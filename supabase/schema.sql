@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS public.tables (
     table_number INTEGER NOT NULL UNIQUE,
     name TEXT NOT NULL,
     capacity INTEGER NOT NULL DEFAULT 10,
-    hierarchy_tag TEXT NOT NULL DEFAULT 'general' CHECK (hierarchy_tag IN ('vip_family', 'extended_relatives', 'friends_bar', 'general')),
-    stage_position TEXT NOT NULL DEFAULT 'center' CHECK (stage_position IN ('stage_front_left', 'stage_front_right', 'center', 'near_bar', 'back')),
+    hierarchy_tag TEXT NOT NULL DEFAULT 'general',
+    stage_position TEXT NOT NULL DEFAULT 'center',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.guests (
     last_name TEXT NOT NULL,
     email TEXT,
     phone TEXT,
-    rsvp_status TEXT NOT NULL DEFAULT 'pending' CHECK (rsvp_status IN ('attending', 'declined', 'pending')),
+    rsvp_status TEXT NOT NULL DEFAULT 'pending',
     headcount INTEGER NOT NULL DEFAULT 1,
     dietary_restrictions TEXT[] NOT NULL DEFAULT '{}',
     dietary_notes TEXT,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS public.guests (
     table_id TEXT REFERENCES public.tables(id) ON DELETE SET NULL,
     table_seat_number INTEGER,
     is_primary_contact BOOLEAN NOT NULL DEFAULT FALSE,
-    relationship_tag TEXT NOT NULL DEFAULT 'general' CHECK (relationship_tag IN ('vip_family', 'extended_relatives', 'friends_bar', 'general')),
+    relationship_tag TEXT NOT NULL DEFAULT 'general',
     plus_one_names TEXT[] NOT NULL DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -51,11 +51,7 @@ CREATE TABLE IF NOT EXISTS public.guests (
 -- 4. Expenses & Budget Engine
 CREATE TABLE IF NOT EXISTS public.expenses (
     id TEXT PRIMARY KEY,
-    category TEXT NOT NULL CHECK (category IN (
-        'venue_banquet', 'host_beverages_corkage', 'attire', 
-        'stage_av_dj', 'decor_floral', 'photography_video', 
-        'gifts_favors', 'misc'
-    )),
+    category TEXT NOT NULL,
     vendor_name TEXT NOT NULL,
     item_description TEXT NOT NULL,
     estimated_cost NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
@@ -63,7 +59,7 @@ CREATE TABLE IF NOT EXISTS public.expenses (
     deposit_paid NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     remaining_balance NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     payment_due_date TEXT NOT NULL,
-    payment_status TEXT NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'overdue')),
+    payment_status TEXT NOT NULL DEFAULT 'pending',
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -73,10 +69,10 @@ CREATE TABLE IF NOT EXISTS public.milestones (
     id TEXT PRIMARY KEY,
     title_en TEXT NOT NULL,
     title_vi TEXT NOT NULL,
-    category TEXT NOT NULL CHECK (category IN ('venue', 'attire', 'guest_rsvp', 'logistics', 'beverage', 'ceremony')),
+    category TEXT NOT NULL,
     target_date TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'blocked')),
-    priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+    status TEXT NOT NULL DEFAULT 'pending',
+    priority TEXT NOT NULL DEFAULT 'medium',
     dependencies TEXT[] NOT NULL DEFAULT '{}',
     assignee TEXT NOT NULL,
     cultural_notes TEXT,
@@ -89,12 +85,9 @@ CREATE TABLE IF NOT EXISTS public.song_requests (
     guest_name TEXT NOT NULL,
     song_title TEXT NOT NULL,
     artist TEXT NOT NULL,
-    genre TEXT NOT NULL DEFAULT 'other' CHECK (genre IN (
-        'vpop', 'edm_dance', 'romantic_ballad', 'viet_bolero', 
-        'hiphop_rnb', '90s_2000s_classics', 'other'
-    )),
+    genre TEXT NOT NULL DEFAULT 'other',
     notes TEXT,
-    status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'played', 'banned')),
+    status TEXT NOT NULL DEFAULT 'queued',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -147,6 +140,20 @@ ALTER TABLE public.milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.song_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.venues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_logs ENABLE ROW LEVEL SECURITY;
+
+-- Clean existing policies if re-running
+DROP POLICY IF EXISTS "Allow public insert into parties" ON public.parties;
+DROP POLICY IF EXISTS "Allow public insert into guests" ON public.guests;
+DROP POLICY IF EXISTS "Allow public insert into song_requests" ON public.song_requests;
+
+DROP POLICY IF EXISTS "Allow authenticated full access to parties" ON public.parties;
+DROP POLICY IF EXISTS "Allow authenticated full access to tables" ON public.tables;
+DROP POLICY IF EXISTS "Allow authenticated full access to guests" ON public.guests;
+DROP POLICY IF EXISTS "Allow authenticated full access to expenses" ON public.expenses;
+DROP POLICY IF EXISTS "Allow authenticated full access to milestones" ON public.milestones;
+DROP POLICY IF EXISTS "Allow authenticated full access to song_requests" ON public.song_requests;
+DROP POLICY IF EXISTS "Allow authenticated full access to venues" ON public.venues;
+DROP POLICY IF EXISTS "Allow authenticated full access to agent_logs" ON public.agent_logs;
 
 -- Public Access Policies: Guests can submit RSVPs and song requests
 CREATE POLICY "Allow public insert into parties" ON public.parties FOR INSERT WITH CHECK (true);
