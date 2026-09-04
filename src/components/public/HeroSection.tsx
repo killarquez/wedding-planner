@@ -6,12 +6,15 @@ import { CountdownTimer } from './CountdownTimer';
 import { Calendar, MapPin, Sparkles, Heart } from 'lucide-react';
 import { downloadIcsFile } from '@/lib/calendar';
 
+import { Party } from '@/lib/types';
+
 interface Props {
   lang: Language;
+  guestParty?: Party | null;
   onRsvpClick: () => void;
 }
 
-export const HeroSection: React.FC<Props> = ({ lang, onRsvpClick }) => {
+export const HeroSection: React.FC<Props> = ({ lang, guestParty, onRsvpClick }) => {
   const t = translations[lang];
 
   return (
@@ -19,12 +22,27 @@ export const HeroSection: React.FC<Props> = ({ lang, onRsvpClick }) => {
       {/* Decorative Traditional Vietnamese & Western Floral Nuances */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-crimson-100/40 via-gold-100/30 to-transparent blur-3xl -z-10 pointer-events-none" />
 
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs sm:text-sm font-semibold tracking-wide mb-6 shadow-xs animate-fade-in">
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs sm:text-sm font-semibold tracking-wide mb-4 shadow-xs animate-fade-in">
         <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-spin" style={{ animationDuration: '6s' }} />
         <span>{lang === 'en' ? 'The Wedding Celebration' : 'Dạ Tiệc Cưới Thân Mật'}</span>
         <span className="text-crimson-300">•</span>
         <span>{lang === 'en' ? 'December 5, 2026' : '05 Tháng 12, 2026'}</span>
       </div>
+
+      {/* Personalized Welcome Banner if Guest/Party is Recognized */}
+      {guestParty && (
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-gold-100 via-amber-50 to-gold-100 border border-gold-400 text-stone-900 text-xs sm:text-sm font-semibold shadow-xs animate-fade-in">
+            <Sparkles className="w-4 h-4 text-gold-700" />
+            <span>
+              {lang === 'en' ? 'Honored Invitation For:' : 'Trân Trọng Kính Mời:'}{' '}
+              <strong className="text-crimson-900 font-bold">{guestParty.primary_guest_name}</strong>
+              <span className="text-stone-400 mx-1.5">•</span>
+              <span>{guestParty.total_invited} {lang === 'en' ? 'Seats Reserved' : 'Chỗ Ngồi'}</span>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Double Happiness Symbol 囍 */}
       <div className="flex justify-center mb-4">

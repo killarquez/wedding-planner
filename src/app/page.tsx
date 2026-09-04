@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Language, translations } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
@@ -10,14 +10,34 @@ import { WeddingIntroExperience } from '@/components/public/WeddingIntroExperien
 import { MusicPlayerWidget } from '@/components/public/MusicPlayerWidget';
 import { Sparkles, Settings2, Heart, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { Party } from '@/lib/types';
 
 function WeddingPageContent() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
+  const [guestParty, setGuestParty] = useState<Party | null>(null);
 
   const searchParams = useSearchParams();
   const initialCode = searchParams.get('invite') || searchParams.get('code') || '';
   const rsvpUrl = initialCode ? `/rsvp?invite=${encodeURIComponent(initialCode)}` : '/rsvp';
+
+  useEffect(() => {
+    if (!initialCode) return;
+    const fetchParty = async () => {
+      try {
+        const res = await fetch(`/api/rsvp?code=${encodeURIComponent(initialCode.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.party) {
+            setGuestParty(data.party);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load guest party for banner:', e);
+      }
+    };
+    fetchParty();
+  }, [initialCode]);
 
   const t = translations[lang];
 
@@ -74,7 +94,7 @@ function WeddingPageContent() {
       </header>
 
       {/* Hero Section (RSVP button routes to /rsvp) */}
-      <HeroSection lang={lang} onRsvpClick={handleNavigateRsvp} />
+      <HeroSection lang={lang} guestParty={guestParty} onRsvpClick={handleNavigateRsvp} />
 
       {/* Event Details & Banquet Showcase */}
       <EventDetails lang={lang} />
@@ -85,6 +105,19 @@ function WeddingPageContent() {
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-gold-400/50">
             囍
           </div>
+
+          {/* Personalized Party Badge if Recognized */}
+          {guestParty && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-gold-100 via-amber-50 to-gold-100 border border-gold-300 text-stone-800 text-xs sm:text-sm font-semibold mb-4 shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-gold-700" />
+              <span>
+                {lang === 'en' ? 'Honored Invitation For:' : 'Trân Trọng Kính Mời:'}{' '}
+                <strong className="text-crimson-900 font-bold">{guestParty.primary_guest_name}</strong>
+                <span className="text-stone-400 mx-1.5">•</span>
+                <span>{guestParty.total_invited} {lang === 'en' ? 'Seats Reserved' : 'Chỗ Ngồi'}</span>
+              </span>
+            </div>
+          )}
 
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 mb-2">
             {t.ready_to_celebrate}

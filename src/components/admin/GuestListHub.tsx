@@ -58,13 +58,20 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
   // Base URL for invite links
   const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://wedding.au-tomato.com';
 
-  const getInviteUrl = (code: string) => `${siteOrigin}/rsvp?invite=${encodeURIComponent(code)}`;
+  const getInviteUrl = (code: string) => `${siteOrigin}/invite=${encodeURIComponent(code)}`;
+  const getDirectRsvpUrl = (code: string) => `${siteOrigin}/invite=${encodeURIComponent(code)}?rsvp`;
 
-  const handleCopyLink = (code: string) => {
-    const url = getInviteUrl(code);
+  const [copiedType, setCopiedType] = useState<'invite' | 'rsvp' | null>(null);
+
+  const handleCopyLink = (code: string, type: 'invite' | 'rsvp' = 'invite') => {
+    const url = type === 'rsvp' ? getDirectRsvpUrl(code) : getInviteUrl(code);
     navigator.clipboard.writeText(url);
     setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2500);
+    setCopiedType(type);
+    setTimeout(() => {
+      setCopiedCode(null);
+      setCopiedType(null);
+    }, 2500);
   };
 
   // Metrics
@@ -212,7 +219,17 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
 
   // Export to CSV
   const handleExportCsv = () => {
-    const headers = ['Party Name', 'Invitation Code', 'Contact Phone', 'Contact Email', 'Total Invited', 'Confirmed Attending', 'Guest Names', 'Personalized Invite Link'];
+    const headers = [
+      'Party Name',
+      'Invitation Code',
+      'Contact Phone',
+      'Contact Email',
+      'Total Invited',
+      'Confirmed Attending',
+      'Guest Names',
+      'Personalized Invite Link',
+      'Direct RSVP Link'
+    ];
     const rows = parties.map(p => {
       const guestNames = p.guests?.map(g => `${g.first_name} ${g.last_name}`.trim()).join('; ') || p.primary_guest_name;
       return [
@@ -223,7 +240,8 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
         p.guests?.length || p.total_invited || 1,
         p.confirmed_count || 0,
         `"${guestNames.replace(/"/g, '""')}"`,
-        `"${getInviteUrl(p.invitation_code)}"`
+        `"${getInviteUrl(p.invitation_code)}"`,
+        `"${getDirectRsvpUrl(p.invitation_code)}"`
       ].join(',');
     });
 
@@ -378,7 +396,9 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
           ) : (
             filteredParties.map((party) => {
               const inviteUrl = getInviteUrl(party.invitation_code);
-              const isCopied = copiedCode === party.invitation_code;
+              const directRsvpUrl = getDirectRsvpUrl(party.invitation_code);
+              const isCopiedInvite = copiedCode === party.invitation_code && copiedType === 'invite';
+              const isCopiedRsvp = copiedCode === party.invitation_code && copiedType === 'rsvp';
               const hasAttending = (party.confirmed_count || 0) > 0;
               const hasDeclined = party.guests?.some(g => g.rsvp_status === 'declined');
               const isAllDeclined = party.guests?.every(g => g.rsvp_status === 'declined');
@@ -505,15 +525,30 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={() => handleCopyLink(party.invitation_code)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                          isCopied
+                        onClick={() => handleCopyLink(party.invitation_code, 'invite')}
+                        title="Copy personalized website landing page link (/invite=CODE)"
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                          isCopiedInvite
                             ? 'bg-emerald-700 text-white'
                             : 'bg-white border border-stone-300 hover:border-gold-500 text-stone-800 shadow-2xs'
                         }`}
                       >
-                        {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 text-stone-500" />}
-                        <span>{isCopied ? 'Copied!' : t.copy_link_btn}</span>
+                        {isCopiedInvite ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 text-stone-500" />}
+                        <span>{isCopiedInvite ? 'Copied!' : (lang === 'en' ? 'Copy Invite' : 'Chép Thiệp')}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopyLink(party.invitation_code, 'rsvp')}
+                        title="Copy direct RSVP form link (?rsvp)"
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                          isCopiedRsvp
+                            ? 'bg-crimson-800 text-white'
+                            : 'bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-800 shadow-2xs'
+                        }`}
+                      >
+                        {isCopiedRsvp ? <Check className="w-3.5 h-3.5" /> : <Heart className="w-3.5 h-3.5 text-crimson-700" />}
+                        <span>{isCopiedRsvp ? 'Copied!' : (lang === 'en' ? 'Direct RSVP' : 'Link RSVP')}</span>
                       </button>
 
                       {party.contact_phone && (
