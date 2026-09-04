@@ -28,6 +28,7 @@ export interface ChaserExecutionReport {
 export class DeadlinesChaserAgent {
   public static async runChaserAndBriefingSimulation(): Promise<ChaserExecutionReport> {
     const guests = WeddingDB.getGuests();
+    const parties = WeddingDB.getParties();
     const pendingPrimaryGuests = guests.filter(g => g.rsvp_status === 'pending' && g.is_primary_contact);
 
     const t21Nudges: ChaserNudgePayload[] = [];
@@ -37,19 +38,23 @@ export class DeadlinesChaserAgent {
     const rsvpCutoffDate = 'November 5, 2026';
 
     pendingPrimaryGuests.forEach((guest, index) => {
+      const party = parties.find(p => p.id === guest.party_id);
+      const code = party?.invitation_code || guest.party_id;
+      const directRsvpLink = `https://wedding.au-tomato.com/?invite=${encodeURIComponent(code)}`;
+
       // Alternate between T-21 and T-7 for demonstration
       const stage: 'T-21' | 'T-7' = index % 2 === 0 ? 'T-21' : 'T-7';
       const daysTextEn = stage === 'T-21' ? '3 weeks' : '7 days';
       const daysTextVi = stage === 'T-21' ? '3 tuần nữa' : '7 ngày nữa';
 
       const emailSubjectEn = `Friendly Reminder: RSVP for Trang & Alfredo's Wedding (Cutoff ${rsvpCutoffDate})`;
-      const emailBodyEn = `Dear ${guest.first_name},\n\nWe hope you are having a wonderful week! We are in the final stages of locking in our 10-top round banquet tables and 8-course dining menu for our Wedding Celebration on December 5, 2026.\n\nThe RSVP deadline is in ${daysTextEn} (${rsvpCutoffDate}). Please let us know if you and your party will be attending so we can reserve your banquet seats and table placement!\n\nRSVP Online in 60 seconds: https://wedding.trangandalfredo.com/#rsvp?code=${guest.party_id}\n\nWarmly,\nTrang & Alfredo`;
+      const emailBodyEn = `Dear ${guest.first_name},\n\nWe hope you are having a wonderful week! We are in the final stages of locking in our 10-top round banquet tables and banquet dining menu for our Wedding Celebration on December 5, 2026 at Grand Harbor Restaurant.\n\nThe RSVP deadline is in ${daysTextEn} (${rsvpCutoffDate}). Please let us know if you and your party will be attending so we can reserve your banquet seats and table placement!\n\nRSVP Online in 60 seconds with your personal invitation link: ${directRsvpLink}\n\nWarmly,\nTrang & Alfredo`;
 
       const emailSubjectVi = `Nhắc Nhở Thân Tình: Xác Nhận Tham Dự Tiệc Cưới Trang & Alfredo (Hạn ${rsvpCutoffDate})`;
-      const emailBodyVi = `Kính gửi ${guest.first_name},\n\nChúng mình đang hoàn tất danh sách bàn tròn 10 người và khẩu phần yến tiệc 8 món cho đêm tiệc 05/12/2026 sắp tới.\n\nThời hạn chốt danh sách chỉ còn ${daysTextVi} (${rsvpCutoffDate}). Kính mong bạn dành chút thời gian xác nhận để chúng mình tiện sắp xếp bàn tiệc đón tiếp chu đáo nhất!\n\nXác nhận nhanh tại: https://wedding.trangandalfredo.com/#rsvp?code=${guest.party_id}\n\nThân ái,\nTrang & Alfredo`;
+      const emailBodyVi = `Kính gửi ${guest.first_name},\n\nChúng mình đang hoàn tất danh sách bàn tròn 10 người và khẩu phần yến tiệc cho đêm tiệc 05/12/2026 sắp tới tại Nhà Hàng Grand Harbor.\n\nThời hạn chốt danh sách chỉ còn ${daysTextVi} (${rsvpCutoffDate}). Kính mong bạn dành chút thời gian xác nhận để chúng mình tiện sắp xếp bàn tiệc đón tiếp chu đáo nhất!\n\nXác nhận nhanh qua link thiệp riêng của gia đình: ${directRsvpLink}\n\nThân ái,\nTrang & Alfredo`;
 
-      const smsEn = `Hi ${guest.first_name}! Friendly reminder to RSVP for Trang & Alfredo's Wedding (Dec 5, 2026) by ${rsvpCutoffDate}. Reply YES or NO, or visit https://wedding.trangandalfredo.com/#rsvp`;
-      const smsVi = `Chào ${guest.first_name}! Nhắc hẹn thân tình xác nhận tham dự Tiệc Cưới Trang & Alfredo ngày 05/12/2026 trước ngày ${rsvpCutoffDate}. Vui lòng phản hồi tại https://wedding.trangandalfredo.com/#rsvp`;
+      const smsEn = `Hi ${guest.first_name}! Friendly reminder to RSVP for Trang & Alfredo's Wedding (Dec 5, 2026) by ${rsvpCutoffDate}. View your personal invitation: ${directRsvpLink}`;
+      const smsVi = `Chào ${guest.first_name}! Nhắc hẹn thân tình xác nhận tham dự Tiệc Cưới Trang & Alfredo ngày 05/12/2026 trước ngày ${rsvpCutoffDate}. Mở link thiệp của bạn tại: ${directRsvpLink}`;
 
       const nudge: ChaserNudgePayload = {
         guestId: guest.id,
@@ -63,7 +68,7 @@ export class DeadlinesChaserAgent {
         emailBodyVi,
         smsEn,
         smsVi,
-        directRsvpLink: `https://wedding.trangandalfredo.com/#rsvp?code=${guest.party_id}`
+        directRsvpLink
       };
 
       if (stage === 'T-21') {

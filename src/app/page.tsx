@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Language, translations } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
 import { HeroSection } from '@/components/public/HeroSection';
@@ -12,11 +13,13 @@ import { MusicPlayerWidget } from '@/components/public/MusicPlayerWidget';
 import { Sparkles, Settings2, Heart } from 'lucide-react';
 import Link from 'next/link';
 
-export default function PublicWeddingPage() {
+function WeddingPageContent() {
   const [lang, setLang] = useState<Language>('en');
   const [modalOpen, setModalOpen] = useState(false);
   const [rsvpData, setRsvpData] = useState<any>(null);
-  const [showIntro, setShowIntro] = useState(false);
+
+  const searchParams = useSearchParams();
+  const initialCode = searchParams.get('invite') || searchParams.get('code') || '';
 
   const t = translations[lang];
 
@@ -36,6 +39,16 @@ export default function PublicWeddingPage() {
     sessionStorage.removeItem('wedding_invite_opened');
     window.location.reload();
   };
+
+  // If initialCode is provided in URL, auto-scroll to RSVP section after brief moment
+  useEffect(() => {
+    if (initialCode) {
+      const timer = setTimeout(() => {
+        scrollToRsvp();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [initialCode]);
 
   return (
     <main className="min-h-screen relative flex flex-col justify-between">
@@ -78,8 +91,12 @@ export default function PublicWeddingPage() {
       {/* Event Details & Banquet Showcase */}
       <EventDetails lang={lang} />
 
-      {/* Smart Dynamic RSVP Form */}
-      <RsvpForm lang={lang} onSuccess={handleRsvpSuccess} />
+      {/* Personalized Link & Party RSVP Form */}
+      <RsvpForm
+        lang={lang}
+        initialCode={initialCode}
+        onSuccess={handleRsvpSuccess}
+      />
 
       {/* Confirmation Modal */}
       <ConfirmationModal
@@ -107,5 +124,13 @@ export default function PublicWeddingPage() {
         </div>
       </footer>
     </main>
+  );
+}
+
+export default function PublicWeddingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#faf8f5]" />}>
+      <WeddingPageContent />
+    </Suspense>
   );
 }

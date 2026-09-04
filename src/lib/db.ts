@@ -10,7 +10,9 @@ import {
   VenueSourcingResult,
   DailyBriefing,
   RsvpStatus,
-  TableHierarchy
+  TableHierarchy,
+  PartyRsvpSubmission,
+  GuestRsvpUpdate
 } from './types';
 import {
   initialGuests,
@@ -207,6 +209,302 @@ export class WeddingDB {
   public static getParties(): Party[] {
     const state = this.getState();
     return state.parties;
+  }
+
+  public static getPartyByCodeOrPhone(query: string): { party: Party; guests: Guest[] } | null {
+    if (!query || !query.trim()) return null;
+    const state = this.getState();
+    const trimmed = query.trim().toLowerCase();
+    const digitsOnly = query.replace(/\D/g, '');
+
+    // 1. Match invitation code exactly (case-insensitive)
+    let party = state.parties.find(p => p.invitation_code.trim().toLowerCase() === trimmed);
+
+    // 2. Match party ID exactly
+    if (!party) {
+      party = state.parties.find(p => p.id.toLowerCase() === trimmed);
+    }
+
+    // 3. Match phone number (if 7+ digits provided)
+    if (!party && digitsOnly.length >= 7) {
+      party = state.parties.find(p => {
+        const partyDigits = (p.contact_phone || '').replace(/\D/g, '');
+        return partyDigits && (partyDigits.includes(digitsOnly) || digitsOnly.includes(partyDigits));
+      });
+
+      // Also check guests' phone numbers
+      if (!party) {
+        const guestWithPhone = state.guests.find(g => {
+          const gDigits = (g.phone || '').replace(/\D/g, '');
+          return gDigits && (gDigits.includes(digitsOnly) || digitsOnly.includes(gDigits));
+        });
+        if (guestWithPhone) {
+          party = state.parties.find(p => p.id === guestWithPhone.party_id);
+        }
+      }
+    }
+
+    // 4. Fuzzy match by Primary Guest Name (if query is at least 3 letters)
+    if (!party && trimmed.length >= 3) {
+      party = state.parties.find(p => p.primary_guest_name.toLowerCase().includes(trimmed));
+      if (!party) {
+        const guestWithName = state.guests.find(g => `${g.first_name} ${g.last_name}`.toLowerCase().includes(trimmed));
+        if (guestWithName) {
+          party = state.parties.find(p => p.id === guestWithName.party_id);
+        }
+      }
+    }
+
+    if (!party) return null;
+
+    const guests = state.guests.filter(g => g.party_id === party!.id);
+    return { party, guests };
+  }
+
+  public static getPartiesWithGuests(): Array<Party & { guests: Guest[]; confirmed_count: number }> {
+    const state = this.getState();
+    return state.parties.map(party => {
+      const partyGuests = state.guests.filter(g => g.party_id === party.id);
+      const confirmedCount = partyGuests.filter(g => g.rsvp_status === 'attending').length;
+      return {
+        ...party,
+        guests: partyGuests,
+        confirmed_count: confirmedCount
+      };
+    });
+  }
+
+  public static submitPartyRsvp(payload: PartyRsvpSubmission): {
+    party: Party;
+    guests: Guest[];
+    attendingCount: number;
+    declinedCount: number;
+    songRequestCreated?: SongRequest;
+  } {
+    const state = this.getState();
+    let party = state.parties.find(
+      p => p.id === payload.party_id || 
+      (payload.invitation_code && p.invitation_code.toLowerCase() === payload.invitation_code.toLowerCase())
+    );
+
+    if (!party) {
+      throw new Error('Party not found for RSVP submission');
+    }
+
+    let songRequestCreated: SongRequest | undefined;
+    let attendingCount = 0;
+    let declinedCount = 0;
+
+    this.updateState(s => {
+      // 1. Update party record
+      const pIdx = s.parties.findIndex(p => p.id === party!.id);
+      if (pIdx !== -1) {
+        s.parties[pIdx] = {
+          ...s.parties[pIdx],
+          contact_email: payload.contact_email || s.parties[pIdx].contact_email,
+          contact_phone: payload.contact_phone || s.parties[pIdx].contact_phone,
+          special_message: payload.special_message || s.parties[pIdx].special_message,
+        };
+        party = s.parties[pIdx];
+      }
+
+      // 2. Update individual guest records
+      payload.guests.forEach(update => {
+        const gIdx = s.guests.findIndex(g => g.id === update.guest_id && g.party_id === party!.id);
+        if (gIdx !== -1) {
+          if (update.rsvp_status === 'attending') attendingCount++;
+          if (update.rsvp_status === 'declined') declinedCount++;
+
+          s.guests[gIdx] = {
+            ...s.guests[gIdx],
+            first_name: update.first_name || s.guests[gIdx].first_name,
+            last_name: update.last_name !== undefined ? update.last_name : s.guests[gIdx].last_name,
+            rsvp_status: update.rsvp_status,
+            dietary_restrictions: update.dietary_restrictions || [],
+            dietary_notes: update.dietary_notes || undefined,
+            updated_at: new Date().toISOString()
+          };
+        }
+      });
+
+      // 3. Insert song request if provided
+      if (payload.song_request?.song_title && payload.song_request.song_title.trim()) {
+        songRequestCreated = {
+          id: `song-${Date.now()}`,
+          guest_name: party!.primary_guest_name,
+          song_title: payload.song_request.song_title.trim(),
+          artist: payload.song_request.artist?.trim() || 'Guest Request',
+          genre: 'other',
+          notes: `Requested by ${party!.primary_guest_name} during personalized party RSVP`,
+          status: 'queued',
+          created_at: new Date().toISOString()
+        };
+        s.song_requests.push(songRequestCreated);
+      }
+
+      // 4. Log to agent_logs
+      s.agent_logs.push({
+        timestamp: new Date().toISOString(),
+        agent: 'RSVP Engine',
+        action: `Personalized RSVP submitted for ${party!.primary_guest_name}: ${attendingCount} attending, ${declinedCount} declined`
+      });
+    });
+
+    // Supabase sync in background if connected
+    const supabase = createAdminClient();
+    if (supabase) {
+      (async () => {
+        try {
+          await supabase.from('parties').update({
+            contact_email: party!.contact_email,
+            contact_phone: party!.contact_phone,
+            notes: party!.special_message ? `Special Message: ${party!.special_message}` : party!.notes
+          }).eq('id', party!.id);
+
+          for (const update of payload.guests) {
+            await supabase.from('guests').update({
+              rsvp_status: update.rsvp_status,
+              dietary_restrictions: update.dietary_restrictions || [],
+              dietary_notes: update.dietary_notes || null,
+              updated_at: new Date().toISOString()
+            }).eq('id', update.guest_id);
+          }
+
+          if (songRequestCreated) {
+            await supabase.from('song_requests').insert(songRequestCreated);
+          }
+        } catch (e) {
+          console.warn('Supabase party RSVP sync error:', e);
+        }
+      })();
+    }
+
+    const updatedGuests = this.getState().guests.filter(g => g.party_id === party!.id);
+    return { party: party!, guests: updatedGuests, attendingCount, declinedCount, songRequestCreated };
+  }
+
+  public static createParty(data: {
+    primary_guest_name: string;
+    contact_phone?: string;
+    contact_email?: string;
+    total_invited?: number;
+    invitation_code?: string;
+    guest_names?: string[];
+    relationship_tag?: TableHierarchy;
+    notes?: string;
+  }): { party: Party; guests: Guest[] } {
+    const partyId = `party-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const guestNames = data.guest_names && data.guest_names.length > 0 
+      ? data.guest_names 
+      : [data.primary_guest_name];
+    const totalInvited = data.total_invited || guestNames.length;
+    const relTag = data.relationship_tag || 'general';
+
+    // Generate code if not provided
+    const codeBase = data.primary_guest_name.split(' ').pop()?.toUpperCase().replace(/[^A-Z]/g, '') || 'GUEST';
+    const invitationCode = data.invitation_code || `INV-${codeBase}-${Math.floor(100 + Math.random() * 900)}`;
+
+    const newParty: Party = {
+      id: partyId,
+      primary_guest_name: data.primary_guest_name.trim(),
+      invitation_code: invitationCode,
+      total_invited: totalInvited,
+      contact_email: data.contact_email?.trim() || undefined,
+      contact_phone: data.contact_phone?.trim() || undefined,
+      notes: data.notes?.trim() || undefined,
+      created_at: new Date().toISOString()
+    };
+
+    const newGuests: Guest[] = guestNames.map((name, idx) => {
+      const parts = name.trim().split(' ');
+      const firstName = parts.slice(0, -1).join(' ') || name.trim();
+      const lastName = parts.length > 1 ? parts[parts.length - 1] : '';
+      return {
+        id: `guest-${Date.now()}-${idx + 1}-${Math.floor(Math.random() * 1000)}`,
+        party_id: partyId,
+        first_name: firstName,
+        last_name: lastName,
+        phone: idx === 0 ? data.contact_phone?.trim() : undefined,
+        email: idx === 0 ? data.contact_email?.trim() : undefined,
+        rsvp_status: 'pending',
+        headcount: 1,
+        dietary_restrictions: [],
+        table_id: null,
+        is_primary_contact: idx === 0,
+        relationship_tag: relTag,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    });
+
+    this.updateState(s => {
+      s.parties.push(newParty);
+      s.guests.push(...newGuests);
+      s.agent_logs.push({
+        timestamp: new Date().toISOString(),
+        agent: 'Party Manager',
+        action: `Created new party ${newParty.primary_guest_name} with ${newGuests.length} guests (Code: ${newParty.invitation_code})`
+      });
+    });
+
+    const supabase = createAdminClient();
+    if (supabase) {
+      (async () => {
+        try {
+          await supabase.from('parties').insert(newParty);
+          await supabase.from('guests').insert(newGuests);
+        } catch (e) {
+          console.warn('Supabase createParty error:', e);
+        }
+      })();
+    }
+
+    return { party: newParty, guests: newGuests };
+  }
+
+  public static bulkImportParties(rows: Array<{
+    primary_guest_name: string;
+    contact_phone?: string;
+    contact_email?: string;
+    guest_names?: string[];
+    relationship_tag?: TableHierarchy;
+    notes?: string;
+  }>): { partiesCreated: number; guestsCreated: number } {
+    let partiesCreated = 0;
+    let guestsCreated = 0;
+
+    for (const row of rows) {
+      if (!row.primary_guest_name || !row.primary_guest_name.trim()) continue;
+      this.createParty(row);
+      partiesCreated++;
+      guestsCreated += (row.guest_names && row.guest_names.length > 0 ? row.guest_names.length : 1);
+    }
+
+    return { partiesCreated, guestsCreated };
+  }
+
+  public static deleteParty(partyId: string): boolean {
+    let deleted = false;
+    this.updateState(s => {
+      const prevCount = s.parties.length;
+      s.parties = s.parties.filter(p => p.id !== partyId);
+      s.guests = s.guests.filter(g => g.party_id !== partyId);
+      deleted = s.parties.length < prevCount;
+    });
+
+    const supabase = createAdminClient();
+    if (supabase) {
+      (async () => {
+        try {
+          await supabase.from('guests').delete().eq('party_id', partyId);
+          await supabase.from('parties').delete().eq('id', partyId);
+        } catch (e) {
+          console.warn('Supabase deleteParty error:', e);
+        }
+      })();
+    }
+
+    return deleted;
   }
 
   public static submitRsvp(payload: {

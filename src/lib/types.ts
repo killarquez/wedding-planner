@@ -32,7 +32,30 @@ export interface Party {
   contact_email?: string;
   contact_phone?: string;
   notes?: string;
+  special_message?: string;
   created_at: string;
+}
+
+export interface GuestRsvpUpdate {
+  guest_id: string;
+  first_name?: string;
+  last_name?: string;
+  rsvp_status: RsvpStatus;
+  dietary_restrictions: string[];
+  dietary_notes?: string;
+}
+
+export interface PartyRsvpSubmission {
+  party_id: string;
+  invitation_code?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  special_message?: string;
+  song_request?: {
+    song_title: string;
+    artist?: string;
+  };
+  guests: GuestRsvpUpdate[];
 }
 
 export interface Table {

@@ -2,9 +2,66 @@ import { NextRequest, NextResponse } from 'next/server';
 import { WeddingDB } from '@/lib/db';
 import { RsvpPipelineAgent } from '@/lib/agents/rsvpAgent';
 
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const query = searchParams.get('code') || searchParams.get('phone') || searchParams.get('lookup');
+
+    if (!query) {
+      return NextResponse.json({ error: 'Lookup parameter (code or phone) is required' }, { status: 400 });
+    }
+
+    const result = WeddingDB.getPartyByCodeOrPhone(query);
+    if (!result) {
+      return NextResponse.json({ error: 'Invitation not found. Please verify your code or phone number.' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      party: result.party,
+      guests: result.guests
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // 1. Personalized Party RSVP Mode
+    if (body.party_id || (body.guests && Array.isArray(body.guests))) {
+      const result = WeddingDB.submitPartyRsvp(body);
+
+      // Trigger Agent B confirmation draft
+      const primaryGuest = result.guests.find(g => g.is_primary_contact) || result.guests[0];
+      const plusOneGuests = result.guests.filter(g => g.id !== primaryGuest?.id && g.rsvp_status === 'attending');
+
+      let agentResponse = null;
+      if (primaryGuest) {
+        try {
+          agentResponse = await RsvpPipelineAgent.processRsvpSubmission(
+            result.party,
+            primaryGuest,
+            plusOneGuests
+          );
+        } catch (e) {
+          console.warn('Agent confirmation generation warning:', e);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        party: result.party,
+        guests: result.guests,
+        attendingCount: result.attendingCount,
+        declinedCount: result.declinedCount,
+        agentResponse
+      });
+    }
+
+    // 2. Legacy / Fallback Single Submission
     const {
       first_name,
       last_name,

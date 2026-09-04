@@ -10,25 +10,28 @@ import { MilestoneTimeline } from '@/components/admin/MilestoneTimeline';
 import { KitchenDjOverview } from '@/components/admin/KitchenDjOverview';
 import { AgentWorkflowsHub } from '@/components/admin/AgentWorkflowsHub';
 import { BriefingModal } from '@/components/admin/BriefingModal';
-import { Table, Guest, Expense, Milestone, SongRequest, DailyBriefing } from '@/lib/types';
+import { GuestListHub } from '@/components/admin/GuestListHub';
+import { Table, Guest, Party, Expense, Milestone, SongRequest, DailyBriefing } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import {
   Layers,
   DollarSign,
   CalendarCheck,
   UtensilsCrossed,
-  Bot
+  Bot,
+  Link2
 } from 'lucide-react';
 
 export default function AdminCrmPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
-  const [activeTab, setActiveTab] = useState<'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents'>('seating');
+  const [activeTab, setActiveTab] = useState<'guests_links' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents'>('guests_links');
 
   // Supabase Auth User State
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // Data State
+  const [parties, setParties] = useState<Array<Party & { guests: Guest[]; confirmed_count: number }>>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [banquetMath, setBanquetMath] = useState<any>({
@@ -79,7 +82,8 @@ export default function AdminCrmPage() {
   const fetchAllData = async () => {
     try {
       setLoading(true);
-      const [tablesRes, guestsRes, budgetRes, milestonesRes, djRes, briefingRes] = await Promise.all([
+      const [partiesRes, tablesRes, guestsRes, budgetRes, milestonesRes, djRes, briefingRes] = await Promise.all([
+        fetch('/api/parties'),
         fetch('/api/tables'),
         fetch('/api/guests'),
         fetch('/api/budget'),
@@ -88,7 +92,8 @@ export default function AdminCrmPage() {
         fetch('/api/agents/chaser')
       ]);
 
-      const [tablesData, guestsData, budgetData, milestonesData, djData, briefingData] = await Promise.all([
+      const [partiesData, tablesData, guestsData, budgetData, milestonesData, djData, briefingData] = await Promise.all([
+        partiesRes.json(),
         tablesRes.json(),
         guestsRes.json(),
         budgetRes.json(),
@@ -97,6 +102,7 @@ export default function AdminCrmPage() {
         briefingRes.json()
       ]);
 
+      if (partiesData.parties) setParties(partiesData.parties);
       if (tablesData.tables) setTables(tablesData.tables);
       if (tablesData.math) setBanquetMath(tablesData.math);
       if (guestsData.guests) setGuests(guestsData.guests);
@@ -146,6 +152,19 @@ export default function AdminCrmPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 space-y-6">
         {/* Module Tab Navigation Bar */}
         <div className="bg-white p-1.5 rounded-2xl border border-stone-200 shadow-2xs flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveTab('guests_links')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'guests_links'
+                ? 'bg-crimson-800 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            }`}
+          >
+            <Link2 className="w-4 h-4 text-gold-300" />
+            <span>{t.crm_tab_guests}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setActiveTab('seating')}
@@ -203,8 +222,8 @@ export default function AdminCrmPage() {
             onClick={() => setActiveTab('agents')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'agents'
-                ? 'bg-crimson-800 text-white shadow-xs'
-                : 'text-crimson-800 hover:bg-crimson-50'
+                ? 'bg-stone-900 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
             }`}
           >
             <Bot className="w-4 h-4 text-gold-300" />
@@ -213,6 +232,14 @@ export default function AdminCrmPage() {
         </div>
 
         {/* Tab Modules View */}
+        {activeTab === 'guests_links' && (
+          <GuestListHub
+            lang={lang}
+            parties={parties}
+            onRefresh={fetchAllData}
+          />
+        )}
+
         {activeTab === 'seating' && (
           <GuestSeatingTracker
             lang={lang}
