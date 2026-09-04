@@ -11,6 +11,8 @@ import { MusicPlayerWidget } from '@/components/public/MusicPlayerWidget';
 import { Sparkles, Settings2, Heart, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Party } from '@/lib/types';
+import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAtmosphereBackground';
+import { VietnameseCornerFlourish, VietnameseCloudDivider } from '@/components/public/VietnameseMotifDividers';
 
 function WeddingPageContent() {
   const router = useRouter();
@@ -52,6 +54,9 @@ function WeddingPageContent() {
 
   return (
     <main className="min-h-screen relative flex flex-col justify-between">
+      {/* Dynamic Vietnamese Imperial Atmosphere & Drifting Petals */}
+      <VietnameseAtmosphereBackground />
+
       {/* 1st Time Opening Royal Red Envelope & Music Experience */}
       <WeddingIntroExperience lang={lang} />
 
@@ -100,15 +105,20 @@ function WeddingPageContent() {
       <EventDetails lang={lang} />
 
       {/* Bottom RSVP Call-To-Action Banner */}
-      <section className="py-12 px-4 sm:px-6 max-w-3xl mx-auto text-center">
-        <div className="bg-gradient-to-br from-[#fffdf9] to-[#faf6ed] rounded-3xl p-8 sm:p-12 border-2 border-gold-300/80 shadow-md">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-gold-400/50">
+      <section className="py-14 px-4 sm:px-6 max-w-3xl mx-auto text-center">
+        <div className="relative bg-gradient-to-br from-white/95 via-amber-50/40 to-rose-50/35 rounded-3xl p-8 sm:p-12 border-2 border-gold-400/80 shadow-xl">
+          <VietnameseCornerFlourish position="top-left" className="absolute top-3 left-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="top-right" className="absolute top-3 right-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="bottom-left" className="absolute bottom-3 left-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="bottom-right" className="absolute bottom-3 right-3 w-7 h-7 text-gold-500/70" />
+
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson-800 via-rose-900 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-4 shadow-md border border-gold-400/60 transform hover:scale-105 transition-transform">
             囍
           </div>
 
           {/* Personalized Party Badge if Recognized */}
           {guestParty && (
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-gold-100 via-amber-50 to-gold-100 border border-gold-300 text-stone-800 text-xs sm:text-sm font-semibold mb-4 shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-100 via-rose-50 to-gold-100 border border-gold-400 text-stone-900 text-xs sm:text-sm font-semibold mb-4 shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 text-gold-700" />
               <span>
                 {lang === 'en' ? 'Honored Invitation For:' : 'Trân Trọng Kính Mời:'}{' '}
@@ -119,9 +129,13 @@ function WeddingPageContent() {
             </div>
           )}
 
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 mb-2">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-stone-900 mb-2">
             {t.ready_to_celebrate}
           </h2>
+
+          <div className="my-3">
+            <VietnameseCloudDivider />
+          </div>
 
           <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
             {t.ready_to_celebrate_desc}
@@ -129,7 +143,7 @@ function WeddingPageContent() {
 
           <Link
             href={rsvpUrl}
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-crimson-700 via-crimson-800 to-crimson-900 text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-crimson-700 via-rose-700 to-crimson-900 text-white font-bold text-sm sm:text-base shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer border border-gold-400/40"
           >
             <Heart className="w-4 h-4 fill-white" />
             <span>{t.rsvp_now}</span>

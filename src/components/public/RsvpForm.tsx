@@ -18,6 +18,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { VietnameseCornerFlourish, VietnameseCloudDivider } from './VietnameseMotifDividers';
 
 interface Props {
   lang: Language;
@@ -220,8 +221,13 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
     <section id="rsvp-section" className="py-12 sm:py-16 px-4 sm:px-6 max-w-4xl mx-auto">
       {/* 1. LOOKUP STATE (When no party loaded) */}
       {!party ? (
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-gold-300/80 shadow-md text-center max-w-xl mx-auto animate-fade-in">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-5 shadow-md border border-gold-400/50">
+        <div className="relative bg-gradient-to-br from-white/95 via-amber-50/40 to-rose-50/30 backdrop-blur-md rounded-3xl p-6 sm:p-10 border-2 border-gold-400/80 shadow-xl text-center max-w-xl mx-auto animate-fade-in">
+          <VietnameseCornerFlourish position="top-left" className="absolute top-3 left-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="top-right" className="absolute top-3 right-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="bottom-left" className="absolute bottom-3 left-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="bottom-right" className="absolute bottom-3 right-3 w-7 h-7 text-gold-500/70" />
+
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-5 shadow-md border border-gold-400/60">
             囍
           </div>
 
@@ -288,12 +294,17 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
         /* 2. PERSONALIZED PARTY RSVP STATE (When party is loaded) */
         <form
           onSubmit={handleSubmit}
-          className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-10 border border-gold-300/80 shadow-md space-y-8 animate-fade-in"
+          className="relative bg-gradient-to-br from-white/95 via-amber-50/30 to-rose-50/25 backdrop-blur-md rounded-3xl p-6 sm:p-10 border-2 border-gold-400/80 shadow-xl space-y-8 animate-fade-in"
         >
+          <VietnameseCornerFlourish position="top-left" className="absolute top-3 left-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="top-right" className="absolute top-3 right-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="bottom-left" className="absolute bottom-3 left-3 w-7 h-7 text-gold-500/70" />
+          <VietnameseCornerFlourish position="bottom-right" className="absolute bottom-3 right-3 w-7 h-7 text-gold-500/70" />
+
           {/* Header Banner */}
-          <div className="border-b border-stone-200 pb-6 text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="border-b border-stone-200/80 pb-6 text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs font-semibold mb-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-crimson-50 to-amber-50 border border-crimson-200 text-crimson-900 text-xs font-semibold mb-2 shadow-2xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-gold-600" />
                 <span>Code: {party.invitation_code}</span>
                 <span className="text-crimson-300">•</span>
@@ -310,7 +321,7 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
             <button
               type="button"
               onClick={handleResetParty}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors shrink-0 self-center sm:self-auto"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs text-stone-500 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors shrink-0 self-center sm:self-auto border border-stone-200"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>{t.switch_party_btn}</span>

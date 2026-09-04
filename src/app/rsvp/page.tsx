@@ -16,6 +16,7 @@ import {
   Settings2,
   Sparkles
 } from 'lucide-react';
+import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAtmosphereBackground';
 
 function RsvpPageContent() {
   const [lang, setLang] = useState<Language>('en');
@@ -33,7 +34,10 @@ function RsvpPageContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col justify-between">
+    <main className="min-h-screen relative text-stone-900 flex flex-col justify-between">
+      {/* Dynamic Vietnamese Imperial Atmosphere & Drifting Petals */}
+      <VietnameseAtmosphereBackground />
+
       {/* Persistent Floating Music Controller */}
       <MusicPlayerWidget lang={lang} />
 
