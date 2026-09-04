@@ -709,8 +709,8 @@ export const initialMilestones: Milestone[] = [
   },
   {
     id: 'ms-8',
-    title_en: 'Sequel Wedding Celebration Night!',
-    title_vi: 'Đêm Dạ Tiệc Báo Hỷ Chính Thức (05/12/2026)!',
+    title_en: 'The Wedding Celebration Night!',
+    title_vi: 'Đêm Dạ Tiệc Cưới Chính Thức (05/12/2026)!',
     category: 'ceremony',
     target_date: '2026-12-05',
     status: 'pending',
@@ -790,8 +790,8 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Top tier Chinese/Vietnamese 8-10 course master chef, majestic crystal chandeliers, large hardwood dance floor, experienced bilingual banquet captains.',
     contact_email: 'banquets@grandpearlpalace.com',
     contact_phone: '+1 (714) 898-8888',
-    inquiry_email_draft_en: `Subject: Banquet Inquiry for Sequel Wedding (Dec 5, 2026) - Trang & Alfredo\n\nDear Grand Pearl Banquet Director,\n\nWe are hosting our Sequel Wedding Celebration on Saturday, December 5, 2026 for approximately 80-100 guests (8 to 10 ten-top round tables). We would like to confirm package pricing for your 8-course banquet menu (featuring Lobster, Peking Duck, and Seabass), along with corkage terms for host-supplied Hennessy XO and wine.\n\nPlease provide your banquet pacing schedule, AV/lighting specifications, and deposit requirements.\n\nWarmly,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Đặt Tiệc Báo Hỷ Ngày 05/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Yến Tiệc The Grand Pearl Palace,\n\nChúng tôi dự kiến tổ chức Dạ Tiệc Báo Hỷ vào Thứ Bảy, 05/12/2026 với quy mô 8 - 10 bàn tiệc tròn 10 người (80 - 100 khách). Xin vui lòng gửi bảng giá chi tiết thực đơn 8 món cao cấp (gồm Tôm Hùm, Vịt Quay Bắc Kinh, Cá Chẽm Hấp), kèm chính sách phí phục vụ cho rượu Hennessy XO và rượu vang do gia đình chuẩn bị.\n\nTrân trọng cảm ơn,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Banquet Inquiry for Wedding Celebration (Dec 5, 2026) - Trang & Alfredo\n\nDear Grand Pearl Banquet Director,\n\nWe are hosting our Wedding Celebration on Saturday, December 5, 2026 for approximately 80-100 guests (8 to 10 ten-top round tables). We would like to confirm package pricing for your 8-course banquet menu (featuring Lobster, Peking Duck, and Seabass), along with corkage terms for host-supplied Hennessy XO and wine.\n\nPlease provide your banquet pacing schedule, AV/lighting specifications, and deposit requirements.\n\nWarmly,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Đặt Tiệc Cưới Ngày 05/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Yến Tiệc The Grand Pearl Palace,\n\nChúng tôi dự kiến tổ chức Dạ Tiệc Cưới vào Thứ Bảy, 05/12/2026 với quy mô 8 - 10 bàn tiệc tròn 10 người (80 - 100 khách). Xin vui lòng gửi bảng giá chi tiết thực đơn 8 món cao cấp (gồm Tôm Hùm, Vịt Quay Bắc Kinh, Cá Chẽm Hấp), kèm chính sách phí phục vụ cho rượu Hennessy XO và rượu vang do gia đình chuẩn bị.\n\nTrân trọng cảm ơn,\nTrang & Alfredo`
   },
   {
     id: 'venue-2',
@@ -808,8 +808,8 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Famous for authentic seafood banquets, expansive LED backdrop wall, ample parking.',
     contact_email: 'events@dragonpalaceoc.com',
     contact_phone: '+1 (714) 539-9988',
-    inquiry_email_draft_en: `Subject: Banquet Availability Inquiry (Dec 5, 2026) - Trang & Alfredo\n\nDear Dragon Palace Team,\n\nWe are planning our 80-person sequel wedding banquet for Dec 5, 2026. We are interested in your 8-course banquet package and bringing our own Cognac bottles for table toasting.\n\nBest regards,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Tư Vấn Tiệc Cưới 05/12/2026 - Trang & Alfredo\n\nKính gửi Dragon Palace Imperial,\n\nChúng tôi muốn tìm hiểu về sảnh tiệc 8-10 bàn 10 người cho tiệc báo hỷ ngày 05/12/2026 và thực đơn yến tiệc hải sản.\n\nTrân trọng,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Banquet Availability Inquiry (Dec 5, 2026) - Trang & Alfredo\n\nDear Dragon Palace Team,\n\nWe are planning our 80-person wedding celebration banquet for Dec 5, 2026. We are interested in your 8-course banquet package and bringing our own Cognac bottles for table toasting.\n\nBest regards,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Tư Vấn Tiệc Cưới 05/12/2026 - Trang & Alfredo\n\nKính gửi Dragon Palace Imperial,\n\nChúng tôi muốn tìm hiểu về sảnh tiệc 8-10 bàn 10 người cho tiệc cưới ngày 05/12/2026 và thực đơn yến tiệc hải sản.\n\nTrân trọng,\nTrang & Alfredo`
   },
   {
     id: 'venue-3',

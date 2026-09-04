@@ -21,7 +21,7 @@ export const HeroSection: React.FC<Props> = ({ lang, onRsvpClick }) => {
 
       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs sm:text-sm font-semibold tracking-wide mb-6 shadow-xs animate-fade-in">
         <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-spin" style={{ animationDuration: '6s' }} />
-        <span>{lang === 'en' ? 'The Sequel Wedding Celebration' : 'Dạ Tiệc Báo Hỷ Thân Mật'}</span>
+        <span>{lang === 'en' ? 'The Wedding Celebration' : 'Dạ Tiệc Cưới Thân Mật'}</span>
         <span className="text-crimson-300">•</span>
         <span>{lang === 'en' ? 'December 5, 2026' : '05 Tháng 12, 2026'}</span>
       </div>
@@ -43,7 +43,7 @@ export const HeroSection: React.FC<Props> = ({ lang, onRsvpClick }) => {
         "{t.subtitle}"
       </p>
 
-      <p className="text-sm sm:text-base text-stone-600 max-w-xl mx-auto mb-8 leading-relaxed font-sans">
+      <p className="text-sm sm:text-base text-stone-600 max-w-2xl mx-auto mb-8 leading-relaxed font-sans">
         {t.tagline}
       </p>
 

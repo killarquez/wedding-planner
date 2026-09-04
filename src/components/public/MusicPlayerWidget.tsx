@@ -170,7 +170,7 @@ export const MusicPlayerWidget: React.FC<Props> = ({ lang, onReplayIntro }) => {
                   Em Đồng Ý (I Do) - Đức Phúc x 911 x Khắc Hưng
                 </h3>
                 <p className="text-xs text-stone-400">
-                  {lang === 'en' ? 'Official Sequel Wedding Theme Song' : 'Bài Hát Chủ Đề Dạ Tiệc Báo Hỷ'}
+                  {lang === 'en' ? 'Official Wedding Celebration Theme Song' : 'Bài Hát Chủ Đề Dạ Tiệc Cưới'}
                 </p>
               </div>
             </div>

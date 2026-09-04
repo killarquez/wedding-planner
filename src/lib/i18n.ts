@@ -3,9 +3,9 @@ export type Language = 'en' | 'vi';
 export const translations = {
   en: {
     // Nav & Common
-    title: "Trang & Alfredo's Sequel Celebration",
+    title: "Trang & Alfredo's Wedding Celebration",
     subtitle: "We said 'I do,' now let's celebrate!",
-    tagline: "Join us for an unforgettable evening of 8-course banquet dining, joyful toasts, music, and memories.",
+    tagline: "We're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.",
     date_display: "Saturday, December 5, 2026",
     time_display: "5:30 PM Welcome Reception | 6:30 PM Grand 8-Course Banquet & Program",
     venue_name: "The Grand Pearl Palace & Pavilion",
@@ -21,7 +21,7 @@ export const translations = {
     calendar_add: "Add to Calendar (.ics)",
     
     // Story & Event Info
-    story_heading: "The Sequel Celebration",
+    story_heading: "The Wedding Celebration",
     story_p1: "Earlier this year, we tied the knot in an intimate ceremony. Now, it's time to bring our beloved families, elders, and closest friends together for the ultimate banquet bash!",
     story_p2: "Get ready for a legendary night featuring a traditional 8-course Asian banquet feast, open host-supplied premium bar with Cognac table toasting (Chào Bàn), vibrant dance floor, and celebration.",
     
@@ -88,7 +88,7 @@ export const translations = {
 
     // CRM Translations
     crm_title: "Wedding Operations Hub & Couple CRM",
-    crm_subtitle: "December 5, 2026 | Trang & Alfredo Sequel Celebration",
+    crm_subtitle: "December 5, 2026 | Trang & Alfredo Wedding Celebration",
     crm_tab_overview: "Seating & Table Math",
     crm_tab_budget: "Budget & Ledger",
     crm_tab_timeline: "Sprint Milestones",
@@ -154,9 +154,9 @@ export const translations = {
   
   vi: {
     // Nav & Common
-    title: "Tiệc Báo Hỷ Trang & Alfredo",
+    title: "Tiệc Cưới Trang & Alfredo",
     subtitle: "Chúng mình đã nên duyên, nay cùng nâng ly chúc mừng!",
-    tagline: "Thân mời quý quan khách cùng chung vui trong dạ tiệc 8 món ấm cúng, đong đầy yêu thương và kỷ niệm.",
+    tagline: "Chúng mình vô cùng hào hứng được đón tiếp quý khách đến chung vui trong ngày cưới! Hãy cùng chia sẻ một buổi tối ấm cúng, tràn đầy niềm vui bên gia đình và bạn bè thân hữu, thưởng thức thực đơn yến tiệc thịnh soạn, cùng nâng ly chúc mừng trong điệu nhạc và những kỷ niệm đáng nhớ.",
     date_display: "Thứ Bảy, ngày 5 tháng 12 năm 2026",
     time_display: "17:30 Đón Khách & Chụp Ảnh | 18:30 Khai Tiệc 8 Món & Giao Lưu",
     venue_name: "Trung Tâm Yến Tiệc The Grand Pearl Palace",
@@ -172,7 +172,7 @@ export const translations = {
     calendar_add: "Thêm Vào Lịch (.ics)",
     
     // Story & Event Info
-    story_heading: "Tiệc Báo Hỷ Đong Đầy Ý Nghĩa",
+    story_heading: "Dạ Tiệc Cưới Đong Đầy Ý Nghĩa",
     story_p1: "Sau lễ cưới thân mật vừa qua, chúng mình rất mong muốn được hội ngộ đông đủ cùng gia đình, các bậc trưởng bối, họ hàng và bạn bè thân hữu trong dạ tiệc đầm ấm này!",
     story_p2: "Buổi tiệc được chuẩn bị chu đáo với thực đơn Á Đông 8 món thịnh soạn, quầy bar và rượu ngoại thượng hạng do cô dâu chú rể chiêu đãi, nghi thức Chào Bàn ấm áp và không gian âm nhạc sống động.",
     
@@ -239,7 +239,7 @@ export const translations = {
 
     // CRM Translations
     crm_title: "Trung Tâm Điều Hành Đám Cưới & CRM Cặp Đôi",
-    crm_subtitle: "05/12/2026 | Dạ Tiệc Báo Hỷ Trang & Alfredo",
+    crm_subtitle: "05/12/2026 | Dạ Tiệc Cưới Trang & Alfredo",
     crm_tab_overview: "Sắp Bàn & Công Thức Bàn 10 Người",
     crm_tab_budget: "Ngân Sách & Chi Tiêu",
     crm_tab_timeline: "Tiến Độ & Deadline",

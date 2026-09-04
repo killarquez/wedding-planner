@@ -2,8 +2,8 @@
  * Helper to generate an .ics iCalendar file string for the wedding event
  */
 export function generateWeddingIcsFile(guestName?: string): string {
-  const title = "Trang & Alfredo's Sequel Wedding Celebration";
-  const description = `We said 'I do,' now let's celebrate!\nJoin us for an evening of 8-course banquet dining, joyful toasts, music, and memories.\nGuest: ${guestName || 'Valued Guest'}\nDress Code: Traditional Áo Dài, Festive Glam, or Semi-Formal.\nDrinks & Bar are hosted by the couple!`;
+  const title = "Trang & Alfredo's Wedding Celebration";
+  const description = `We said 'I do,' now let's celebrate!\nWe're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.\nGuest: ${guestName || 'Valued Guest'}\nDress Code: Traditional Áo Dài, Festive Glam, or Semi-Formal.\nDrinks & Bar are hosted by the couple!`;
   const location = "The Grand Pearl Palace & Pavilion, 9988 Golden Dragon Way, Westminster, CA 92683";
   
   // Dec 5, 2026 17:30:00 PST (UTC-8) -> 20261206T013000Z
@@ -16,7 +16,7 @@ export function generateWeddingIcsFile(guestName?: string): string {
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Trang & Alfredo Wedding Operations//Sequel Celebration 2026//EN",
+    "PRODID:-//Trang & Alfredo Wedding Operations//Wedding Celebration 2026//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
@@ -31,7 +31,7 @@ export function generateWeddingIcsFile(guestName?: string): string {
     "BEGIN:VALARM",
     "TRIGGER:-P1D",
     "ACTION:DISPLAY",
-    "DESCRIPTION:Reminder: Trang & Alfredo's Sequel Wedding Celebration tomorrow!",
+    "DESCRIPTION:Reminder: Trang & Alfredo's Wedding Celebration tomorrow!",
     "END:VALARM",
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",

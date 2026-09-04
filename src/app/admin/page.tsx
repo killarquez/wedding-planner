@@ -117,7 +117,7 @@ export default function AdminCrmPage() {
   }, []);
 
   const handleResetSeed = async () => {
-    if (!confirm(lang === 'en' ? 'Reset all data to default sequel celebration seed dataset?' : 'Khôi phục lại toàn bộ dữ liệu mẫu ban đầu?')) return;
+    if (!confirm(lang === 'en' ? 'Reset all data to default wedding celebration seed dataset?' : 'Khôi phục lại toàn bộ dữ liệu mẫu ban đầu?')) return;
     setIsResetting(true);
     try {
       await fetch('/api/seed', { method: 'POST' });

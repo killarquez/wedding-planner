@@ -102,7 +102,7 @@ export default function PublicWeddingPage() {
             Saturday, December 5, 2026 • The Grand Pearl Palace, Westminster, CA
           </p>
           <p className="text-[11px] text-stone-400 mt-4">
-            Bilingual Wedding Operations & Guest Portal • Built for Sequel Celebrations
+            Bilingual Wedding Operations & Guest Portal • The Wedding Celebration
           </p>
         </div>
       </footer>

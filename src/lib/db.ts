@@ -71,7 +71,7 @@ function loadState(): DatabaseState {
       {
         timestamp: new Date().toISOString(),
         agent: 'System',
-        action: 'Database initialized with sequel celebration seed data'
+        action: 'Database initialized with wedding celebration seed data'
       }
     ]
   };

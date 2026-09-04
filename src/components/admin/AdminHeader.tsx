@@ -41,7 +41,7 @@ export const AdminHeader: React.FC<Props> = ({
                 {t.crm_title}
               </h1>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gold-950 text-gold-400 border border-gold-800/80 uppercase">
-                Sequel Hub
+                Wedding Hub
               </span>
             </div>
             <p className="text-xs text-stone-400">
