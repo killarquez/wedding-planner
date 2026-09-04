@@ -57,12 +57,14 @@ export const EventDetails: React.FC<Props> = ({ lang }) => {
           <VietnameseCloudDivider />
         </div>
 
-        <p className="text-stone-700 text-sm sm:text-base leading-relaxed mb-4 max-w-2xl mx-auto">
+        <p className="text-stone-700 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
           {t.story_p1}
         </p>
-        <p className="text-sm sm:text-base leading-relaxed font-semibold text-crimson-900 max-w-2xl mx-auto">
-          {t.story_p2}
-        </p>
+        {t.story_p2 && (
+          <p className="text-sm sm:text-base leading-relaxed font-semibold text-crimson-900 max-w-2xl mx-auto mt-3">
+            {t.story_p2}
+          </p>
+        )}
       </div>
 
       {/* 3 Jewel-Toned Cultural Pillars */}
@@ -82,11 +84,11 @@ export const EventDetails: React.FC<Props> = ({ lang }) => {
           </div>
           <div className="mt-5 pt-4 border-t border-lotus-200/60 flex items-center gap-2 text-xs font-bold text-lotus-800">
             <Sparkles className="w-3.5 h-3.5 text-lotus-600" />
-            <span>{lang === 'en' ? 'Áo Dài & Western Glam' : 'Áo Dài & Dạ Tiệc Sang Trọng'}</span>
+            <span>{t.dress_code_tag}</span>
           </div>
         </div>
 
-        {/* Pillar 2: Host-Supplied Bar (Gilded Amber & Cognac) */}
+        {/* Pillar 2: Banquet & Open Bar (Gilded Amber & Cognac) */}
         <div className="amber-glow-card rounded-2xl p-6 transition-all hover:scale-[1.01] flex flex-col justify-between">
           <div>
             <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-gold-700 text-white flex items-center justify-center mb-4 shadow-sm border border-amber-300/40">
@@ -101,28 +103,26 @@ export const EventDetails: React.FC<Props> = ({ lang }) => {
           </div>
           <div className="mt-5 pt-4 border-t border-amber-200/60 flex items-center gap-2 text-xs font-bold text-amber-800">
             <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-            <span>{lang === 'en' ? 'Hennessy XO & Chào Bàn Toasting' : 'Hennessy XO & Rượu Nâng Ly Chào Bàn'}</span>
+            <span>{t.drinks_tag}</span>
           </div>
         </div>
 
-        {/* Pillar 3: Music & DJ (Imperial Jade & Royal Indigo) */}
+        {/* Pillar 3: Music, Dancing & La Hora Loca (Imperial Jade & Royal Indigo) */}
         <div className="jade-glow-card rounded-2xl p-6 transition-all hover:scale-[1.01] flex flex-col justify-between">
           <div>
             <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-jade-600 via-emerald-700 to-teal-900 text-white flex items-center justify-center mb-4 shadow-sm border border-jade-300/40">
               <Music className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-serif font-bold text-stone-900 mb-2">
-              {lang === 'en' ? 'Bilingual Program & DJ' : 'Chương Trình Song Ngữ & DJ'}
+              {t.music_title}
             </h3>
             <p className="text-sm text-stone-600 leading-relaxed">
-              {lang === 'en'
-                ? 'An interactive evening featuring bilingual MC hosting, live toasting ceremony, Vietnamese & English dance classics, and guest song requests!'
-                : 'Dạ tiệc dẫn dắt bởi MC song ngữ chuyên nghiệp, nghi thức Chào Bàn truyền thống và sàn nhảy sôi động cùng các bản hit V-Pop & quốc tế!'}
+              {t.music_desc}
             </p>
           </div>
           <div className="mt-5 pt-4 border-t border-jade-200/60 flex items-center gap-2 text-xs font-bold text-jade-800">
             <Users className="w-3.5 h-3.5 text-jade-600" />
-            <span>{lang === 'en' ? 'Bilingual MC & Open Dance Floor' : 'MC Song Ngữ & Khiêu Vũ Tự Do'}</span>
+            <span>{t.music_tag}</span>
           </div>
         </div>
       </div>

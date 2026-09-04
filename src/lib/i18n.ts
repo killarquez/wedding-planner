@@ -22,14 +22,21 @@ export const translations = {
     
     // Story & Event Info
     story_heading: "The Wedding Celebration",
-    story_p1: "Earlier this year, we tied the knot in an intimate ceremony. Now, it's time to bring our beloved families, elders, and closest friends together for the ultimate banquet bash!",
-    story_p2: "Get ready for a legendary night featuring a traditional 8-course Asian banquet feast, open host-supplied premium bar with Cognac table toasting (Chào Bàn), vibrant dance floor, and celebration.",
+    story_p1: "Earlier this year, we officially tied the knot in an intimate ceremony. Now, we can’t wait to gather our favorite people to eat, drink, and celebrate together! Join us for a lively evening featuring a classic family-style banquet, traditional table toasts (Chào Bàn), great music, and a packed dance floor.",
+    story_p2: "",
     
     // Details Grid
     dress_code_title: "Dress Code & Attire",
-    dress_code_desc: "Traditional Vietnamese Áo Dài, Festive Glam, or Semi-Formal / Cocktail Attire. Jewel tones, golds, and reds are warmly welcomed!",
-    drinks_title: "Host-Supplied Bar & Toasting",
-    drinks_desc: "Drinks are fully on us! Enjoy our curated host-supplied bar featuring top-shelf Cognac (Hennessy XO/VSOP), Single Malt Scotch, signature cocktails, and premium wine at every table for Chào Bàn.",
+    dress_code_desc: "Traditional Vietnamese Áo Dài, cultural attire, or cocktail / semi-formal wear. Festive colors and jewel tones are warmly encouraged!",
+    dress_code_tag: "Áo Dài & Festive Attire",
+
+    drinks_title: "Banquet & Open Bar",
+    drinks_desc: "Dinner and drinks are on us all night! Look forward to a delicious multi-course banquet feast, an open bar, and raising a glass together during traditional Chào Bàn table visits.",
+    drinks_tag: "Open Bar & Chào Bàn",
+
+    music_title: "Music, Dancing & La Hora Loca",
+    music_desc: "An evening guided by our bilingual MC, featuring heartfelt toasts, plenty of dancing to Vietnamese favorites, American classics, and Latin beats—capped off with a high-energy Hora Loca to ignite the dance floor!",
+    music_tag: "Live MC & Hora Loca",
     banquet_title: "8-Course Grand Feast",
     banquet_desc: "Featuring four-seasons cold appetizer platter, honey walnut shrimp, seafood bird's nest soup, Peking roast duck, lobster with ginger & scallions, and steamed whole sea bass.",
     
@@ -205,17 +212,24 @@ export const translations = {
     calendar_add: "Thêm Vào Lịch (.ics)",
     
     // Story & Event Info
-    story_heading: "Dạ Tiệc Cưới Đong Đầy Ý Nghĩa",
-    story_p1: "Sau lễ cưới thân mật vừa qua, chúng mình rất mong muốn được hội ngộ đông đủ cùng gia đình, các bậc trưởng bối, họ hàng và bạn bè thân hữu trong dạ tiệc đầm ấm này!",
-    story_p2: "Buổi tiệc được chuẩn bị chu đáo với thực đơn Á Đông 8 món thịnh soạn, quầy bar và rượu ngoại thượng hạng do cô dâu chú rể chiêu đãi, nghi thức Chào Bàn ấm áp và không gian âm nhạc sống động.",
+    story_heading: "Dạ Tiệc Cưới Thân Mật",
+    story_p1: "Sau lễ cưới thân mật vừa qua, chúng mình rất mong chờ được hội ngộ đông đủ những người thân thương nhất để cùng nâng ly, thưởng thức yến tiệc và chung vui! Kính mời quý khách cùng chia sẻ một buổi tối ấm cúng, tràn đầy niềm vui với đại tiệc bàn tròn truyền thống, nghi thức Chào Bàn ý nghĩa, âm nhạc sống động và sàn khiêu vũ bùng nổ.",
+    story_p2: "",
     
     // Details Grid
     dress_code_title: "Trang Phục Dự Tiệc",
-    dress_code_desc: "Áo Dài truyền thống, Dạ tiệc trang trọng hoặc Semi-Formal / Cocktail. Tông màu gợi ý: Đỏ Hỷ Sự, Vàng Hoàng Gia, Xanh Ngọc Bích hoặc tông trầm thanh lịch.",
-    drinks_title: "Đồ Uống & Rượu Mừng Chiêu Đãi",
-    drinks_desc: "Toàn bộ đồ uống và rượu do hai bạn chiêu đãi trọn vẹn! Mỗi bàn tiệc đều được chuẩn bị sẵn Cognac hảo hạng (Hennessy XO/VSOP), Rượu vang cao cấp phục vụ nghi thức Chào Bàn và quầy bar tự do.",
-    banquet_title: "Dạ Yến Á Đông 8 Món Thượng Hạng",
-    banquet_desc: "Thực đơn gồm Khai vị tứ quý, Tôm chiên sốt quả óc chó, Súp tổ yến hải vị, Vịt quay Bắc Kinh, Tôm hùm xào gừng hành, và Cá chẽm hấp Hồng Kông truyền thống.",
+    dress_code_desc: "Áo Dài truyền thống Việt Nam, trang phục văn hóa lễ hội hoặc dạ tiệc cocktail / semi-formal. Tông màu lễ hội rực rỡ và sắc màu đá quý luôn được nồng nhiệt hoan nghênh!",
+    dress_code_tag: "Áo Dài & Trang Phục Lễ Hội",
+
+    drinks_title: "Đại Tiệc Yến & Open Bar",
+    drinks_desc: "Toàn bộ tiệc tối và đồ uống do hai bạn chiêu đãi trọn vẹn suốt đêm tiệc! Hãy sẵn sàng thưởng thức thực đơn yến tiệc nhiều món thơm ngon, quầy bar mở và cùng nâng ly chúc mừng trong nghi thức Chào Bàn truyền thống.",
+    drinks_tag: "Quầy Bar Mở & Chào Bàn",
+
+    music_title: "Âm Nhạc, Khiêu Vũ & La Hora Loca",
+    music_desc: "Dạ tiệc dẫn dắt bởi MC song ngữ, tràn ngập những lời chúc mừng chân thành, các giai điệu V-Pop yêu thích, nhạc bất hủ Âu Mỹ và vũ điệu Latin sôi động—đặc biệt bùng nổ cùng màn Hora Loca cuồng nhiệt thắp sáng sàn khiêu vũ!",
+    music_tag: "MC Song Ngữ & Hora Loca",
+    banquet_title: "Dạ Yến Á Đông Thượng Hạng",
+    banquet_desc: "Thực đơn yến tiệc bàn tròn phong phú gồm Khai vị tứ quý, Tôm chiên sốt quả óc chó, Súp tổ yến hải vị, Vịt quay Bắc Kinh, Tôm hùm xào gừng hành, và Cá chẽm hấp Hồng Kông truyền thống.",
     
     // RSVP Section
     rsvp_heading: "Xác Nhận Tham Dự Cùng Chúng Mình",
