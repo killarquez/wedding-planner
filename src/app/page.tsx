@@ -99,7 +99,7 @@ export default function PublicWeddingPage() {
             Trang & Alfredo
           </p>
           <p className="text-xs text-stone-500 mt-1">
-            Saturday, December 5, 2026 • The Grand Pearl Palace, Westminster, CA
+            Saturday, December 5, 2026 • Grand Harbor Restaurant, Temple City, CA
           </p>
           <p className="text-[11px] text-stone-400 mt-4">
             Bilingual Wedding Operations & Guest Portal • The Wedding Celebration

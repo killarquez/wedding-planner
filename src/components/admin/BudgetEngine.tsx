@@ -354,7 +354,7 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
                   required
                   value={vendorName}
                   onChange={(e) => setVendorName(e.target.value)}
-                  placeholder="e.g. Grand Pearl Palace / Tailor"
+                  placeholder="e.g. Grand Harbor / Tailor"
                   className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white"
                 />
               </div>

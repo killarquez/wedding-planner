@@ -4,7 +4,7 @@
 export function generateWeddingIcsFile(guestName?: string): string {
   const title = "Trang & Alfredo's Wedding Celebration";
   const description = `We said 'I do,' now let's celebrate!\nWe're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.\nGuest: ${guestName || 'Valued Guest'}\nDress Code: Traditional Áo Dài, Festive Glam, or Semi-Formal.\nDrinks & Bar are hosted by the couple!`;
-  const location = "The Grand Pearl Palace & Pavilion, 9988 Golden Dragon Way, Westminster, CA 92683";
+  const location = "Grand Harbor Restaurant, 5733 Rosemead Blvd., Temple City, CA 91780";
   
   // Dec 5, 2026 17:30:00 PST (UTC-8) -> 20261206T013000Z
   // End Dec 5, 2026 23:30:00 PST -> 20261206T073000Z
@@ -36,7 +36,7 @@ export function generateWeddingIcsFile(guestName?: string): string {
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",
     "ACTION:DISPLAY",
-    "DESCRIPTION:Trang & Alfredo's Wedding starts in 2 hours at The Grand Pearl Palace!",
+    "DESCRIPTION:Trang & Alfredo's Wedding starts in 2 hours at Grand Harbor Restaurant!",
     "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR"

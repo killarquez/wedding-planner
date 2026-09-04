@@ -17,8 +17,8 @@ export class VenueSourcingAgent {
     const candidates: Array<Omit<VenueSourcingResult, 'score' | 'inquiry_email_draft_en' | 'inquiry_email_draft_vi'>> = [
       {
         id: `venue-${Date.now()}-1`,
-        name: 'The Grand Pearl Palace & Pavilion',
-        location: `${criteria.city || 'Westminster'}, CA (Little Saigon Hub)`,
+        name: 'Grand Harbor Restaurant',
+        location: `${criteria.city || 'Temple City'}, CA`,
         max_capacity_guests: 350,
         ten_top_tables_capacity: 35,
         allows_host_supplied_alcohol: true,
@@ -26,9 +26,9 @@ export class VenueSourcingAgent {
         asian_banquet_capable: true,
         menu_starting_price_per_table: 720,
         av_stage_included: true,
-        notes: 'Exceptional 8-10 course Cantonese/Vietnamese banquet chef, majestic chandeliers, stage with LED backdrop.',
-        contact_email: 'banquets@grandpearlpalace.com',
-        contact_phone: '+1 (714) 898-8888'
+        notes: 'Celebrated Chinese & Vietnamese seafood banquet dining, intimate and joyous celebration atmosphere.',
+        contact_email: 'banquets@grandharborevents.com',
+        contact_phone: '+1 (626) 280-2998'
       },
       {
         id: `venue-${Date.now()}-2`,

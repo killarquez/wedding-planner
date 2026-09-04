@@ -91,7 +91,7 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
                   {lang === 'en' ? 'Venue' : 'Địa Điểm'}
                 </span>
                 <span className="font-bold text-stone-800">
-                  The Grand Pearl Palace (Westminster, CA)
+                  Grand Harbor Restaurant (Temple City, CA)
                 </span>
               </div>
 

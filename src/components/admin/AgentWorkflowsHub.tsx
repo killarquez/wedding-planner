@@ -30,7 +30,7 @@ export const AgentWorkflowsHub: React.FC<Props> = ({ lang, onRefresh, onOpenBrie
   const t = translations[lang];
 
   // Workflow A State
-  const [city, setCity] = useState('Westminster / Little Saigon');
+  const [city, setCity] = useState('Temple City / San Gabriel Valley');
   const [tablesNeeded, setTablesNeeded] = useState(9);
   const [expectedGuests, setExpectedGuests] = useState(90);
   const [hostSuppliedDrinks, setHostSuppliedDrinks] = useState(true);

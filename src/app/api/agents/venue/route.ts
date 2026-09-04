@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const criteria: VenueSearchCriteria = {
-      city: body.city || 'Westminster / Little Saigon',
+      city: body.city || 'Temple City / San Gabriel Valley',
       expectedGuests: Number(body.expectedGuests || 90),
       tablesNeeded: Number(body.tablesNeeded || 9),
       hostSuppliedDrinks: body.hostSuppliedDrinks !== undefined ? body.hostSuppliedDrinks : true,
