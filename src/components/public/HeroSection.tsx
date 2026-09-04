@@ -15,7 +15,7 @@ export const HeroSection: React.FC<Props> = ({ lang, onRsvpClick }) => {
   const t = translations[lang];
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 px-4 sm:px-6 max-w-6xl mx-auto text-center">
+    <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 px-4 sm:px-6 max-w-6xl mx-auto text-center animate-fade-in">
       {/* Decorative Traditional Vietnamese & Western Floral Nuances */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-gradient-to-b from-crimson-100/40 via-gold-100/30 to-transparent blur-3xl -z-10 pointer-events-none" />
 

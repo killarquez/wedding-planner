@@ -14,8 +14,8 @@ interface Props {
 export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
+  const [isDissolving, setIsDissolving] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
-  const [fireworkActive, setFireworkActive] = useState(false);
 
   useEffect(() => {
     const openedSession = sessionStorage.getItem('wedding_invite_opened');
@@ -68,7 +68,6 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
   const handleOpenEnvelope = () => {
     if (isOpening) return;
     setIsOpening(true);
-    setFireworkActive(true);
 
     // Play synthesized realistic firework booms, launch whooshes and sparkles
     weddingAudio.playFireworkShow();
@@ -80,33 +79,49 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
     // Launch multi-stage grand fireworks
     triggerGrandFireworks();
 
-    // Theatrical duration: 3.5 seconds before dissolving into the main portal
+    // Step 1: Smoothly dissolve envelope and unveil the landing page behind it
+    setTimeout(() => {
+      setIsDissolving(true);
+    }, 2400);
+
+    // Step 2: Unmount after the 1.2s smooth dissolve finishes
     setTimeout(() => {
       sessionStorage.setItem('wedding_invite_opened', 'true');
       setIsVisible(false);
       setHasOpened(true);
       if (onOpened) onOpened();
-    }, 3500);
+    }, 3600);
   };
 
   if (!isVisible && hasOpened) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-1000 ${
-        isOpening && !fireworkActive ? 'opacity-0 pointer-events-none scale-105' : 'opacity-100'
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 select-none transition-all duration-1200 ease-out ${
+        isDissolving
+          ? 'opacity-0 pointer-events-none'
+          : 'opacity-100'
       } ${
         isOpening ? 'bg-black/90 backdrop-blur-2xl' : 'bg-[#0e0708]/95 backdrop-blur-xl'
       }`}
     >
+      {/* Radiant Golden Glow that connects into the landing page */}
+      <div className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold-500/25 via-crimson-900/20 to-transparent transition-opacity duration-1000 ${
+        isDissolving ? 'opacity-100 scale-125' : 'opacity-0'
+      } pointer-events-none`} />
+
       {/* Ambient Night Sky & Glowing Stars */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-crimson-900/30 rounded-full blur-[100px] animate-pulse-subtle" />
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gold-600/15 rounded-full blur-3xl" />
       </div>
 
-      <div className={`relative max-w-md w-full text-center space-y-6 transition-transform duration-700 ${
-        isOpening ? 'scale-105 animate-pulse' : 'animate-slide-up'
+      <div className={`relative max-w-md w-full text-center space-y-6 transition-all duration-1000 ease-out ${
+        isDissolving
+          ? 'scale-110 opacity-0 blur-xs'
+          : isOpening
+          ? 'scale-105 animate-pulse'
+          : 'animate-slide-up'
       }`}>
         {/* Mysterious Top Badge (No wedding spoilers or dates) */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-950/90 border border-gold-500/50 text-gold-300 text-xs font-semibold tracking-wider shadow-lg">
