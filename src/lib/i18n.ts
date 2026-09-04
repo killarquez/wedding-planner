@@ -113,6 +113,11 @@ export const translations = {
     bulk_import_btn: "Bulk Import Guest List",
     add_party_btn: "+ Add Party",
     export_csv_btn: "Export Links (CSV)",
+    back_to_home: "Back to Wedding Details",
+    rsvp_page_title: "RSVP & Guest Check-In",
+    rsvp_page_subtitle: "Confirm party attendance, submit dietary preferences, and request songs for Trang & Alfredo's Wedding Celebration.",
+    ready_to_celebrate: "Ready to Celebrate With Us?",
+    ready_to_celebrate_desc: "Confirm your party attendance, specify dietary notes, and request your favorite dance song.",
 
     // CRM Translations
     crm_title: "Wedding Operations Hub & Couple CRM",
@@ -292,6 +297,11 @@ export const translations = {
     bulk_import_btn: "Nhập Danh Sách Hàng Loạt",
     add_party_btn: "+ Thêm Bàn / Khách",
     export_csv_btn: "Xuất Danh Sách Link (CSV)",
+    back_to_home: "Trở Về Thông Tin Lễ Cưới",
+    rsvp_page_title: "Xác Nhận Tham Dự & Điểm Danh",
+    rsvp_page_subtitle: "Xác nhận sự hiện diện của gia đình, ghi chú món ăn và gửi bài hát yêu thích đến ngày vui của Trang & Alfredo.",
+    ready_to_celebrate: "Sẵn Sàng Chung Vui Cùng Chúng Mình?",
+    ready_to_celebrate_desc: "Xác nhận tham dự bàn tiệc, ghi chú món ăn và yêu cầu bài hát khiêu vũ yêu thích của gia đình.",
 
     // CRM Translations
     crm_title: "Trung Tâm Điều Hành Đám Cưới & CRM Cặp Đôi",

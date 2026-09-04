@@ -58,7 +58,7 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
   // Base URL for invite links
   const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://wedding.au-tomato.com';
 
-  const getInviteUrl = (code: string) => `${siteOrigin}/?invite=${encodeURIComponent(code)}`;
+  const getInviteUrl = (code: string) => `${siteOrigin}/rsvp?invite=${encodeURIComponent(code)}`;
 
   const handleCopyLink = (code: string) => {
     const url = getInviteUrl(code);
