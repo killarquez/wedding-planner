@@ -267,9 +267,9 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
 
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
+            className="w-full py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
           >
-            {t.close_btn}
+            <span>{t.return_to_landing || t.close_btn}</span>
           </button>
         </div>
       </div>

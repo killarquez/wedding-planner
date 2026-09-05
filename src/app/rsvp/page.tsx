@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Language, translations } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
@@ -19,6 +19,7 @@ import {
 import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAtmosphereBackground';
 
 function RsvpPageContent() {
+  const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
   const [modalOpen, setModalOpen] = useState(false);
   const [rsvpData, setRsvpData] = useState<any>(null);
@@ -31,6 +32,12 @@ function RsvpPageContent() {
   const handleRsvpSuccess = (data: any) => {
     setRsvpData(data);
     setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    const targetUrl = initialCode ? `/?invite=${encodeURIComponent(initialCode)}` : '/';
+    router.push(targetUrl);
   };
 
   return (
@@ -99,7 +106,7 @@ function RsvpPageContent() {
       {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         lang={lang}
         rsvpResult={rsvpData}
       />

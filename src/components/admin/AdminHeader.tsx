@@ -3,7 +3,7 @@
 import React from 'react';
 import { Language, translations } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
-import { Sparkles, Bot, RotateCcw, ExternalLink, ShieldCheck, LogOut, User } from 'lucide-react';
+import { Sparkles, Bot, RotateCcw, ExternalLink, ShieldCheck, LogOut, User, QrCode } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
@@ -84,10 +84,20 @@ export const AdminHeader: React.FC<Props> = ({
             <span className="hidden sm:inline">{lang === 'en' ? 'Reset Seed' : 'Tải Lại'}</span>
           </button>
 
+          {/* Reception Check-In Scanner */}
+          <Link
+            href="/checkin"
+            className="px-3.5 py-1.5 rounded-xl bg-gold-600/20 hover:bg-gold-600/30 text-gold-300 text-xs font-semibold flex items-center gap-1.5 border border-gold-500/40 transition-colors"
+            title="Launch VIP Reception Check-In Scanner"
+          >
+            <QrCode className="w-3.5 h-3.5 text-gold-300" />
+            <span>{lang === 'en' ? 'Reception Scanner' : 'Máy Quét Check-in'}</span>
+          </Link>
+
           {/* Back to Public View */}
           <Link
             href="/"
-            className="px-3.5 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-gold-300 text-xs font-semibold flex items-center gap-1.5 border border-gold-600/30 transition-colors"
+            className="px-3.5 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-semibold flex items-center gap-1.5 border border-stone-700 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>{t.exit_admin}</span>
