@@ -133,7 +133,7 @@ function LoginFormContent() {
               囍
             </div>
             <h1 className="font-serif font-bold text-2xl text-stone-100">Couple Operations Hub</h1>
-            <p className="text-xs text-stone-400">Trang & Alfredo Wedding Celebration (Sep 12, 2026)</p>
+            <p className="text-xs text-stone-400">Trang & Alfredo Wedding Celebration (Dec 12, 2026)</p>
           </div>
 
           {!isConfigured && (

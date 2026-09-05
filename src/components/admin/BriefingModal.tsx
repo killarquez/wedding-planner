@@ -63,8 +63,8 @@ export const BriefingModal: React.FC<Props> = ({ isOpen, onClose, lang, briefing
             </div>
             <p className="text-xs text-stone-500">
               {lang === 'en'
-                ? `T-${briefing.days_until_wedding} Days to Wedding Celebration (Sep 12, 2026)`
-                : `Còn ${briefing.days_until_wedding} ngày nữa đến Dạ Tiệc Cưới (12/09/2026)`}
+                ? `T-${briefing.days_until_wedding} Days to Wedding Celebration (Dec 12, 2026)`
+                : `Còn ${briefing.days_until_wedding} ngày nữa đến Dạ Tiệc Cưới (12/12/2026)`}
             </p>
           </div>
         </div>

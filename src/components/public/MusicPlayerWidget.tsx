@@ -187,7 +187,7 @@ export const MusicPlayerWidget: React.FC<Props> = ({ lang, onReplayIntro }) => {
             </div>
 
             <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
-              <span>Trang & Alfredo • September 12, 2026</span>
+              <span>Trang & Alfredo • December 12, 2026</span>
               <button
                 onClick={() => setShowVideoModal(false)}
                 className="px-4 py-1.5 rounded-full bg-crimson-800 hover:bg-crimson-700 text-white font-semibold transition-colors"

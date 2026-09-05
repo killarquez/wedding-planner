@@ -405,8 +405,8 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
 
               // SMS pre-draft
               const smsMessage = lang === 'en'
-                ? `Hi ${party.primary_guest_name}! Here is your personalized invitation to Trang & Alfredo's Wedding Celebration on Sep 12, 2026: ${inviteUrl}`
-                : `Thân gửi ${party.primary_guest_name}! Đây là thiệp mời dạ tiệc cưới Trang & Alfredo ngày 12/09/2026 dành riêng cho gia đình: ${inviteUrl}`;
+                ? `Hi ${party.primary_guest_name}! Here is your personalized invitation to Trang & Alfredo's Wedding Celebration on Dec 12, 2026: ${inviteUrl}`
+                : `Thân gửi ${party.primary_guest_name}! Đây là thiệp mời dạ tiệc cưới Trang & Alfredo ngày 12/12/2026 dành riêng cho gia đình: ${inviteUrl}`;
               const smsHref = `sms:${party.contact_phone || ''}?&body=${encodeURIComponent(smsMessage)}`;
 
               return (
