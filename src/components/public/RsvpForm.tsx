@@ -120,13 +120,44 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
     }
   }, [initialCode]);
 
+  // Dynamic Party Limit & Add Guest Handlers
+  const partyLimit = party?.total_invited || guestStates.length;
+  const attendingCount = guestStates.filter(g => g.rsvp_status === 'attending').length;
+  const declinedCount = guestStates.filter(g => g.rsvp_status === 'declined').length;
+  const canAddGuest = attendingCount < partyLimit;
+
   // Bulk Quick Buttons
   const handleSetAllStatus = (status: RsvpStatus) => {
+    if (status === 'attending') {
+      if (guestStates.length > partyLimit) {
+        setSubmitError(
+          lang === 'en'
+            ? `Your party has a limit of ${partyLimit} seats. Please remove any additional guests before selecting all attending.`
+            : `Bàn tiệc có giới hạn tối đa ${partyLimit} chỗ. Vui lòng bỏ bớt thành viên đã thêm trước khi chọn tất cả cùng đi.`
+        );
+        return;
+      }
+    }
+    setSubmitError('');
     setGuestStates(prev => prev.map(g => ({ ...g, rsvp_status: status })));
   };
 
   // Individual Guest Toggle
   const handleToggleGuestStatus = (guestId: string, status: RsvpStatus) => {
+    if (status === 'attending') {
+      const currentOtherAttending = guestStates.filter(
+        g => g.guest_id !== guestId && g.rsvp_status === 'attending'
+      ).length;
+      if (currentOtherAttending >= partyLimit) {
+        setSubmitError(
+          lang === 'en'
+            ? `Your party's allocation of ${partyLimit} attending seats is already filled. Please remove or adjust an added guest first.`
+            : `Bàn tiệc của bạn chỉ có tối đa ${partyLimit} chỗ tham dự đã được chọn đủ. Vui lòng bỏ bớt thành viên thêm vào trước khi chọn lại người này.`
+        );
+        return;
+      }
+    }
+    setSubmitError('');
     setGuestStates(prev =>
       prev.map(g => (g.guest_id === guestId ? { ...g, rsvp_status: status } : g))
     );
@@ -153,12 +184,9 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
     );
   };
 
-  // Dynamic Party Limit & Add Guest Handlers
-  const partyLimit = party?.total_invited || guestStates.length;
-  const canAddGuest = guestStates.length < partyLimit;
-
   const handleAddGuest = () => {
     if (!canAddGuest) return;
+    setSubmitError('');
     const newGuestId = `new-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     setGuestStates(prev => [
       ...prev,
@@ -175,6 +203,7 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
   };
 
   const handleRemoveGuest = (guestId: string) => {
+    setSubmitError('');
     setGuestStates(prev => prev.filter(g => g.guest_id !== guestId));
   };
 
@@ -351,11 +380,19 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
           {/* Header Banner */}
           <div className="border-b border-stone-200/80 pb-6 text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-crimson-50 to-amber-50 border border-crimson-200 text-crimson-900 text-xs font-semibold mb-2 shadow-2xs">
+              <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-crimson-50 to-amber-50 border border-crimson-200 text-crimson-900 text-xs font-semibold mb-2 shadow-2xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-gold-600" />
                 <span>Code: {party.invitation_code}</span>
                 <span className="text-crimson-300">•</span>
-                <span>{guestStates.length} / {partyLimit} {t.party_cap_badge}</span>
+                <span>{attendingCount} / {partyLimit} {lang === 'en' ? 'Seats Attending' : 'Chỗ Tham Dự'}</span>
+                {declinedCount > 0 && (
+                  <>
+                    <span className="text-crimson-300">•</span>
+                    <span className="text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md font-medium text-[11px]">
+                      {declinedCount} {lang === 'en' ? 'Declined (Spot Opened)' : 'Vắng mặt (Đã mở chỗ)'}
+                    </span>
+                  </>
+                )}
               </div>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
                 {t.party_welcome} <span className="text-crimson-800">{party.primary_guest_name}</span>
@@ -395,6 +432,14 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
               <span>{t.all_declining_btn}</span>
             </button>
           </div>
+
+          {/* Validation Notice if cap exceeded */}
+          {submitError && (
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2 animate-fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <span>{submitError}</span>
+            </div>
+          )}
 
           {/* Individual Guest Cards List */}
           <div className="space-y-4">
@@ -542,24 +587,42 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
               <button
                 type="button"
                 onClick={handleAddGuest}
-                className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-crimson-300 bg-crimson-50/40 hover:bg-crimson-50 hover:border-crimson-400 text-crimson-800 font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-2xs group"
+                className="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-crimson-300 bg-crimson-50/40 hover:bg-crimson-50 hover:border-crimson-400 text-crimson-800 font-medium text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 transition-all shadow-2xs group"
               >
-                <div className="p-1.5 rounded-full bg-crimson-100 group-hover:bg-crimson-200 text-crimson-800 transition-colors">
-                  <UserPlus className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-crimson-100 group-hover:bg-crimson-200 text-crimson-800 transition-colors">
+                    <UserPlus className="w-4 h-4" />
+                  </div>
+                  <span className="font-semibold">{t.add_guest_party_btn}</span>
                 </div>
-                <span>{t.add_guest_party_btn}</span>
-                <span className="text-xs text-crimson-600/80 font-normal">
-                  ({guestStates.length} / {partyLimit})
-                </span>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span className="text-crimson-700 font-medium">
+                    ({attendingCount} / {partyLimit} {lang === 'en' ? 'Attending' : 'Tham dự'})
+                  </span>
+                  {declinedCount > 0 && (
+                    <span className="bg-amber-100/90 text-amber-900 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                      {lang === 'en'
+                        ? `• ${declinedCount} spot opened from missing guest`
+                        : `• ${declinedCount} chỗ trống từ người vắng mặt`}
+                    </span>
+                  )}
+                </div>
               </button>
             ) : (
-              <div className="w-full py-3 px-4 rounded-2xl border border-stone-200 bg-stone-100/80 text-stone-400 text-xs sm:text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
-                <UserCheck className="w-4 h-4 text-stone-400" />
-                <span className="font-medium">
-                  {t.party_cap_reached_btn
-                    .replace('{current}', String(guestStates.length))
-                    .replace('{max}', String(partyLimit))}
-                </span>
+              <div className="w-full py-3.5 px-4 rounded-2xl border border-stone-200 bg-stone-100/80 text-stone-400 text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-not-allowed select-none">
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-stone-400" />
+                  <span className="font-medium">
+                    {t.party_cap_reached_btn
+                      .replace('{current}', String(attendingCount))
+                      .replace('{max}', String(partyLimit))}
+                  </span>
+                </div>
+                {declinedCount > 0 && (
+                  <span className="text-[11px] text-stone-400">
+                    ({declinedCount} {lang === 'en' ? 'declined' : 'vắng mặt'})
+                  </span>
+                )}
               </div>
             )}
 
