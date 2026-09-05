@@ -4,6 +4,28 @@ import { WeddingDB } from '@/lib/db';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    if (searchParams.get('debug') === '1') {
+      const isConfigured = WeddingDB.isSupabaseConfigured();
+      let error = null;
+      let count = null;
+      try {
+        const { SupabaseService } = await import('@/lib/supabase/service');
+        const parties = await SupabaseService.getParties();
+        count = parties.length;
+      } catch (e: any) {
+        error = e.message;
+      }
+      return NextResponse.json({
+        isConfigured,
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL ? process.env.NEXT_PUBLIC_SUPABASE_URL.substring(0, 35) : null,
+        hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        keyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+        count,
+        error
+      });
+    }
+
     const query = searchParams.get('query') || searchParams.get('code') || searchParams.get('phone');
 
     if (query) {
