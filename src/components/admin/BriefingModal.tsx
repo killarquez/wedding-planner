@@ -55,7 +55,7 @@ export const BriefingModal: React.FC<Props> = ({ isOpen, onClose, lang, briefing
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-serif font-bold text-xl text-stone-900">
-                {lang === 'en' ? 'Daily Executive Briefing for Alfredo & Trang' : 'Báo Cáo Điều Hành Hàng Ngày - Alfredo & Trang'}
+                {lang === 'en' ? 'Daily Executive Briefing for Trang & Alfredo' : 'Báo Cáo Điều Hành Hàng Ngày - Trang & Alfredo'}
               </h3>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gold-100 text-gold-900 uppercase">
                 {briefing.date}

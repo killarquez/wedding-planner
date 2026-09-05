@@ -272,6 +272,7 @@ export default function AdminCrmPage() {
             lang={lang}
             tables={tables}
             guests={guests}
+            parties={parties}
             songs={songs}
             onRefresh={fetchAllData}
           />
@@ -280,6 +281,8 @@ export default function AdminCrmPage() {
         {activeTab === 'agents' && (
           <AgentWorkflowsHub
             lang={lang}
+            parties={parties}
+            guests={guests}
             onRefresh={fetchAllData}
             onOpenBriefing={() => setIsBriefingOpen(true)}
           />
