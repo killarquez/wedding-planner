@@ -91,6 +91,12 @@ export const translations = {
     rsvp_declined_title: "We Will Miss You!",
     rsvp_declined_desc: "Thank you for letting us know. You will be in our thoughts as we celebrate!",
     download_ticket: "Save Digital Pass / Invite",
+    save_ticket_photo_btn: "📸 Save Ticket to Photos",
+    add_calendar_btn: "📅 Add to Calendar (.ics)",
+    ticket_saved_toast: "VIP Ticket saved! Show this at reception check-in.",
+    scan_checkin_label: "Scan at Reception for Fast Check-In",
+    ticket_pass_type: "VIP Digital Banquet Pass",
+    ticket_attendees: "Guests in Party:",
     close_btn: "Close",
 
     // Personalized Link & Party RSVP
@@ -370,6 +376,12 @@ export const translations = {
     rsvp_declined_title: "Cảm Ơn Quý Khách Đã Thông Báo!",
     rsvp_declined_desc: "Dù rất tiếc không thể gặp mặt, sự quan tâm và lời chúc của bạn luôn là món quà quý giá với chúng mình!",
     download_ticket: "Lưu Thẻ Tham Dự / Thêm Vào Lịch",
+    save_ticket_photo_btn: "📸 Lưu Thẻ Vào Thư Viện Ảnh",
+    add_calendar_btn: "📅 Thêm Vào Lịch Hẹn (.ics)",
+    ticket_saved_toast: "Đã lưu thẻ dự tiệc! Vui lòng đưa thẻ này khi đến sảnh tiệc.",
+    scan_checkin_label: "Quét mã để điểm danh nhanh tại sảnh tiệc",
+    ticket_pass_type: "Thẻ Tham Dự Dạ Tiệc VIP",
+    ticket_attendees: "Thành viên trong bàn:",
     close_btn: "Đóng",
 
     // Personalized Link & Party RSVP
