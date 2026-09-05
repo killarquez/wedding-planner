@@ -72,11 +72,17 @@ export default function AdminCrmPage() {
   }, []);
 
   const handleSignOut = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Error logging out of couple session:', e);
+    }
     const supabase = createClient();
     if (supabase) {
       await supabase.auth.signOut();
     }
     router.push('/login');
+    router.refresh();
   };
 
   const fetchAllData = async () => {

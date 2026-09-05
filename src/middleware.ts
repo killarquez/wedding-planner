@@ -35,36 +35,36 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect /admin routes
+  // Protect /admin routes strictly - Couple Only
   if (pathname.startsWith('/admin')) {
+    // 1. Check for valid couple session cookie (Passcode authenticated)
+    const coupleSession = request.cookies.get('couple_session')?.value;
+    if (coupleSession === 'authenticated_couple') {
+      return NextResponse.next();
+    }
+
+    // 2. Check for Supabase session if configured
     const { supabaseResponse, user, isConfigured } = await updateSession(request);
-
-    // If Supabase is configured in environment, enforce authentication
-    if (isConfigured) {
-      if (!user) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(loginUrl);
-      }
-
-      // Check allowed admin emails if configured
+    if (isConfigured && user) {
       const allowedEmails = (process.env.ADMIN_ALLOWED_EMAILS || '')
         .split(',')
         .map(e => e.trim().toLowerCase())
         .filter(Boolean);
 
-      if (allowedEmails.length > 0) {
-        const userEmail = (user.email || '').toLowerCase();
-        if (!allowedEmails.includes(userEmail)) {
-          // Logged in but not authorized couple email
-          const loginUrl = new URL('/login', request.url);
-          loginUrl.searchParams.set('error', 'unauthorized_email');
-          return NextResponse.redirect(loginUrl);
-        }
+      if (allowedEmails.length === 0 || allowedEmails.includes((user.email || '').toLowerCase())) {
+        return supabaseResponse;
       }
 
-      return supabaseResponse;
+      // User logged in but not on the couple whitelist
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('error', 'unauthorized_email');
+      return NextResponse.redirect(loginUrl);
     }
+
+    // 3. Unauthenticated access - redirect to /login
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Update session cookies for all other routes if Supabase is active
