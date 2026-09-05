@@ -103,7 +103,9 @@ export class WeddingDB {
   }
 
   public static isSupabaseConfigured(): boolean {
-    return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const hasUrl = !!(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL);
+    const hasKey = !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    return hasUrl && hasKey;
   }
 
   // --- Reset / Seed ---

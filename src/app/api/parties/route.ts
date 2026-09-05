@@ -19,8 +19,10 @@ export async function GET(req: NextRequest) {
         isConfigured,
         hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
         urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL ? process.env.NEXT_PUBLIC_SUPABASE_URL.substring(0, 35) : null,
-        hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        keyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+        hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        serviceKeyLen: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        anonKeyLen: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
         count,
         error
       });
