@@ -162,8 +162,8 @@ export const WeddingIntroExperience: React.FC<Props> = ({
           <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
           <span>
             {lang === 'en'
-              ? 'Trang & Alfredo Wedding Invitation'
-              : 'Thiệp Báo Hỷ Trang & Alfredo'}
+              ? 'A Special Delivery For You'
+              : 'Thư Gửi Trao Yêu Thương'}
           </span>
         </div>
 
@@ -326,13 +326,13 @@ export const WeddingIntroExperience: React.FC<Props> = ({
               <Sparkles className="w-4 h-4 text-stone-900" />
               <span>
                 {lang === 'en'
-                  ? 'Tap to Open Wedding Invitation'
-                  : 'Chạm Để Mở Thiệp Báo Hỷ'}
+                  ? 'Tap to Open'
+                  : 'Chạm Để Mở'}
               </span>
             </button>
           </div>
           <p className="mt-2 text-[11px] text-amber-200/90 font-serif tracking-wider drop-shadow-md">
-            {lang === 'en' ? 'Trang & Alfredo • Dec 12, 2026' : 'Trang & Alfredo • 12.12.2026'}
+            {lang === 'en' ? 'Dec 12, 2026' : '12.12.2026'}
           </p>
         </div>
       </div>
