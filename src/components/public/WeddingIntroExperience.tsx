@@ -85,10 +85,10 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
       triggerCelebrationConfetti();
     }, 1050);
 
-    // 4. Golden invitation card glides up into center view at 1800ms
+    // 4. Golden invitation card glides up into center view at 3600ms (allowing guests to enjoy the kiss, music, and fireworks)
     setTimeout(() => {
       setStep('revealed');
-    }, 1800);
+    }, 3600);
   };
 
   const handleCompleteIntro = () => {

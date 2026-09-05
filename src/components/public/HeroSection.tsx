@@ -20,11 +20,13 @@ export const HeroSection: React.FC<Props> = ({ lang, guestParty, onRsvpClick }) 
   return (
     <section className="relative overflow-hidden pt-10 pb-16 md:pt-16 md:pb-24 px-4 sm:px-6 max-w-6xl mx-auto text-center animate-fade-in">
       {/* Auspicious Vietnamese Celebration Badge */}
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-crimson-50 via-lotus-50 to-amber-50 border border-crimson-300/70 text-crimson-950 text-xs sm:text-sm font-semibold tracking-wide mb-5 shadow-xs animate-fade-in">
-        <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-spin" style={{ animationDuration: '6s' }} />
-        <span className="font-serif">{lang === 'en' ? 'The Wedding Celebration' : 'Dạ Tiệc Cưới Thân Mật'}</span>
-        <span className="text-crimson-300">•</span>
-        <span>{lang === 'en' ? 'December 5, 2026' : '05 Tháng 12, 2026'}</span>
+      <div className="flex justify-center mb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-crimson-50 via-lotus-50 to-amber-50 border border-crimson-300/70 text-crimson-950 text-xs sm:text-sm font-semibold tracking-wide shadow-xs animate-fade-in">
+          <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-spin" style={{ animationDuration: '6s' }} />
+          <span className="font-serif">{lang === 'en' ? 'The Wedding Celebration' : 'Dạ Tiệc Cưới Thân Mật'}</span>
+          <span className="text-crimson-300">•</span>
+          <span>{lang === 'en' ? 'December 5, 2026' : '05 Tháng 12, 2026'}</span>
+        </div>
       </div>
 
       {/* Personalized Welcome Banner if Guest/Party is Recognized */}
@@ -43,16 +45,18 @@ export const HeroSection: React.FC<Props> = ({ lang, guestParty, onRsvpClick }) 
       )}
 
       {/* Double Happiness Symbol 囍 with Traditional Imperial Frame */}
-      <div className="relative inline-flex items-center justify-center mb-5">
-        <VietnameseCornerFlourish position="top-left" className="absolute -top-3 -left-3 w-6 h-6 text-gold-500/80" />
-        <VietnameseCornerFlourish position="top-right" className="absolute -top-3 -right-3 w-6 h-6 text-gold-500/80" />
-        <VietnameseCornerFlourish position="bottom-left" className="absolute -bottom-3 -left-3 w-6 h-6 text-gold-500/80" />
-        <VietnameseCornerFlourish position="bottom-right" className="absolute -bottom-3 -right-3 w-6 h-6 text-gold-500/80" />
+      <div className="flex justify-center mb-5">
+        <div className="relative inline-flex items-center justify-center">
+          <VietnameseCornerFlourish position="top-left" className="absolute -top-3 -left-3 w-6 h-6 text-gold-500/80" />
+          <VietnameseCornerFlourish position="top-right" className="absolute -top-3 -right-3 w-6 h-6 text-gold-500/80" />
+          <VietnameseCornerFlourish position="bottom-left" className="absolute -bottom-3 -left-3 w-6 h-6 text-gold-500/80" />
+          <VietnameseCornerFlourish position="bottom-right" className="absolute -bottom-3 -right-3 w-6 h-6 text-gold-500/80" />
 
-        <div className="w-18 h-18 sm:w-22 sm:h-22 p-2 rounded-2xl bg-gradient-to-br from-crimson-700 via-crimson-800 to-crimson-950 flex items-center justify-center shadow-xl border-2 border-gold-400 transform hover:scale-105 transition-transform duration-300">
-          <span className="text-3xl sm:text-4xl text-gold-200 font-serif select-none drop-shadow-md font-bold">
-            囍
-          </span>
+          <div className="w-18 h-18 sm:w-22 sm:h-22 p-2 rounded-2xl bg-gradient-to-br from-crimson-700 via-crimson-800 to-crimson-950 flex items-center justify-center shadow-xl border-2 border-gold-400 transform hover:scale-105 transition-transform duration-300">
+            <span className="text-3xl sm:text-4xl text-gold-200 font-serif select-none drop-shadow-md font-bold">
+              囍
+            </span>
+          </div>
         </div>
       </div>
 
