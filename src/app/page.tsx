@@ -8,7 +8,7 @@ import { HeroSection } from '@/components/public/HeroSection';
 import { EventDetails } from '@/components/public/EventDetails';
 import { WeddingIntroExperience } from '@/components/public/WeddingIntroExperience';
 import { MusicPlayerWidget } from '@/components/public/MusicPlayerWidget';
-import { Sparkles, Settings2, Heart, ArrowRight } from 'lucide-react';
+import { Sparkles, Lock, Heart, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Party } from '@/lib/types';
 import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAtmosphereBackground';
@@ -87,14 +87,6 @@ function WeddingPageContent() {
           </Link>
 
           <LanguageToggle currentLang={lang} onToggle={setLang} />
-
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold shadow-xs transition-all"
-          >
-            <Settings2 className="w-3.5 h-3.5 text-gold-400" />
-            <span className="hidden sm:inline">{t.enter_admin}</span>
-          </Link>
         </div>
       </header>
 
@@ -167,6 +159,16 @@ function WeddingPageContent() {
           <p className="text-[11px] text-stone-400 mt-4">
             Bilingual Wedding Operations & Guest Portal • The Wedding Celebration
           </p>
+          <div className="pt-4 border-t border-stone-100 w-full mt-4 flex items-center justify-center">
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 text-[11px] text-stone-400 hover:text-stone-700 transition-colors"
+              title={t.enter_admin}
+            >
+              <Lock className="w-3 h-3 text-stone-400" />
+              <span>{t.enter_admin}</span>
+            </Link>
+          </div>
         </div>
       </footer>
     </main>

@@ -13,7 +13,7 @@ import {
   Calendar,
   MapPin,
   Heart,
-  Settings2,
+  Lock,
   Sparkles
 } from 'lucide-react';
 import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAtmosphereBackground';
@@ -65,14 +65,6 @@ function RsvpPageContent() {
 
         <div className="flex items-center gap-2.5">
           <LanguageToggle currentLang={lang} onToggle={setLang} />
-
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold shadow-xs transition-all"
-          >
-            <Settings2 className="w-3.5 h-3.5 text-gold-400" />
-            <span className="hidden sm:inline">{t.enter_admin}</span>
-          </Link>
         </div>
       </header>
 
@@ -124,12 +116,23 @@ function RsvpPageContent() {
           <p className="text-[11px] text-stone-500 mt-1">
             Saturday, December 12, 2026 • Grand Harbor Restaurant, Temple City, CA
           </p>
-          <Link
-            href="/"
-            className="text-xs text-crimson-800 hover:text-crimson-950 font-semibold mt-3 hover:underline inline-flex items-center gap-1"
-          >
-            <span>{t.back_to_home}</span>
-          </Link>
+          <div className="pt-3 border-t border-stone-100 w-full mt-3 flex items-center justify-center gap-3">
+            <Link
+              href="/"
+              className="text-xs text-crimson-800 hover:text-crimson-950 font-semibold hover:underline inline-flex items-center gap-1"
+            >
+              <span>{t.back_to_home}</span>
+            </Link>
+            <span className="text-stone-300">•</span>
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1 text-[11px] text-stone-400 hover:text-stone-700 transition-colors"
+              title={t.enter_admin}
+            >
+              <Lock className="w-3 h-3 text-stone-400" />
+              <span>{t.enter_admin}</span>
+            </Link>
+          </div>
         </div>
       </footer>
     </main>
