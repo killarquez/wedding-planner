@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         party: result.party,
+        primaryGuest,
         guests: result.guests,
         attendingCount: result.attendingCount,
         declinedCount: result.declinedCount,

@@ -16,10 +16,21 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
   if (!isOpen || !rsvpResult) return null;
 
   const t = translations[lang];
-  const primary = rsvpResult.primaryGuest || {};
+  const guests = rsvpResult.guests || [];
+  const primary = rsvpResult.primaryGuest || guests.find((g: any) => g.is_primary_contact) || guests[0] || {};
   const party = rsvpResult.party || {};
   const agentResp = rsvpResult.agentResponse || {};
-  const isAttending = primary.rsvp_status === 'attending';
+
+  // Calculate actual attending headcount
+  const attendingGuests = guests.filter((g: any) => g.rsvp_status === 'attending');
+  const attendingCount = rsvpResult.attendingCount !== undefined
+    ? rsvpResult.attendingCount
+    : (attendingGuests.length > 0 ? attendingGuests.length : (primary.rsvp_status === 'attending' ? 1 : 0));
+
+  // The modal only shows "We will miss you" if the WHOLE party cannot come (0 attending)!
+  const isAttending = attendingCount > 0;
+
+  const primaryName = (primary.first_name ? `${primary.first_name} ${primary.last_name || ''}`.trim() : '') || party.primary_guest_name || 'Honored Guest';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
@@ -59,7 +70,7 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
                   {lang === 'en' ? 'Digital Banquet Pass' : 'Thẻ Tham Dự Dạ Tiệc'}
                 </span>
                 <h4 className="text-base font-bold font-serif text-stone-900">
-                  {primary.first_name} {primary.last_name}
+                  {primaryName}
                 </h4>
               </div>
               <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-gold-100 text-gold-900 border border-gold-300">
@@ -70,10 +81,10 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <span className="text-stone-400 block font-medium">
-                  {lang === 'en' ? 'Headcount' : 'Số Khách'}
+                  {lang === 'en' ? 'Confirmed Headcount' : 'Số Khách Tham Dự'}
                 </span>
                 <span className="font-bold text-stone-800">
-                  {party.total_invited || 1} {lang === 'en' ? 'Person(s)' : 'Người'}
+                  {attendingCount} {lang === 'en' ? `Guest${attendingCount > 1 ? 's' : ''}` : 'Khách'}
                 </span>
               </div>
 
@@ -113,7 +124,7 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
         <div className="space-y-2.5">
           {isAttending && (
             <button
-              onClick={() => downloadIcsFile(`${primary.first_name} ${primary.last_name}`)}
+              onClick={() => downloadIcsFile(primaryName)}
               className="w-full py-3 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
