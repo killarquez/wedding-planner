@@ -9,7 +9,6 @@ import {
   Copy,
   Check,
   MessageSquare,
-  MessageCircle,
   Share2,
   Plus,
   FileSpreadsheet,
@@ -144,15 +143,6 @@ Trang & Alfredo`;
     }
   };
 
-  const handleOpenWhatsApp = (phone?: string, text?: string) => {
-    const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
-    const encoded = encodeURIComponent(text || '');
-    const url = cleanPhone && cleanPhone.length >= 10
-      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`
-      : `https://api.whatsapp.com/send?text=${encoded}`;
-    window.open(url, '_blank');
-  };
-
   const handleOpenSms = (phone?: string, text?: string) => {
     const cleanPhone = phone ? phone.trim() : '';
     const encoded = encodeURIComponent(text || '');
@@ -164,11 +154,6 @@ Trang & Alfredo`;
     navigator.clipboard.writeText(text);
     setCopiedShareMessage(true);
     setTimeout(() => setCopiedShareMessage(false), 2500);
-  };
-
-  const handleQuickWhatsApp = (party: Party & { guests: Guest[]; confirmed_count: number }) => {
-    const msg = buildShareMessage(party, lang === 'vi' ? 'vi' : 'both', 'envelope');
-    handleOpenWhatsApp(party.contact_phone, msg);
   };
 
   const handleCopyLink = (code: string, type: 'invite' | 'rsvp' = 'invite') => {
@@ -635,22 +620,11 @@ Trang & Alfredo`;
                       <button
                         type="button"
                         onClick={() => openShareModal(party)}
-                        title={lang === 'en' ? 'Open bilingual invite share modal (WhatsApp, SMS, Custom text)' : 'Mở hộp thoại gửi thiệp song ngữ (WhatsApp, SMS, nội dung tùy chỉnh)'}
+                        title={lang === 'en' ? 'Open bilingual invite share modal (SMS, Messenger, Copy Text)' : 'Mở hộp thoại gửi thiệp song ngữ (SMS, Messenger, sao chép nội dung)'}
                         className="px-2.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-gold-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
                       >
                         <Share2 className="w-3.5 h-3.5 text-gold-400" />
                         <span>{t.share_invite_btn}</span>
-                      </button>
-
-                      {/* 1-Click WhatsApp Quick Share */}
-                      <button
-                        type="button"
-                        onClick={() => handleQuickWhatsApp(party)}
-                        title={lang === 'en' ? 'Quick share via WhatsApp' : 'Gửi nhanh qua WhatsApp'}
-                        className="px-2.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>WhatsApp</span>
                       </button>
 
                       {/* 1-Click SMS Quick Share */}
@@ -1104,17 +1078,8 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => handleOpenWhatsApp(sharingParty.contact_phone, editableMessage)}
-                  className="px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{t.open_whatsapp}</span>
-                </button>
-
-                <button
-                  type="button"
                   onClick={() => handleOpenSms(sharingParty.contact_phone, editableMessage)}
-                  className="px-4 py-2 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>{t.open_sms}</span>
