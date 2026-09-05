@@ -142,12 +142,50 @@ export async function POST(req: NextRequest) {
       plusOneGuests
     );
 
+    // Dispatch Instant Discord Push Notification to Alfredo & Trang's Phones
+    try {
+      const allGuests = [primaryGuest, ...(plusOneGuests || [])];
+      const attendingCount = allGuests.filter(g => g.rsvp_status === 'attending').length;
+      const declinedCount = allGuests.filter(g => g.rsvp_status === 'declined').length;
+      await sendDiscordRsvpAlert({
+        party,
+        primaryGuest,
+        allGuests,
+        attendingCount,
+        declinedCount,
+        specialMessage: notes,
+        songRequest: song_request
+      });
+    } catch (err) {
+      console.warn('Discord alert push warning:', err);
+    }
+
+    // Dispatch Transactional Confirmation Email via Resend with .ics Attachment
+    const recipientEmail = email || party.contact_email;
+    let emailResult = null;
+    if (recipientEmail && primaryGuest) {
+      try {
+        const allGuests = [primaryGuest, ...(plusOneGuests || [])];
+        const attendingCount = allGuests.filter(g => g.rsvp_status === 'attending').length;
+        emailResult = await sendRsvpConfirmationEmail({
+          party,
+          primaryGuest,
+          allGuests,
+          attendingCount,
+          recipientEmail
+        });
+      } catch (err) {
+        console.warn('Resend email dispatch warning:', err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       party,
       primaryGuest,
       plusOneGuests,
-      agentResponse
+      agentResponse,
+      emailSent: emailResult?.success || false
     });
   } catch (error: any) {
     console.error('Error processing RSVP:', error);
