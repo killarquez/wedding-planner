@@ -6,11 +6,11 @@ export function generateWeddingIcsFile(guestName?: string): string {
   const description = `We said 'I do,' now let's celebrate!\nWe're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.\nGuest: ${guestName || 'Valued Guest'}\nDress Code: Traditional Áo Dài, Festive Glam, or Semi-Formal.\nDrinks & Bar are hosted by the couple!`;
   const location = "Grand Harbor Restaurant, 5733 Rosemead Blvd., Temple City, CA 91780";
   
-  // Dec 5, 2026 17:30:00 PST (UTC-8) -> 20261206T013000Z
-  // End Dec 5, 2026 23:30:00 PST -> 20261206T073000Z
-  const startTimeUtc = "20261206T013000Z";
-  const endTimeUtc = "20261206T073000Z";
-  const uid = `wedding-trang-alfredo-20261205-${Date.now()}@weddingplanner.local`;
+  // Sep 12, 2026 17:30:00 PDT (UTC-7) -> 20260913T003000Z
+  // End Sep 12, 2026 23:30:00 PDT -> 20260913T063000Z
+  const startTimeUtc = "20260913T003000Z";
+  const endTimeUtc = "20260913T063000Z";
+  const uid = `wedding-trang-alfredo-20260912-${Date.now()}@weddingplanner.local`;
   const nowUtc = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
   return [
@@ -50,7 +50,7 @@ export function downloadIcsFile(guestName?: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', 'Trang_Alfredo_Wedding_Dec_5_2026.ics');
+  link.setAttribute('download', 'Trang_Alfredo_Wedding_Sep_12_2026.ics');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

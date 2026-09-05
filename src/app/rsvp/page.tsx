@@ -82,7 +82,7 @@ function RsvpPageContent() {
         <div className="text-center max-w-2xl mx-auto mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs font-semibold tracking-wide mb-4 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-            <span>Saturday, Dec 5, 2026</span>
+            <span>Saturday, Sep 12, 2026</span>
             <span className="text-crimson-300">•</span>
             <span>Grand Harbor Restaurant</span>
           </div>
@@ -122,7 +122,7 @@ function RsvpPageContent() {
             Trang & Alfredo's Wedding Celebration
           </p>
           <p className="text-[11px] text-stone-500 mt-1">
-            Saturday, December 5, 2026 • Grand Harbor Restaurant, Temple City, CA
+            Saturday, September 12, 2026 • Grand Harbor Restaurant, Temple City, CA
           </p>
           <Link
             href="/"

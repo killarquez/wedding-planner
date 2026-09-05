@@ -9,8 +9,8 @@ interface Props {
 
 export const CountdownTimer: React.FC<Props> = ({ lang }) => {
   const t = translations[lang];
-  // Target: December 5, 2026 17:30:00 PST
-  const targetDate = new Date('2026-12-05T17:30:00-08:00').getTime();
+  // Target: September 12, 2026 17:30:00 PDT (UTC-7)
+  const targetDate = new Date('2026-09-12T17:30:00-07:00').getTime();
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,

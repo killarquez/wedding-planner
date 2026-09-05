@@ -587,7 +587,7 @@ export const initialExpenses: Expense[] = [
     actual_invoiced: 3800,
     deposit_paid: 1500,
     remaining_balance: 2300,
-    payment_due_date: '2026-12-05',
+    payment_due_date: '2026-09-12',
     payment_status: 'pending',
     notes: 'Final balance due on wedding night',
     created_at: '2026-08-12T10:00:00Z'
@@ -615,7 +615,7 @@ export const initialExpenses: Expense[] = [
     actual_invoiced: 800,
     deposit_paid: 0,
     remaining_balance: 800,
-    payment_due_date: '2026-12-01',
+    payment_due_date: '2026-09-08',
     payment_status: 'pending',
     notes: 'Buffer reserve for day-of coordination',
     created_at: '2026-08-25T10:00:00Z'
@@ -628,44 +628,44 @@ export const initialMilestones: Milestone[] = [
     title_en: 'Finalize 8-Course Banquet Menu Tasting',
     title_vi: 'Duyệt Thử Vị & Khóa Thực Đơn 8 Món Yến Tiệc',
     category: 'venue',
-    target_date: '2026-09-15',
+    target_date: '2026-08-10',
     status: 'completed',
     priority: 'critical',
     assignee: 'Alfredo & Partner',
     cultural_notes: 'Tested lobster with ginger scallion and seafood soup with parents approval',
-    updated_at: '2026-08-25T10:00:00Z'
+    updated_at: '2026-08-10T10:00:00Z'
   },
   {
     id: 'ms-2',
     title_en: 'Custom Silk Áo Dài Second Fitting',
     title_vi: 'Thử Áo Dài Lần 2 & Chỉnh Sửa Phom Dáng',
     category: 'attire',
-    target_date: '2026-10-01',
+    target_date: '2026-08-15',
     status: 'completed',
     priority: 'high',
     assignee: 'Alfredo & Partner',
     cultural_notes: 'Gold thread dragon and phoenix embroidery finalized',
-    updated_at: '2026-08-28T10:00:00Z'
+    updated_at: '2026-08-15T10:00:00Z'
   },
   {
     id: 'ms-3',
     title_en: 'RSVP Cutoff & Automated Chaser Campaign',
     title_vi: 'Hạn Chót Xác Nhận RSVP & Kích Hoạt Hệ Thống Nhắc Hẹn',
     category: 'guest_rsvp',
-    target_date: '2026-11-05',
-    status: 'in_progress',
+    target_date: '2026-08-12',
+    status: 'completed',
     priority: 'critical',
     assignee: 'Alfredo & Partner',
     cultural_notes: 'All outstanding parties get T-21 and T-7 SMS/Email nudges',
-    updated_at: '2026-08-30T10:00:00Z'
+    updated_at: '2026-08-12T10:00:00Z'
   },
   {
     id: 'ms-4',
     title_en: 'Chào Bàn (Table Toasting) Strategy & Route Mapping',
     title_vi: 'Lập Kế Hoạch Đi Chào Từng Bàn Tiệc & Phân Công Người Dẫn Đường',
     category: 'ceremony',
-    target_date: '2026-11-15',
-    status: 'pending',
+    target_date: '2026-09-01',
+    status: 'in_progress',
     priority: 'high',
     assignee: 'Best Man / Groomsmen',
     cultural_notes: 'Assign groomsman/bridesmaid to hold Cognac tray, red envelope pouch, and guide couple from VIP 1 through 8',
@@ -676,7 +676,7 @@ export const initialMilestones: Milestone[] = [
     title_en: 'Host-Supplied Cognac & Wine Stock Delivery',
     title_vi: 'Giao Rượu Hennessy & Rượu Vang Đến Nhà Hàng Kiểm Đếm',
     category: 'beverage',
-    target_date: '2026-11-25',
+    target_date: '2026-09-05',
     status: 'pending',
     priority: 'high',
     assignee: 'Best Man / Groomsmen',
@@ -688,7 +688,7 @@ export const initialMilestones: Milestone[] = [
     title_en: 'Final Headcount & Kitchen Dietary Matrix Lock',
     title_vi: 'Chốt Số Lượng Bàn 10 Người & Danh Sách Ăn Kiêng Cho Bếp Trưởng',
     category: 'logistics',
-    target_date: '2026-11-27',
+    target_date: '2026-09-07',
     status: 'pending',
     priority: 'critical',
     assignee: 'Alfredo & Partner',
@@ -700,7 +700,7 @@ export const initialMilestones: Milestone[] = [
     title_en: 'Stage AV Rehearsal & Master DJ Song Cue Lock',
     title_vi: 'Tổng Duyệt Âm Thanh Ánh Sáng & Khóa Danh Sách Nhạc DJ',
     category: 'ceremony',
-    target_date: '2026-12-03',
+    target_date: '2026-09-10',
     status: 'pending',
     priority: 'medium',
     assignee: 'Maid of Honor / Bridesmaids',
@@ -710,9 +710,9 @@ export const initialMilestones: Milestone[] = [
   {
     id: 'ms-8',
     title_en: 'The Wedding Celebration Night!',
-    title_vi: 'Đêm Dạ Tiệc Cưới Chính Thức (05/12/2026)!',
+    title_vi: 'Đêm Dạ Tiệc Cưới Chính Thức (12/09/2026)!',
     category: 'ceremony',
-    target_date: '2026-12-05',
+    target_date: '2026-09-12',
     status: 'pending',
     priority: 'critical',
     assignee: 'Alfredo & Partner',
@@ -790,8 +790,8 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Top tier Chinese & Vietnamese banquet chefs, intimate celebration ambience, exceptional live seafood specialties, experienced bilingual banquet staff.',
     contact_email: 'banquets@grandharborevents.com',
     contact_phone: '+1 (626) 280-2998',
-    inquiry_email_draft_en: `Subject: Banquet Inquiry for Wedding Celebration (Dec 5, 2026) - Trang & Alfredo\n\nDear Grand Harbor Banquet Director,\n\nWe are hosting our Wedding Celebration on Saturday, December 5, 2026 for approximately 80-100 guests (8 to 10 ten-top round tables). We would like to confirm package pricing for your banquet menu (featuring Lobster, Peking Duck, and Seabass), along with corkage terms for host-supplied Hennessy XO and wine.\n\nPlease provide your banquet pacing schedule, AV/lighting specifications, and deposit requirements.\n\nWarmly,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Đặt Tiệc Cưới Ngày 05/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Yến Tiệc Nhà Hàng Grand Harbor,\n\nChúng tôi dự kiến tổ chức Dạ Tiệc Cưới vào Thứ Bảy, 05/12/2026 với quy mô 8 - 10 bàn tiệc tròn 10 người (80 - 100 khách). Xin vui lòng gửi bảng giá chi tiết thực đơn yến tiệc cao cấp (gồm Tôm Hùm, Vịt Quay Bắc Kinh, Cá Chẽm Hấp), kèm chính sách phí phục vụ cho rượu Hennessy XO và rượu vang do gia đình chuẩn bị.\n\nTrân trọng cảm ơn,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Banquet Inquiry for Wedding Celebration (Sep 12, 2026) - Trang & Alfredo\n\nDear Grand Harbor Banquet Director,\n\nWe are hosting our Wedding Celebration on Saturday, September 12, 2026 for approximately 80-100 guests (8 to 10 ten-top round tables). We would like to confirm package pricing for your banquet menu (featuring Lobster, Peking Duck, and Seabass), along with corkage terms for host-supplied Hennessy XO and wine.\n\nPlease provide your banquet pacing schedule, AV/lighting specifications, and deposit requirements.\n\nWarmly,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Đặt Tiệc Cưới Ngày 12/09/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Yến Tiệc Nhà Hàng Grand Harbor,\n\nChúng tôi dự kiến tổ chức Dạ Tiệc Cưới vào Thứ Bảy, 12/09/2026 với quy mô 8 - 10 bàn tiệc tròn 10 người (80 - 100 khách). Xin vui lòng gửi bảng giá chi tiết thực đơn yến tiệc cao cấp (gồm Tôm Hùm, Vịt Quay Bắc Kinh, Cá Chẽm Hấp), kèm chính sách phí phục vụ cho rượu Hennessy XO và rượu vang do gia đình chuẩn bị.\n\nTrân trọng cảm ơn,\nTrang & Alfredo`
   },
   {
     id: 'venue-2',
@@ -808,8 +808,8 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Famous for authentic seafood banquets, expansive LED backdrop wall, ample parking.',
     contact_email: 'events@dragonpalaceoc.com',
     contact_phone: '+1 (714) 539-9988',
-    inquiry_email_draft_en: `Subject: Banquet Availability Inquiry (Dec 5, 2026) - Trang & Alfredo\n\nDear Dragon Palace Team,\n\nWe are planning our 80-person wedding celebration banquet for Dec 5, 2026. We are interested in your 8-course banquet package and bringing our own Cognac bottles for table toasting.\n\nBest regards,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Tư Vấn Tiệc Cưới 05/12/2026 - Trang & Alfredo\n\nKính gửi Dragon Palace Imperial,\n\nChúng tôi muốn tìm hiểu về sảnh tiệc 8-10 bàn 10 người cho tiệc cưới ngày 05/12/2026 và thực đơn yến tiệc hải sản.\n\nTrân trọng,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Banquet Availability Inquiry (Sep 12, 2026) - Trang & Alfredo\n\nDear Dragon Palace Team,\n\nWe are planning our 80-person wedding celebration banquet for Sep 12, 2026. We are interested in your 8-course banquet package and bringing our own Cognac bottles for table toasting.\n\nBest regards,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Tư Vấn Tiệc Cưới 12/09/2026 - Trang & Alfredo\n\nKính gửi Dragon Palace Imperial,\n\nChúng tôi muốn tìm hiểu về sảnh tiệc 8-10 bàn 10 người cho tiệc cưới ngày 12/09/2026 và thực đơn yến tiệc hải sản.\n\nTrân trọng,\nTrang & Alfredo`
   },
   {
     id: 'venue-3',
@@ -826,7 +826,7 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Modern luxury aesthetic with outdoor cocktail garden terrace, higher rental baseline.',
     contact_email: 'weddings@crownpavilionoc.com',
     contact_phone: '+1 (949) 755-1234',
-    inquiry_email_draft_en: `Subject: Wedding Reception Inquiry (Dec 5, 2026) - Trang & Alfredo\n\nDear Crown Pavilion Team,\n\nWe are looking to hold our reception on December 5, 2026 for 80-100 guests with outside Vietnamese banquet catering and host-supplied bar service.\n\nWarm regards,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Liên Hệ Thuê Sảnh Tiệc Ngày 05/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Crown Pavilion,\n\nChúng tôi quan tâm đến sảnh tiệc cho 80-100 khách với hình thức catering món Á bên ngoài.\n\nTrân trọng,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Wedding Reception Inquiry (Sep 12, 2026) - Trang & Alfredo\n\nDear Crown Pavilion Team,\n\nWe are looking to hold our reception on September 12, 2026 for 80-100 guests with outside Vietnamese banquet catering and host-supplied bar service.\n\nWarm regards,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Liên Hệ Thuê Sảnh Tiệc Ngày 12/09/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Crown Pavilion,\n\nChúng tôi quan tâm đến sảnh tiệc cho 80-100 khách với hình thức catering món Á bên ngoài.\n\nTrân trọng,\nTrang & Alfredo`
   }
 ];

@@ -82,7 +82,7 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
                   {lang === 'en' ? 'Date & Time' : 'Thời Gian'}
                 </span>
                 <span className="font-bold text-stone-800">
-                  Dec 5, 2026 @ 5:30 PM
+                  Sep 12, 2026 @ 5:30 PM
                 </span>
               </div>
 

@@ -1116,7 +1116,7 @@ export class WeddingDB {
     const banquetMath = this.getBanquetTableMath();
     const budget = this.getBudgetMetrics();
 
-    const weddingDate = new Date('2026-12-05');
+    const weddingDate = new Date('2026-09-12');
     const today = new Date('2026-08-30');
     const daysUntil = Math.ceil((weddingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
