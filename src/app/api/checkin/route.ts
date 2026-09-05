@@ -244,10 +244,8 @@ export async function POST(req: NextRequest) {
     updatedNotes = `${tag} ${updatedNotes}`.trim();
 
     const updated = await WeddingDB.updateParty(party_id, {
-      notes: updatedNotes,
-      checked_in: true,
-      checked_in_at: now
-    } as any);
+      notes: updatedNotes
+    });
 
     // Dispatch Discord arrival notification
     try {
@@ -301,10 +299,8 @@ export async function DELETE(req: NextRequest) {
     updatedNotes = updatedNotes.replace(/\[CHECKED_IN:[^\]]+\]\s*/g, '').trim();
 
     const updated = await WeddingDB.updateParty(party_id, {
-      notes: updatedNotes,
-      checked_in: false,
-      checked_in_at: null
-    } as any);
+      notes: updatedNotes
+    });
 
     return NextResponse.json({
       success: true,
