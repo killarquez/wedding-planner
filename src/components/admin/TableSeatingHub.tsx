@@ -180,97 +180,73 @@ export const TableSeatingHub: React.FC<Props> = ({
     }
   };
 
-  // Chào Bàn Walking Route Sequence Definitions
-  const chaoBanStations = [
-    {
-      step: 1,
-      tableNumber: 1,
-      titleEn: 'Table 1: Trưởng Bối & VIP Family (Stage-Front Left)',
-      titleVi: 'Bàn 1: Trưởng Bối Nhà Gái & Ông Bà Ngoại (Sát Sân Khấu Trái)',
-      protocolEn: 'Traditional Cognac toast, bowing to Grandmother & Uncle Hai, receiving elders blessings and marriage advice.',
-      protocolVi: 'Nghi thức dâng rượu mừng Bà Ngoại & Bác Hai, cúi đầu nhận lời chúc phúc và dặn dò của bậc trưởng thượng.',
-      toastSpirit: 'Hennessy XO (Bottle #1)',
-      duration: '7 mins',
-      recipients: 'Bà Ngoại, Bác Hai Nguyen, VIP Elders'
-    },
-    {
-      step: 2,
-      tableNumber: 2,
-      titleEn: 'Table 2: Rossi Family & Godparents (Stage-Front Right)',
-      titleVi: 'Bàn 2: Gia Đình Rossi & Ba Mẹ Chú Rể (Sát Sân Khấu Phải)',
-      protocolEn: 'Bilingual Italian-Vietnamese celebratory toast with Alfredo’s parents (Roberto & Maria), welcoming Trang to the Rossi family.',
-      protocolVi: 'Nâng ly chúc mừng song ngữ Ý - Việt cùng Ba Mẹ Alfredo (Roberto & Maria), đón chào nàng dâu mới Trang.',
-      toastSpirit: 'Hennessy XO (Bottle #2)',
-      duration: '6 mins',
-      recipients: 'Roberto & Maria Rossi, Godparents'
-    },
-    {
-      step: 3,
-      tableNumber: 3,
-      titleEn: 'Table 3: Extended Relatives - Cô, Dì, Chú, Bác',
-      titleVi: 'Bàn 3: Họ Hàng Nhà Gái - Cô, Dì, Chú, Bác',
-      protocolEn: 'Table toast with aunts and uncles, collecting Bao Lì Xì (red envelopes), joyous laughter and commemorative table photo.',
-      protocolVi: 'Chào rượu các cô chú bác, nhận phong bao đỏ may mắn, chụp ảnh kỷ niệm ấm cúng cùng họ hàng.',
-      toastSpirit: 'Hennessy XO (Bottle #3)',
-      duration: '6 mins',
-      recipients: 'Cô Sáu, Chú Bảy Tran, Relatives'
-    },
-    {
-      step: 4,
-      tableNumber: 4,
-      titleEn: 'Table 4: Cousins & Extended Relatives',
-      titleVi: 'Bàn 4: Anh Chị Em Họ & Gia Đình Thân Thuộc',
-      protocolEn: 'High-energy toasts with cousins, teasing the groom, and collecting wedding blessings.',
-      protocolVi: 'Nâng ly rôm rả cùng anh chị em họ, trêu đùa cô dâu chú rể và trao gửi lời chúc trăm năm hạnh phúc.',
-      toastSpirit: 'Hennessy XO (Bottle #4)',
-      duration: '5 mins',
-      recipients: 'Anh Tuấn & Chị Mai Le, Cousins'
-    },
-    {
-      step: 5,
-      tableNumber: 5,
-      titleEn: 'Table 5: Tech & Creative Friends (Near Open Bar)',
-      titleVi: 'Bàn 5: Bạn Bè Công Nghệ & Sáng Tạo (Gần Quầy Bar)',
-      protocolEn: 'Rousing "Một, Hai, Ba, Dô!" toast chants, Cognac shots, and DJ Danny K upbeat music transition.',
-      protocolVi: 'Hô vang "Một, Hai, Ba, Dô!", cạn ly mừng đôi bạn trẻ và kết nối cùng âm nhạc DJ Danny K.',
-      toastSpirit: 'Hennessy XO (Bottle #5)',
-      duration: '6 mins',
-      recipients: 'David Miller, Kevin Vo & Creative Crew'
-    },
-    {
-      step: 6,
-      tableNumber: 6,
-      titleEn: 'Table 6: College & High School Alumni Crew',
-      titleVi: 'Bàn 6: Hội Bạn Đại Học & Phổ Thông',
-      protocolEn: 'College stories, energetic table cheers, selfie photos with Trang & Alfredo.',
-      protocolVi: 'Ôn lại kỷ niệm thời sinh viên, nâng ly chúc mừng nhiệt huyết và chụp ảnh selfie cùng cô dâu chú rể.',
-      toastSpirit: 'Hennessy XO (Bottle #6)',
-      duration: '5 mins',
-      recipients: 'Alumni Friends & Classmates'
-    },
-    {
-      step: 7,
-      tableNumber: 7,
-      titleEn: 'Table 7: Sports League & Bowling Teammates',
-      titleVi: 'Bàn 7: Đồng Đội Thể Thao & Bowling League',
-      protocolEn: 'Competitive cheers, camaraderie toasts, and gearing up for the dance floor.',
-      protocolVi: 'Chúc mừng phong cách thể thao sôi nổi, khuấy động tinh thần chuẩn bị cho sàn khiêu vũ.',
-      toastSpirit: 'Hennessy XO (Bottle #7)',
-      duration: '5 mins',
-      recipients: 'Carlos & Elena Gomez, Sports League'
-    },
-    {
-      step: 8,
-      tableNumber: 8,
-      titleEn: 'Table 8: Open Banquet Table & Transition to Dance Floor',
-      titleVi: 'Bàn 8: Bàn Mở / Khách Mời & Chuyển Tiếp Sang Sàn Khiêu Vũ',
-      protocolEn: 'Final table toast, thanking banquet attendees, followed by grand transition to Dance Floor for First Dance & La Hora Loca!',
-      protocolVi: 'Nâng ly trọn vẹn kết thúc vòng Chào Bàn, dẫn dắt toàn thể khách mời tiến ra sàn khiêu vũ bắt đầu La Hora Loca!',
-      toastSpirit: 'Hennessy XO (Bottle #8) / Champagne Toast',
-      duration: '6 mins',
-      recipients: 'General Guests & Transition to Stage'
-    }
-  ];
+  // Dynamically map Chào Bàn stations based on configured tables and currently seated guests
+  const chaoBanStations = tables.map((table, idx) => {
+    const seated = table.guests || [];
+    const seatedSummary = seated.length > 0
+      ? seated.map(g => `${g.first_name} ${g.last_name}`.trim()).slice(0, 3).join(', ') + (seated.length > 3 ? '...' : '')
+      : (lang === 'en' ? 'Pending guest assignment' : 'Chưa xếp khách');
+
+    const defaultProtocols: Record<number, { en: string; vi: string; duration: string }> = {
+      1: {
+        en: 'Traditional Cognac toast, bowing to family elders, receiving marriage blessings and guidance.',
+        vi: 'Nghi thức dâng rượu mừng Trưởng Bối, nhận lời chúc phúc dặn dò của bậc trưởng thượng.',
+        duration: '7 mins'
+      },
+      2: {
+        en: 'Bilingual celebratory toast welcoming the newly married couple into both families.',
+        vi: 'Nâng ly chúc mừng gia đình nội ngoại, gắn kết hai gia đình và chào đón dâu hiền rể thảo.',
+        duration: '6 mins'
+      },
+      3: {
+        en: 'Table toast with aunts, uncles and relatives, collecting Bao Lì Xì and table photos.',
+        vi: 'Chào rượu các cô chú bác, nhận phong bao đỏ may mắn và chụp ảnh kỷ niệm ấm cúng.',
+        duration: '6 mins'
+      },
+      4: {
+        en: 'Joyful toasts with cousins and extended family, sharing laughter and well-wishes.',
+        vi: 'Nâng ly rôm rả cùng anh chị em họ hàng, trao gửi những lời chúc trăm năm hạnh phúc.',
+        duration: '5 mins'
+      },
+      5: {
+        en: 'High-energy "Một, Hai, Ba, Dô!" toast chants, Cognac shots near the open bar.',
+        vi: 'Hô vang "Một, Hai, Ba, Dô!", cạn ly tưng bừng cùng bạn bè gần quầy bar.',
+        duration: '6 mins'
+      },
+      6: {
+        en: 'Lively toasts with close friends and alumni, sharing memories and celebration drinks.',
+        vi: 'Nâng ly chúc mừng thân thiết, chia sẻ kỷ niệm và cùng chụp ảnh selfie kỷ niệm.',
+        duration: '5 mins'
+      },
+      7: {
+        en: 'Camaraderie toasts with teammates and colleagues, gearing up for the dance floor.',
+        vi: 'Chúc mừng sôi nổi cùng đồng nghiệp và bạn hữu, khuấy động tinh thần khiêu vũ.',
+        duration: '5 mins'
+      },
+      8: {
+        en: 'Final banquet table toast, thanking guests followed by grand transition to Dance Floor & La Hora Loca!',
+        vi: 'Nâng ly trọn vẹn vòng Chào Bàn, dẫn dắt toàn thể khách mời tiến ra sàn khiêu vũ La Hora Loca!',
+        duration: '6 mins'
+      }
+    };
+
+    const protocol = defaultProtocols[table.table_number] || {
+      en: `Table toast with Table ${table.table_number} guests and commemorative celebration drinks.`,
+      vi: `Chào rượu thân tình cùng bàn ${table.table_number} và chụp ảnh kỷ niệm.`,
+      duration: '5 mins'
+    };
+
+    return {
+      step: idx + 1,
+      tableNumber: table.table_number,
+      title: table.name,
+      protocolEn: protocol.en,
+      protocolVi: protocol.vi,
+      toastSpirit: `Hennessy XO (Bottle #${table.table_number})`,
+      duration: protocol.duration,
+      recipients: seatedSummary
+    };
+  });
 
   // Helper to render round table with 10 circumference seat pips
   const renderRoundTable = (table: Table) => {
@@ -800,7 +776,7 @@ export const TableSeatingHub: React.FC<Props> = ({
                           </span>
                           <div>
                             <h5 className="text-sm font-bold font-serif text-stone-900">
-                              {lang === 'en' ? station.titleEn : station.titleVi}
+                              {station.title}
                             </h5>
                             <span className="text-[11px] text-stone-500">
                               Target: {station.recipients}
