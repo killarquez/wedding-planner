@@ -194,6 +194,42 @@ export const translations = {
     category_gifts: "Favors, Tea Ceremony & Red Envelopes",
     category_misc: "Miscellaneous Contingency",
     
+    // Budget & Corkage Tabs
+    tab_ledger: "Categorized Expense Ledger",
+    tab_corkage_engine: "Host Bar & Corkage Calculator",
+    tab_payment_calendar: "Payment Schedule & Deadlines",
+    tab_cashflow_analytics: "Cashflow & Category Breakdown",
+    export_budget_csv_btn: "Export CSV Ledger",
+    print_budget_summary: "Print Executive Budget",
+    edit_expense: "Edit",
+    save_changes: "Save Changes",
+    cancel: "Cancel",
+    
+    // Corkage Simulator
+    corkage_title: "Host-Supplied Bar & Corkage Optimization Engine",
+    corkage_desc: "Model outside wholesale spirits (Hennessy XO Chào Bàn, Macallan 12, Napa Cabernet) vs Grand Harbor corkage policies and restaurant open bar packages.",
+    corkage_policy_selection: "Grand Harbor Outside Corkage Policy",
+    corkage_per_bottle: "Option A: Per-Bottle Corkage ($15 / bottle)",
+    corkage_flat_table: "Option B: Flat Unlimited Table Fee ($250 / table)",
+    corkage_venue_open_bar: "Option C: Venue Standard Open Bar ($45 / guest)",
+    net_savings_badge: "Couples Savings vs Venue Pricing",
+    inventory_checklist_title: "Bar Inventory & Delivery Checklist",
+    chao_ban_hennessy_allocation: "Hennessy XO Chào Bàn (8 Tables)",
+    single_malt_bar: "Macallan 12 Single Malt (Cocktail Bar)",
+    table_wine_napa: "Napa Valley Cabernet (2 Cases / 24 btls)",
+    sparkling_reception: "Prosecco DOCG (1 Case / 12 btls)",
+    mixers_ice_garnishes: "Mixers, Sparkling Soda & Citrus",
+    corkage_fee_total: "Total Outside Corkage & Service Fee",
+    spirits_subtotal: "Wholesale Spirits & Wine Subtotal",
+    total_beverage_investment: "Total Beverage Investment",
+    venue_open_bar_estimate: "Restaurant In-House Bar Package",
+    
+    // Payment Calendar & Night-of Envelopes
+    payment_timeline_title: "Payment Milestone Schedule & Countdown",
+    payment_timeline_desc: "Visual roadmap of cleared deposits, upcoming vendor balances, and wedding night cash envelopes leading to Dec 12, 2026.",
+    wedding_night_envelopes: "Wedding Night Cash Envelopes (Final Balances & Tips)",
+    wedding_night_desc: "Cash envelopes to be prepared in advance and handed out by the Best Man / Treasurer at the conclusion of the banquet.",
+    
     // Milestones
     milestone_sprint_title: "Countdown Sprint to Dec 12, 2026",
     milestone_overdue: "Overdue Actions",
@@ -405,6 +441,42 @@ export const translations = {
     category_photo: "Quay Phim & Chụp Ảnh Phóng Sự",
     category_gifts: "Lễ Vật, Trầu Cau & Quà Cảm Ơn",
     category_misc: "Chi Phí Dự Phòng Khác",
+    
+    // Budget & Corkage Tabs
+    tab_ledger: "Sổ Nhật Ký Chi Phí & Hóa Đơn",
+    tab_corkage_engine: "Bảng Tính Rượu Chiêu Đãi & Phí Mở Chai",
+    tab_payment_calendar: "Lịch Trình Hạn Thanh Toán & Tiền Cọc",
+    tab_cashflow_analytics: "Phân Tích Dòng Tiền & Danh Mục",
+    export_budget_csv_btn: "Xuất File CSV",
+    print_budget_summary: "In Báo Cáo Ngân Sách",
+    edit_expense: "Sửa",
+    save_changes: "Lưu Thay Đổi",
+    cancel: "Hủy",
+    
+    // Corkage Simulator
+    corkage_title: "Bảng Tính Tối Ưu Rượu Chiêu Đãi & Phí Mở Chai Grand Harbor",
+    corkage_desc: "Mô phỏng chi phí rượu mua sỉ (Hennessy XO Chào Bàn, Macallan 12, vang Napa) so với chính sách mở chai và gói bar của nhà hàng.",
+    corkage_policy_selection: "Chính Sách Phí Mở Chai Nhà Hàng Grand Harbor",
+    corkage_per_bottle: "Lựa Chọn A: Tính Theo Chai ($15 / chai)",
+    corkage_flat_table: "Lựa Chọn B: Trọn Gói Từng Bàn ($250 / bàn)",
+    corkage_venue_open_bar: "Lựa Chọn C: Gói Bar Của Nhà Hàng ($45 / khách)",
+    net_savings_badge: "Tiết Kiệm So Với Giá Nhà Hàng Bán Lẻ",
+    inventory_checklist_title: "Danh Mục Kiểm Kê Rượu & Bàn Giao",
+    chao_ban_hennessy_allocation: "Hennessy XO Đi Chào Bàn (8 Bàn)",
+    single_malt_bar: "Macallan 12 Quầy Bar Rượu Ngoại",
+    table_wine_napa: "Vang Đỏ Napa Valley (2 Thùng / 24 chai)",
+    sparkling_reception: "Prosecco DOCG Tháp Rượu & Đón Khách (1 Thùng / 12 chai)",
+    mixers_ice_garnishes: "Nước Pha Chế, Nước Khoáng & Chanh Tươi",
+    corkage_fee_total: "Tổng Phí Mở Chai & Phục Vụ Ly",
+    spirits_subtotal: "Tổng Tiền Rượu Ngoại Mua Sỉ",
+    total_beverage_investment: "Tổng Chi Phí Đồ Uống Thực Tế",
+    venue_open_bar_estimate: "Ước Tính Gói Bar Do Nhà Hàng Bán",
+    
+    // Payment Calendar & Night-of Envelopes
+    payment_timeline_title: "Lịch Trình Hạn Thanh Toán & Đếm Ngược",
+    payment_timeline_desc: "Sơ đồ theo dõi các khoản đã cọc, hạn thanh toán sắp tới và phong bì tiền mặt chi trả đêm tiệc 12/12/2026.",
+    wedding_night_envelopes: "Phong Bì Tiền Mặt Đêm Tiệc (Hợp Đồng Cuối & Tiền Tips)",
+    wedding_night_desc: "Các phong bì tiền mặt được chuẩn bị trước để Phù rể trưởng hoặc Thủ quỹ thanh toán khi kết thúc tiệc cưới.",
     
     // Milestones
     milestone_sprint_title: "Tiến Độ Sprint Hướng Đến 12/12/2026",
