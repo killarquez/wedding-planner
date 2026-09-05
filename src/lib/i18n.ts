@@ -164,6 +164,16 @@ export const translations = {
     table_capacity: "Capacity",
     seats_filled: "filled",
     drag_drop_hint: "Drag guests between tables or click to move to rebalance 10-tops.",
+    view_floorplan: "Banquet Floorplan",
+    view_chao_ban_route: "Chào Bàn Toasting Route",
+    view_table_cards: "Table Cards & Roster",
+    chao_ban_title: "Chào Bàn (Table Toasting) Walking Route & Pacing",
+    chao_ban_desc: "Traditional Vietnamese table-toasting sequence with Hennessy XO cognac, red envelope pouch, and stage-front to bar walking order.",
+    chao_ban_step: "Station",
+    chao_ban_pacing: "Estimated Pacing: ~6 mins / table (~48 mins total)",
+    chao_ban_crew_title: "Toasting Entourage & Roles",
+    chao_ban_bottle_allocation: "Hennessy XO Allocation: 1 Bottle / Table",
+    print_seating_chart: "Print Greeter Seating Chart",
     
     // Budget
     budget_total_budget: "Target Budget",
@@ -366,6 +376,16 @@ export const translations = {
     table_capacity: "Sức chứa",
     seats_filled: "chỗ đã ngồi",
     drag_drop_hint: "Kéo thả khách mời giữa các bàn để cân bằng số lượng 10 người/bàn.",
+    view_floorplan: "Sơ Đồ Sàn Bàn Tiệc",
+    view_chao_ban_route: "Lộ Trình Đi Chào Bàn",
+    view_table_cards: "Danh Sách Thẻ Bàn",
+    chao_ban_title: "Kế Hoạch & Lộ Trình Đi Chào Từng Bàn Tiệc (Chào Bàn)",
+    chao_ban_desc: "Nghi thức chúc rượu truyền thống với khay rượu Hennessy XO, túi lụa đựng bao lì xì, thứ tự từ bàn Trưởng bối sân khấu đến bàn bạn bè gần bar.",
+    chao_ban_step: "Điểm Chào",
+    chao_ban_pacing: "Thời lượng dự kiến: ~6 phút / bàn (~48 phút tổng cộng)",
+    chao_ban_crew_title: "Đội Hình Hộ Tống & Nhiệm Vụ",
+    chao_ban_bottle_allocation: "Phân bổ Hennessy XO: 1 Chai / Bàn",
+    print_seating_chart: "In Sơ Đồ Cho Ban Đón Tiếp",
     
     // Budget
     budget_total_budget: "Ngân Sách Dự Kiến",

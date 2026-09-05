@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Language, translations } from '@/lib/i18n';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { GuestSeatingTracker } from '@/components/admin/GuestSeatingTracker';
+import { TableSeatingHub } from '@/components/admin/TableSeatingHub';
 import { BudgetEngine } from '@/components/admin/BudgetEngine';
 import { MilestoneTimeline } from '@/components/admin/MilestoneTimeline';
 import { KitchenDjOverview } from '@/components/admin/KitchenDjOverview';
@@ -241,7 +241,7 @@ export default function AdminCrmPage() {
         )}
 
         {activeTab === 'seating' && (
-          <GuestSeatingTracker
+          <TableSeatingHub
             lang={lang}
             tables={tables}
             guests={guests}
