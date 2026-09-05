@@ -58,7 +58,7 @@ function WeddingPageContent() {
       <VietnameseAtmosphereBackground />
 
       {/* 1st Time Opening Royal Red Envelope & Music Experience */}
-      <WeddingIntroExperience lang={lang} />
+      <WeddingIntroExperience lang={lang} guestParty={guestParty} initialCode={initialCode} />
 
       {/* Persistent Floating Music Controller ("Em Đồng Ý - I Do") */}
       <MusicPlayerWidget lang={lang} onReplayIntro={handleReplayIntro} />

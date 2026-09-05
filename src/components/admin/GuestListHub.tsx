@@ -9,6 +9,8 @@ import {
   Copy,
   Check,
   MessageSquare,
+  MessageCircle,
+  Share2,
   Plus,
   FileSpreadsheet,
   Download,
@@ -55,13 +57,119 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
   const [bulkText, setBulkText] = useState('');
   const [bulkError, setBulkError] = useState('');
 
-  // Base URL for invite links
+  // Base URL for invite links (canonical path without redirect hop)
   const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://wedding.au-tomato.com';
 
-  const getInviteUrl = (code: string) => `${siteOrigin}/invite=${encodeURIComponent(code)}`;
-  const getDirectRsvpUrl = (code: string) => `${siteOrigin}/invite=${encodeURIComponent(code)}?rsvp`;
+  const getInviteUrl = (code: string) => `${siteOrigin}/?invite=${encodeURIComponent(code)}`;
+  const getDirectRsvpUrl = (code: string) => `${siteOrigin}/rsvp?invite=${encodeURIComponent(code)}`;
 
   const [copiedType, setCopiedType] = useState<'invite' | 'rsvp' | null>(null);
+
+  // Share Modal State
+  const [sharingParty, setSharingParty] = useState<(Party & { guests: Guest[]; confirmed_count: number }) | null>(null);
+  const [shareLanguage, setShareLanguage] = useState<'both' | 'vi' | 'en'>(lang === 'vi' ? 'vi' : 'both');
+  const [shareLinkType, setShareLinkType] = useState<'envelope' | 'rsvp'>('envelope');
+  const [editableMessage, setEditableMessage] = useState('');
+  const [copiedShareMessage, setCopiedShareMessage] = useState(false);
+
+  const buildShareMessage = (
+    party: Party & { guests: Guest[]; confirmed_count: number },
+    targetLang: 'en' | 'vi' | 'both',
+    linkType: 'envelope' | 'rsvp'
+  ) => {
+    const link = linkType === 'rsvp' ? getDirectRsvpUrl(party.invitation_code) : getInviteUrl(party.invitation_code);
+    const seats = party.guests?.length || party.total_invited || 1;
+    const guestListStr = party.guests?.map(g => `${g.first_name} ${g.last_name}`.trim()).filter(Boolean).join(', ') || '';
+
+    const enText = `✨ You're Invited to Trang & Alfredo's Wedding Celebration! ✨
+Dear ${party.primary_guest_name},
+
+We are thrilled to invite you to celebrate our special wedding evening with us!
+
+📅 Date: Saturday, December 12, 2026
+⏰ Schedule: 5:30 PM Welcome Reception | 6:30 PM Grand Banquet & Program
+📍 Venue: Grand Harbor Restaurant (5733 Rosemead Blvd., Temple City, CA 91780)
+🍽️ 8-Course Feast, Open Bar, Traditional Chào Bàn & Dancing!
+⏳ Please RSVP by November 12, 2026 (${seats} ${seats > 1 ? 'seats' : 'seat'} reserved for your party${guestListStr ? `: ${guestListStr}` : ''}).
+
+${linkType === 'rsvp' ? `Direct RSVP Pass:\n${link}` : `Open your interactive invitation & red envelope:\n${link}`}
+
+Warmly,
+Trang & Alfredo`;
+
+    const viText = `✨ Thân Mời Dự Dạ Tiệc Cưới Trang & Alfredo! ✨
+Kính gửi ${party.primary_guest_name},
+
+Chúng con / chúng mình rất vinh hạnh được đón tiếp quý gia đình đến chung vui trong ngày hạnh phúc nhất của hai đứa!
+
+📅 Thời Gian: Thứ Bảy, Ngày 12 Tháng 12 Năm 2026 (12/12/2026)
+⏰ Lịch Trình: 17:30 Đón Khách & Chụp Ảnh | 18:30 Khai Tiệc & Nghi Lễ
+📍 Địa Điểm: Nhà Hàng Grand Harbor (5733 Rosemead Blvd., Temple City, CA 91780)
+🍽️ Đại tiệc 8 món Á Đông, quầy bar mở, nghi thức Chào Bàn truyền thống & khiêu vũ!
+⏳ Kính mong quý vị xác nhận trước ngày 12/11/2026 (Dành riêng ${seats} chỗ ngồi cho gia đình${guestListStr ? `: ${guestListStr}` : ''}).
+
+${linkType === 'rsvp' ? `Xác nhận tham dự trực tiếp (RSVP):\n${link}` : `Mở thiệp cưới & phong bao đỏ online dành riêng cho quý vị tại:\n${link}`}
+
+Thân ái & Trân trọng,
+Trang & Alfredo`;
+
+    if (targetLang === 'en') return enText;
+    if (targetLang === 'vi') return viText;
+    return `${viText}\n\n═══════════════════════════\n\n${enText}`;
+  };
+
+  const openShareModal = (
+    party: Party & { guests: Guest[]; confirmed_count: number },
+    defaultLang: 'both' | 'vi' | 'en' = lang === 'vi' ? 'vi' : 'both',
+    defaultLink: 'envelope' | 'rsvp' = 'envelope'
+  ) => {
+    setSharingParty(party);
+    setShareLanguage(defaultLang);
+    setShareLinkType(defaultLink);
+    setEditableMessage(buildShareMessage(party, defaultLang, defaultLink));
+    setCopiedShareMessage(false);
+  };
+
+  const handleLanguageSwitch = (newLang: 'both' | 'vi' | 'en') => {
+    setShareLanguage(newLang);
+    if (sharingParty) {
+      setEditableMessage(buildShareMessage(sharingParty, newLang, shareLinkType));
+    }
+  };
+
+  const handleLinkTypeSwitch = (newLinkType: 'envelope' | 'rsvp') => {
+    setShareLinkType(newLinkType);
+    if (sharingParty) {
+      setEditableMessage(buildShareMessage(sharingParty, shareLanguage, newLinkType));
+    }
+  };
+
+  const handleOpenWhatsApp = (phone?: string, text?: string) => {
+    const cleanPhone = phone ? phone.replace(/\D/g, '') : '';
+    const encoded = encodeURIComponent(text || '');
+    const url = cleanPhone && cleanPhone.length >= 10
+      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`
+      : `https://api.whatsapp.com/send?text=${encoded}`;
+    window.open(url, '_blank');
+  };
+
+  const handleOpenSms = (phone?: string, text?: string) => {
+    const cleanPhone = phone ? phone.trim() : '';
+    const encoded = encodeURIComponent(text || '');
+    const url = cleanPhone ? `sms:${cleanPhone}?&body=${encoded}` : `sms:?&body=${encoded}`;
+    window.location.href = url;
+  };
+
+  const handleCopyShareText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedShareMessage(true);
+    setTimeout(() => setCopiedShareMessage(false), 2500);
+  };
+
+  const handleQuickWhatsApp = (party: Party & { guests: Guest[]; confirmed_count: number }) => {
+    const msg = buildShareMessage(party, lang === 'vi' ? 'vi' : 'both', 'envelope');
+    handleOpenWhatsApp(party.contact_phone, msg);
+  };
 
   const handleCopyLink = (code: string, type: 'invite' | 'rsvp' = 'invite') => {
     const url = type === 'rsvp' ? getDirectRsvpUrl(code) : getInviteUrl(code);
@@ -522,11 +630,46 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                      {/* Share & Customize Modal Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => openShareModal(party)}
+                        title={lang === 'en' ? 'Open bilingual invite share modal (WhatsApp, SMS, Custom text)' : 'Mở hộp thoại gửi thiệp song ngữ (WhatsApp, SMS, nội dung tùy chỉnh)'}
+                        className="px-2.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-gold-300 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-gold-400" />
+                        <span>{t.share_invite_btn}</span>
+                      </button>
+
+                      {/* 1-Click WhatsApp Quick Share */}
+                      <button
+                        type="button"
+                        onClick={() => handleQuickWhatsApp(party)}
+                        title={lang === 'en' ? 'Quick share via WhatsApp' : 'Gửi nhanh qua WhatsApp'}
+                        className="px-2.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>WhatsApp</span>
+                      </button>
+
+                      {/* 1-Click SMS Quick Share */}
+                      {party.contact_phone && (
+                        <a
+                          href={smsHref}
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
+                          title={lang === 'en' ? 'Quick send via SMS' : 'Gửi tin nhắn SMS'}
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>SMS</span>
+                        </a>
+                      )}
+
+                      {/* Copy Envelope Landing Link */}
                       <button
                         type="button"
                         onClick={() => handleCopyLink(party.invitation_code, 'invite')}
-                        title="Copy personalized website landing page link (/invite=CODE)"
+                        title={lang === 'en' ? 'Copy red envelope landing page link (/?invite=CODE)' : 'Sao chép link phong bì thiệp online'}
                         className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                           isCopiedInvite
                             ? 'bg-emerald-700 text-white'
@@ -537,10 +680,11 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
                         <span>{isCopiedInvite ? 'Copied!' : (lang === 'en' ? 'Copy Invite' : 'Chép Thiệp')}</span>
                       </button>
 
+                      {/* Copy Direct RSVP Link */}
                       <button
                         type="button"
                         onClick={() => handleCopyLink(party.invitation_code, 'rsvp')}
-                        title="Copy direct RSVP form link (?rsvp)"
+                        title={lang === 'en' ? 'Copy direct RSVP form link (/rsvp?invite=CODE)' : 'Sao chép link vào thẳng form RSVP'}
                         className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
                           isCopiedRsvp
                             ? 'bg-crimson-800 text-white'
@@ -551,22 +695,13 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
                         <span>{isCopiedRsvp ? 'Copied!' : (lang === 'en' ? 'Direct RSVP' : 'Link RSVP')}</span>
                       </button>
 
-                      {party.contact_phone && (
-                        <a
-                          href={smsHref}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>{t.sms_invite_btn}</span>
-                        </a>
-                      )}
-
+                      {/* Preview Landing Page */}
                       <a
                         href={inviteUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="p-1.5 rounded-lg text-stone-400 hover:text-stone-800 hover:bg-stone-200 transition-colors"
-                        title="Preview Guest View"
+                        title={lang === 'en' ? 'Preview guest view in new tab' : 'Xem trước giao diện khách'}
                       >
                         <ExternalLink className="w-4 h-4" />
                       </a>
@@ -816,6 +951,175 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
               >
                 {loadingAction ? 'Importing...' : 'Generate All Links & Save'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Share Bilingual Wedding Invitation */}
+      {sharingParty && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-xs p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 border-2 border-gold-300 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-stone-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-crimson-800 text-gold-300 flex items-center justify-center shrink-0">
+                  <Share2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-serif font-bold text-stone-900">
+                    {t.share_modal_title}
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    {t.share_modal_desc}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSharingParty(null)}
+                className="text-stone-400 hover:text-stone-700 p-1.5 rounded-lg hover:bg-stone-100 text-lg transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Target Party Info Banner */}
+            <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div>
+                <span className="font-bold text-stone-900 text-sm block">
+                  {sharingParty.primary_guest_name}
+                </span>
+                <span className="text-stone-500 font-mono">
+                  Code: <strong className="text-crimson-800">{sharingParty.invitation_code}</strong> • {sharingParty.guests?.length || sharingParty.total_invited} {lang === 'en' ? 'seats' : 'chỗ'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {sharingParty.contact_phone ? (
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1 font-mono">
+                    <Phone className="w-3 h-3 text-emerald-600" />
+                    {sharingParty.contact_phone}
+                  </span>
+                ) : (
+                  <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-[11px]">
+                    {lang === 'en' ? 'No phone saved' : 'Chưa lưu số điện thoại'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Controls: Language Choice & Link Type Choice */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  {lang === 'en' ? 'Message Language' : 'Ngôn Ngữ Soạn Tin'}
+                </label>
+                <div className="grid grid-cols-3 gap-1 bg-stone-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => handleLanguageSwitch('both')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      shareLanguage === 'both' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    Bilingual
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLanguageSwitch('vi')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      shareLanguage === 'vi' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    Tiếng Việt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLanguageSwitch('en')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      shareLanguage === 'en' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    English
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  {lang === 'en' ? 'Destination Link' : 'Trang Đích Thiệp'}
+                </label>
+                <div className="grid grid-cols-2 gap-1 bg-stone-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => handleLinkTypeSwitch('envelope')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      shareLinkType === 'envelope' ? 'bg-white text-crimson-800 shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    {t.envelope_link_label}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLinkTypeSwitch('rsvp')}
+                    className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      shareLinkType === 'rsvp' ? 'bg-white text-crimson-800 shadow-2xs' : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    {t.direct_rsvp_link_label}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Editable Message Textarea */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-stone-700">
+                  {lang === 'en' ? 'Customizable Message Text:' : 'Nội Dung Tin Nhắn Tùy Chỉnh:'}
+                </label>
+                <span className="text-[10px] text-stone-400">
+                  {lang === 'en' ? 'Feel free to edit before sending' : 'Có thể chỉnh sửa trước khi gửi'}
+                </span>
+              </div>
+              <textarea
+                rows={9}
+                value={editableMessage}
+                onChange={(e) => setEditableMessage(e.target.value)}
+                className="w-full p-3 font-mono text-xs rounded-2xl border border-stone-300 bg-stone-50/50 focus:outline-none focus:ring-2 focus:ring-crimson-700 text-stone-800 leading-relaxed"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-stone-200">
+              <button
+                type="button"
+                onClick={() => handleCopyShareText(editableMessage)}
+                className="px-4 py-2 rounded-xl bg-white border border-stone-300 hover:border-gold-500 text-stone-800 text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+              >
+                {copiedShareMessage ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-stone-500" />}
+                <span>{copiedShareMessage ? t.msg_copied_toast : t.copy_msg_btn}</span>
+              </button>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenWhatsApp(sharingParty.contact_phone, editableMessage)}
+                  className="px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{t.open_whatsapp}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenSms(sharingParty.contact_phone, editableMessage)}
+                  className="px-4 py-2 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>{t.open_sms}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

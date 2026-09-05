@@ -108,7 +108,7 @@ export interface Milestone {
   status: MilestoneStatus;
   priority: MilestonePriority;
   dependencies?: string[];
-  assignee: 'Alfredo & Partner' | 'Best Man / Groomsmen' | 'Maid of Honor / Bridesmaids' | 'Family Elders';
+  assignee: 'Trang & Alfredo' | 'Best Man / Groomsmen' | 'Maid of Honor / Bridesmaids' | 'Family Elders';
   cultural_notes?: string;
   updated_at: string;
 }

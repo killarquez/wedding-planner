@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       target_date,
       status: status || 'pending',
       priority: priority || 'medium',
-      assignee: assignee || 'Alfredo & Partner',
+      assignee: assignee || 'Trang & Alfredo',
       cultural_notes
     });
 

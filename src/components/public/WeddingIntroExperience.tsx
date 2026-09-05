@@ -5,19 +5,46 @@ import { Language } from '@/lib/i18n';
 import { Sparkles, ArrowRight, X, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { weddingAudio } from '@/lib/audioManager';
+import { Party } from '@/lib/types';
 
 interface Props {
   lang: Language;
   onOpened?: () => void;
+  guestParty?: Party | null;
+  initialCode?: string;
 }
 
 type AnimationStep = 'ready' | 'animating' | 'kissed' | 'revealed';
 
-export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
+export const WeddingIntroExperience: React.FC<Props> = ({
+  lang,
+  onOpened,
+  guestParty,
+  initialCode,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [step, setStep] = useState<AnimationStep>('ready');
   const [isDissolving, setIsDissolving] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
+  const [loadedParty, setLoadedParty] = useState<Party | null>(guestParty || null);
+
+  useEffect(() => {
+    if (guestParty) {
+      setLoadedParty(guestParty);
+      return;
+    }
+    if (!initialCode) return;
+    fetch(`/api/rsvp?code=${encodeURIComponent(initialCode.trim())}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.party) setLoadedParty(data.party);
+      })
+      .catch(() => {});
+  }, [guestParty, initialCode]);
+
+  const defaultPartyName =
+    lang === 'en' ? 'Honored Family & Friends' : 'Quý Khách & Gia Đình';
+  const displayPartyName = loadedParty?.primary_guest_name || defaultPartyName;
 
   useEffect(() => {
     const openedSession = sessionStorage.getItem('wedding_invite_opened');
@@ -248,6 +275,42 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
           </div>
         </div>
 
+        {/* 3.5. Royal Dedication Plaque on the Red Envelope (From Trang & Alfredo To Party Name) */}
+        <div
+          className={`absolute top-[13.5%] sm:top-[15%] left-1/2 -translate-x-1/2 z-35 w-[82%] max-w-[270px] pointer-events-none transition-all duration-500 ease-out ${
+            step === 'ready' ? 'opacity-100 scale-100' : 'opacity-0 -translate-y-2 scale-95'
+          }`}
+        >
+          <div className="relative rounded-2xl bg-gradient-to-b from-black/55 via-crimson-950/65 to-black/65 backdrop-blur-[2px] px-3.5 py-2.5 sm:py-3 border border-amber-300/75 shadow-[0_8px_25px_rgba(0,0,0,0.55)] text-center">
+            {/* Traditional Gold Corner Accents */}
+            <div className="absolute top-1.5 left-1.5 w-2 h-2 border-t border-l border-amber-300/90 pointer-events-none" />
+            <div className="absolute top-1.5 right-1.5 w-2 h-2 border-t border-r border-amber-300/90 pointer-events-none" />
+            <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b border-l border-amber-300/90 pointer-events-none" />
+            <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b border-r border-amber-300/90 pointer-events-none" />
+
+            {/* From: Trang & Alfredo */}
+            <div className="flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-serif tracking-wide text-amber-200/90">
+              <span className="text-amber-400 font-semibold uppercase tracking-wider text-[10px]">
+                {lang === 'en' ? 'From:' : 'Từ:'}
+              </span>
+              <span className="font-bold text-amber-100">Trang & Alfredo</span>
+            </div>
+
+            {/* Subtle Gilded Divider */}
+            <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent mx-auto my-1.5" />
+
+            {/* To: (Party Name) */}
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] uppercase font-semibold tracking-widest text-amber-400/90 font-serif">
+                {lang === 'en' ? 'To:' : 'Kính gửi:'}
+              </span>
+              <h3 className="text-xs sm:text-sm font-serif font-bold text-amber-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wide mt-0.5 max-w-[220px] line-clamp-2">
+                {displayPartyName}
+              </h3>
+            </div>
+          </div>
+        </div>
+
         {/* 4. Perfectly Centered "Tap to Open" Call to Action Badge */}
         <div
           className={`absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-full px-6 flex flex-col items-center pointer-events-none transition-all duration-300 ${
@@ -305,6 +368,15 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
               <div className="text-[10px] tracking-[0.25em] uppercase text-amber-800/90 font-serif font-semibold mt-0.5">
                 {lang === 'en' ? 'Wedding Banquet & Reception' : 'Tiệc Cưới & Báo Hỷ'}
               </div>
+            </div>
+
+            {/* Dedicated Recipient Pill on Invitation Card */}
+            <div className="mb-2 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-100 via-rose-50 to-amber-100 border border-amber-300 text-stone-900 font-serif text-[11px] sm:text-xs inline-flex items-center gap-1.5 shadow-2xs">
+              <Sparkles className="w-3 h-3 text-amber-600" />
+              <span>
+                <span className="text-stone-500 font-medium mr-1">{lang === 'en' ? 'To:' : 'Kính gửi:'}</span>
+                <strong className="text-crimson-900 font-bold">{displayPartyName}</strong>
+              </span>
             </div>
 
             {/* Couple Calligraphy */}

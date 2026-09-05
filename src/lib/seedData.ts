@@ -631,7 +631,7 @@ export const initialMilestones: Milestone[] = [
     target_date: '2026-08-10',
     status: 'completed',
     priority: 'critical',
-    assignee: 'Alfredo & Partner',
+    assignee: 'Trang & Alfredo',
     cultural_notes: 'Tested lobster with ginger scallion and seafood soup with parents approval',
     updated_at: '2026-08-10T10:00:00Z'
   },
@@ -643,7 +643,7 @@ export const initialMilestones: Milestone[] = [
     target_date: '2026-08-15',
     status: 'completed',
     priority: 'high',
-    assignee: 'Alfredo & Partner',
+    assignee: 'Trang & Alfredo',
     cultural_notes: 'Gold thread dragon and phoenix embroidery finalized',
     updated_at: '2026-08-15T10:00:00Z'
   },
@@ -655,7 +655,7 @@ export const initialMilestones: Milestone[] = [
     target_date: '2026-11-12',
     status: 'completed',
     priority: 'critical',
-    assignee: 'Alfredo & Partner',
+    assignee: 'Trang & Alfredo',
     cultural_notes: 'All outstanding parties get T-21 and T-7 SMS/Email nudges',
     updated_at: '2026-08-12T10:00:00Z'
   },
@@ -691,7 +691,7 @@ export const initialMilestones: Milestone[] = [
     target_date: '2026-12-07',
     status: 'pending',
     priority: 'critical',
-    assignee: 'Alfredo & Partner',
+    assignee: 'Trang & Alfredo',
     cultural_notes: 'Lock exact table count with Grand Harbor banquet manager (Table multiplier math)',
     updated_at: '2026-08-30T10:00:00Z'
   },
@@ -715,7 +715,7 @@ export const initialMilestones: Milestone[] = [
     target_date: '2026-12-12',
     status: 'pending',
     priority: 'critical',
-    assignee: 'Alfredo & Partner',
+    assignee: 'Trang & Alfredo',
     cultural_notes: 'Celebration, feast, Chào Bàn, dancing and memories!',
     updated_at: '2026-08-30T10:00:00Z'
   }

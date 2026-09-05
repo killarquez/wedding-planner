@@ -35,7 +35,7 @@ export const MilestoneTimeline: React.FC<Props> = ({ lang, milestones, onRefresh
   const [category, setCategory] = useState<'venue' | 'attire' | 'guest_rsvp' | 'logistics' | 'beverage' | 'ceremony'>('venue');
   const [targetDate, setTargetDate] = useState('');
   const [priority, setPriority] = useState<MilestonePriority>('high');
-  const [assignee, setAssignee] = useState<'Alfredo & Partner' | 'Best Man / Groomsmen' | 'Maid of Honor / Bridesmaids' | 'Family Elders'>('Alfredo & Partner');
+  const [assignee, setAssignee] = useState<'Trang & Alfredo' | 'Best Man / Groomsmen' | 'Maid of Honor / Bridesmaids' | 'Family Elders'>('Trang & Alfredo');
   const [culturalNotes, setCulturalNotes] = useState('');
 
   const today = new Date('2026-08-30');
@@ -214,7 +214,7 @@ export const MilestoneTimeline: React.FC<Props> = ({ lang, milestones, onRefresh
                 onChange={(e) => setAssignee(e.target.value as any)}
                 className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white"
               >
-                <option value="Alfredo & Partner">Alfredo & Partner</option>
+                <option value="Trang & Alfredo">Trang & Alfredo</option>
                 <option value="Best Man / Groomsmen">Best Man / Groomsmen</option>
                 <option value="Maid of Honor / Bridesmaids">Maid of Honor / Bridesmaids</option>
                 <option value="Family Elders">Family Elders</option>
