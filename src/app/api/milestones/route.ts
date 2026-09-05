@@ -3,7 +3,7 @@ import { WeddingDB } from '@/lib/db';
 
 export async function GET() {
   try {
-    const milestones = WeddingDB.getMilestones();
+    const milestones = await WeddingDB.getMilestones();
     return NextResponse.json({ milestones });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Title and target date are required' }, { status: 400 });
     }
 
-    const milestone = WeddingDB.addMilestone({
+    const milestone = await WeddingDB.addMilestone({
       title_en,
       title_vi: title_vi || title_en,
       category: category || 'ceremony',
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Milestone ID is required' }, { status: 400 });
     }
 
-    const updated = WeddingDB.updateMilestone(id, updates);
+    const updated = await WeddingDB.updateMilestone(id, updates);
     return NextResponse.json({ success: true, milestone: updated });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

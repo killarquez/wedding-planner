@@ -3,7 +3,7 @@ import { WeddingDB } from '@/lib/db';
 
 export async function POST() {
   try {
-    const fresh = WeddingDB.resetToSeed();
+    const fresh = await WeddingDB.resetToSeed();
     return NextResponse.json({
       success: true,
       message: 'Database reset to initial wedding celebration state',

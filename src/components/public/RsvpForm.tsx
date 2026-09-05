@@ -15,7 +15,11 @@ import {
   ShieldCheck,
   AlertCircle,
   ArrowRight,
-  RotateCcw
+  RotateCcw,
+  UserPlus,
+  UserCheck,
+  Trash2,
+  Heart
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { VietnameseCornerFlourish, VietnameseCloudDivider } from './VietnameseMotifDividers';
@@ -33,6 +37,7 @@ interface GuestState {
   rsvp_status: RsvpStatus;
   dietary_restrictions: string[];
   dietary_notes: string;
+  is_new?: boolean;
 }
 
 export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
@@ -148,10 +153,52 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
     );
   };
 
+  // Dynamic Party Limit & Add Guest Handlers
+  const partyLimit = party?.total_invited || guestStates.length;
+  const canAddGuest = guestStates.length < partyLimit;
+
+  const handleAddGuest = () => {
+    if (!canAddGuest) return;
+    const newGuestId = `new-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    setGuestStates(prev => [
+      ...prev,
+      {
+        guest_id: newGuestId,
+        first_name: '',
+        last_name: '',
+        rsvp_status: 'attending',
+        dietary_restrictions: [],
+        dietary_notes: '',
+        is_new: true
+      }
+    ]);
+  };
+
+  const handleRemoveGuest = (guestId: string) => {
+    setGuestStates(prev => prev.filter(g => g.guest_id !== guestId));
+  };
+
+  const handleUpdateGuestName = (guestId: string, field: 'first_name' | 'last_name', value: string) => {
+    setGuestStates(prev =>
+      prev.map(g => (g.guest_id === guestId ? { ...g, [field]: value } : g))
+    );
+  };
+
   // Submit RSVP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!party) return;
+
+    // Check for empty names on newly added guests
+    const missingName = guestStates.some(g => g.is_new && !g.first_name.trim());
+    if (missingName) {
+      setSubmitError(
+        lang === 'en'
+          ? 'Please enter a name for each additional guest you added.'
+          : 'Vui lòng nhập tên cho các thành viên mới được thêm vào.'
+      );
+      return;
+    }
 
     setSubmitting(true);
     setSubmitError('');
@@ -308,7 +355,7 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
                 <ShieldCheck className="w-3.5 h-3.5 text-gold-600" />
                 <span>Code: {party.invitation_code}</span>
                 <span className="text-crimson-300">•</span>
-                <span>{guestStates.length} {t.party_invited_badge}</span>
+                <span>{guestStates.length} / {partyLimit} {t.party_cap_badge}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
                 {t.party_welcome} <span className="text-crimson-800">{party.primary_guest_name}</span>
@@ -364,20 +411,56 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/70">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-7 h-7 rounded-full bg-crimson-50 text-crimson-800 font-serif font-bold text-xs flex items-center justify-center border border-crimson-200">
+                    <div className="flex items-center gap-2.5 flex-1">
+                      <span className="w-7 h-7 rounded-full bg-crimson-50 text-crimson-800 font-serif font-bold text-xs flex items-center justify-center border border-crimson-200 shrink-0">
                         {idx + 1}
                       </span>
-                      <div>
-                        <h3 className="text-base font-serif font-bold text-stone-900">
-                          {guest.first_name} {guest.last_name}
-                        </h3>
-                        {idx === 0 && (
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-gold-700 block">
-                            Primary Contact
-                          </span>
-                        )}
-                      </div>
+                      {guest.is_new ? (
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-crimson-800 bg-crimson-100/80 px-2 py-0.5 rounded-md">
+                              {lang === 'en' ? 'Additional Guest / Plus-One' : 'Thành Viên Thêm Vào'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGuest(guest.guest_id)}
+                              className="inline-flex items-center gap-1 text-[11px] text-stone-400 hover:text-red-600 transition-colors p-1"
+                              title={t.remove_guest_btn}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                              <span className="hidden sm:inline">{t.remove_guest_btn}</span>
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              required
+                              value={guest.first_name}
+                              onChange={(e) => handleUpdateGuestName(guest.guest_id, 'first_name', e.target.value)}
+                              placeholder={t.guest_first_name_label}
+                              className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-crimson-600"
+                            />
+                            <input
+                              type="text"
+                              value={guest.last_name}
+                              onChange={(e) => handleUpdateGuestName(guest.guest_id, 'last_name', e.target.value)}
+                              placeholder={t.guest_last_name_label}
+                              className="w-full px-3 py-1.5 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-crimson-600"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <h3 className="text-base font-serif font-bold text-stone-900">
+                            {guest.first_name} {guest.last_name}
+                          </h3>
+                          {idx === 0 && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-gold-700 block">
+                              Primary Contact
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Attendance Toggle Buttons */}
@@ -451,6 +534,49 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
                 </div>
               );
             })}
+          </div>
+
+          {/* Add Guest Button & Warm Apologetic Capacity Notice */}
+          <div className="space-y-3 pt-1">
+            {canAddGuest ? (
+              <button
+                type="button"
+                onClick={handleAddGuest}
+                className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-crimson-300 bg-crimson-50/40 hover:bg-crimson-50 hover:border-crimson-400 text-crimson-800 font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-2xs group"
+              >
+                <div className="p-1.5 rounded-full bg-crimson-100 group-hover:bg-crimson-200 text-crimson-800 transition-colors">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <span>{t.add_guest_party_btn}</span>
+                <span className="text-xs text-crimson-600/80 font-normal">
+                  ({guestStates.length} / {partyLimit})
+                </span>
+              </button>
+            ) : (
+              <div className="w-full py-3 px-4 rounded-2xl border border-stone-200 bg-stone-100/80 text-stone-400 text-xs sm:text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
+                <UserCheck className="w-4 h-4 text-stone-400" />
+                <span className="font-medium">
+                  {t.party_cap_reached_btn
+                    .replace('{current}', String(guestStates.length))
+                    .replace('{max}', String(partyLimit))}
+                </span>
+              </div>
+            )}
+
+            {/* Apologetic and warm hospitality notice box */}
+            <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-amber-100/80 text-amber-800 shrink-0 mt-0.5">
+                <Heart className="w-4 h-4 text-amber-700 fill-amber-700/20" />
+              </div>
+              <div className="space-y-1 text-left">
+                <h5 className="text-xs font-serif font-bold text-amber-950">
+                  {t.party_missed_anyone_title}
+                </h5>
+                <p className="text-[11px] text-amber-900/80 leading-relaxed">
+                  {t.party_missed_anyone_desc}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Song Request Section */}

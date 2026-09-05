@@ -49,6 +49,7 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
   const [newPhone, setNewPhone] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newGuestNames, setNewGuestNames] = useState('');
+  const [newTotalInvited, setNewTotalInvited] = useState<string>('');
   const [newTag, setNewTag] = useState<TableHierarchy>('general');
   const [newNotes, setNewNotes] = useState('');
 
@@ -201,6 +202,25 @@ Trang & Alfredo`;
     return true;
   });
 
+  // Quick adjust party guest cap / limit from CRM
+  const handleAdjustPartyLimit = async (partyId: string, currentLimit: number, delta: number) => {
+    const newLimit = Math.max(1, currentLimit + delta);
+    setLoadingAction(true);
+    try {
+      const res = await fetch('/api/parties', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: partyId, total_invited: newLimit })
+      });
+      if (!res.ok) throw new Error('Failed to update party limit');
+      onRefresh();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
   // Handle Add Single Party
   const handleCreateParty = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,6 +233,8 @@ Trang & Alfredo`;
         .map(n => n.trim())
         .filter(Boolean);
 
+      const parsedTotal = newTotalInvited ? parseInt(newTotalInvited, 10) : undefined;
+
       const res = await fetch('/api/parties', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,6 +242,7 @@ Trang & Alfredo`;
           primary_guest_name: newPartyName.trim(),
           contact_phone: newPhone.trim() || undefined,
           contact_email: newEmail.trim() || undefined,
+          total_invited: parsedTotal && !isNaN(parsedTotal) ? parsedTotal : undefined,
           guest_names: names.length > 0 ? names : [newPartyName.trim()],
           relationship_tag: newTag,
           notes: newNotes.trim() || undefined
@@ -233,6 +256,7 @@ Trang & Alfredo`;
       setNewPhone('');
       setNewEmail('');
       setNewGuestNames('');
+      setNewTotalInvited('');
       setNewNotes('');
       onRefresh();
     } catch (e: any) {
@@ -532,13 +556,41 @@ Trang & Alfredo`;
                           </span>
                         )}
                         <span>
-                          • {party.guests?.length || party.total_invited} {lang === 'en' ? 'seats invited' : 'chỗ mời'}
+                          • {party.guests?.length || party.total_invited} {lang === 'en' ? 'named' : 'đã ghi tên'} / {party.total_invited || party.guests?.length} {lang === 'en' ? 'max cap' : 'chỗ tối đa'}
                         </span>
                       </div>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="flex items-center gap-2">
+                    {/* Party Cap Adjuster & Status Badge */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* Interactive Seat Limit Stepper */}
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-stone-100/90 border border-stone-200 text-xs text-stone-700">
+                        <span className="text-[11px] text-stone-400 font-medium">
+                          {lang === 'en' ? 'Cap:' : 'Giới hạn:'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustPartyLimit(party.id, party.total_invited || party.guests.length, -1)}
+                          disabled={loadingAction || (party.total_invited || party.guests.length) <= (party.guests?.length || 1)}
+                          className="w-5 h-5 rounded-md bg-white border border-stone-300 hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center font-bold text-stone-600 transition-colors shadow-2xs"
+                          title={lang === 'en' ? 'Decrease party seat cap' : 'Giảm số chỗ tối đa'}
+                        >
+                          -
+                        </button>
+                        <span className="font-bold text-stone-900 px-1 min-w-[20px] text-center">
+                          {party.total_invited || party.guests.length}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustPartyLimit(party.id, party.total_invited || party.guests.length, 1)}
+                          disabled={loadingAction}
+                          className="w-5 h-5 rounded-md bg-white border border-stone-300 hover:bg-stone-50 disabled:opacity-30 flex items-center justify-center font-bold text-stone-600 transition-colors shadow-2xs"
+                          title={lang === 'en' ? 'Increase party seat cap' : 'Tăng số chỗ tối đa'}
+                        >
+                          +
+                        </button>
+                      </div>
+
                       {isAllDeclined ? (
                         <span className="px-3 py-1 rounded-xl bg-red-100 text-red-800 text-xs font-bold flex items-center gap-1">
                           <XCircle className="w-3.5 h-3.5" />
@@ -547,7 +599,7 @@ Trang & Alfredo`;
                       ) : hasAttending ? (
                         <span className="px-3 py-1 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          {party.confirmed_count} / {party.guests?.length || party.total_invited} {lang === 'en' ? 'Attending' : 'Tham dự'}
+                          {party.confirmed_count} / {party.total_invited || party.guests?.length} {lang === 'en' ? 'Attending' : 'Tham dự'}
                         </span>
                       ) : (
                         <span className="px-3 py-1 rounded-xl bg-amber-100 text-amber-800 text-xs font-bold flex items-center gap-1">
@@ -567,7 +619,7 @@ Trang & Alfredo`;
                     </div>
                   </div>
 
-                  {/* Member Guests List with individual tags */}
+                  {/* Member Guests List with individual tags & Open Capacity Slots */}
                   <div className="flex flex-wrap gap-2 pt-2 border-t border-stone-100">
                     {party.guests?.map((guest) => {
                       const isGuestAttending = guest.rsvp_status === 'attending';
@@ -591,6 +643,18 @@ Trang & Alfredo`;
                         </div>
                       );
                     })}
+
+                    {/* Unnamed / Open Capacity Slots */}
+                    {Array.from({ length: Math.max(0, (party.total_invited || party.guests.length) - party.guests.length) }).map((_, slotIdx) => (
+                      <div
+                        key={`unnamed-slot-${slotIdx}`}
+                        className="px-2.5 py-1 rounded-lg text-xs border border-dashed border-amber-300 bg-amber-50/60 text-amber-800 flex items-center gap-1"
+                        title={lang === 'en' ? 'Unfilled party seat that guests can add via RSVP button' : 'Chỗ trống khách có thể tự thêm trên RSVP'}
+                      >
+                        <span className="text-[10px] text-amber-600 font-bold">+{slotIdx + 1}</span>
+                        <span className="italic">{lang === 'en' ? 'Open Seat (Addable on RSVP)' : 'Chỗ trống (Khách tự thêm)'}</span>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Special Message (if present) */}
@@ -803,6 +867,26 @@ Trang & Alfredo`;
               />
               <p className="text-[10px] text-stone-400 mt-1">
                 Each named person will get an individual attendance toggle and dietary preference card on their party's RSVP link.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-stone-700 mb-1">
+                {lang === 'en' ? 'Total Allocated Seats / Guest Cap (Optional)' : 'Tổng Số Chỗ Dành Riêng / Giới Hạn Khách (Tùy chọn)'}
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={newTotalInvited}
+                onChange={(e) => setNewTotalInvited(e.target.value)}
+                placeholder={lang === 'en' ? 'e.g. 5 (Leave blank to match named guests above)' : 'Ví dụ: 5 (Để trống nếu bằng số khách đã ghi tên)'}
+                className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-crimson-700"
+              />
+              <p className="text-[10px] text-amber-700 mt-1">
+                {lang === 'en'
+                  ? '💡 Pro-tip: If this party has 5 seats allocated but you only have 2 names right now, enter 5 here! The guest will see "+ Add Guest" on their RSVP to add the other 3.'
+                  : '💡 Mẹo: Nếu bàn này dự kiến 5 người nhưng bạn mới có tên 2 người, hãy điền 5 vào đây! Khách sẽ thấy nút "+ Thêm thành viên" trên thiệp để tự điền 3 người còn lại.'}
               </p>
             </div>
 

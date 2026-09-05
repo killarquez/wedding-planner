@@ -4,7 +4,7 @@ import { WeddingDB } from '@/lib/db';
 
 export async function GET() {
   try {
-    const briefing = WeddingDB.generateDailyBriefing();
+    const briefing = await WeddingDB.generateDailyBriefing();
     const logs = WeddingDB.getAgentLogs();
     return NextResponse.json({ briefing, logs });
   } catch (error: any) {

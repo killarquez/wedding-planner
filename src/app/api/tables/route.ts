@@ -3,8 +3,8 @@ import { WeddingDB } from '@/lib/db';
 
 export async function GET() {
   try {
-    const tables = WeddingDB.getTablesWithGuests();
-    const math = WeddingDB.getBanquetTableMath();
+    const tables = await WeddingDB.getTablesWithGuests();
+    const math = await WeddingDB.getBanquetTableMath();
     return NextResponse.json({ tables, math });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
 
     // Action: Auto Assign All
     if (action === 'auto_assign') {
-      const result = WeddingDB.autoAssignGuestsByHierarchy();
-      const math = WeddingDB.getBanquetTableMath();
+      const result = await WeddingDB.autoAssignGuestsByHierarchy();
+      const math = await WeddingDB.getBanquetTableMath();
       return NextResponse.json({ success: true, ...result, math });
     }
 
@@ -28,16 +28,16 @@ export async function POST(req: NextRequest) {
       if (!guest_id) {
         return NextResponse.json({ error: 'guest_id is required' }, { status: 400 });
       }
-      WeddingDB.assignGuestToTable(guest_id, table_id || null);
-      const tables = WeddingDB.getTablesWithGuests();
-      const math = WeddingDB.getBanquetTableMath();
+      await WeddingDB.assignGuestToTable(guest_id, table_id || null);
+      const tables = await WeddingDB.getTablesWithGuests();
+      const math = await WeddingDB.getBanquetTableMath();
       return NextResponse.json({ success: true, tables, math });
     }
 
     // Default Action: Create new Table
-    const newTable = WeddingDB.addTable(name, hierarchy_tag || 'general', capacity || 10);
-    const tables = WeddingDB.getTablesWithGuests();
-    const math = WeddingDB.getBanquetTableMath();
+    const newTable = await WeddingDB.addTable(name, hierarchy_tag || 'general', capacity || 10);
+    const tables = await WeddingDB.getTablesWithGuests();
+    const math = await WeddingDB.getBanquetTableMath();
 
     return NextResponse.json({ success: true, table: newTable, tables, math });
   } catch (error: any) {
@@ -53,9 +53,9 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Table ID is required' }, { status: 400 });
     }
 
-    WeddingDB.deleteTable(id);
-    const tables = WeddingDB.getTablesWithGuests();
-    const math = WeddingDB.getBanquetTableMath();
+    await WeddingDB.deleteTable(id);
+    const tables = await WeddingDB.getTablesWithGuests();
+    const math = await WeddingDB.getBanquetTableMath();
 
     return NextResponse.json({ success: true, tables, math });
   } catch (error: any) {

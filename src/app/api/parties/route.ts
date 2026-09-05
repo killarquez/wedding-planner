@@ -7,14 +7,14 @@ export async function GET(req: NextRequest) {
     const query = searchParams.get('query') || searchParams.get('code') || searchParams.get('phone');
 
     if (query) {
-      const result = WeddingDB.getPartyByCodeOrPhone(query);
+      const result = await WeddingDB.getPartyByCodeOrPhone(query);
       if (!result) {
         return NextResponse.json({ error: 'Party or invitation code not found' }, { status: 404 });
       }
       return NextResponse.json(result);
     }
 
-    const parties = WeddingDB.getPartiesWithGuests();
+    const parties = await WeddingDB.getPartiesWithGuests();
     return NextResponse.json({ parties });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No rows provided for bulk import' }, { status: 400 });
       }
 
-      const result = WeddingDB.bulkImportParties(body.rows);
+      const result = await WeddingDB.bulkImportParties(body.rows);
       return NextResponse.json({ success: true, ...result });
     }
 
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Primary guest or party name is required' }, { status: 400 });
     }
 
-    const result = WeddingDB.createParty({
+    const result = await WeddingDB.createParty({
       primary_guest_name: body.primary_guest_name,
       contact_phone: body.contact_phone,
       contact_email: body.contact_email,
@@ -64,8 +64,29 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Party ID is required' }, { status: 400 });
     }
 
-    const deleted = WeddingDB.deleteParty(id);
+    const deleted = await WeddingDB.deleteParty(id);
     return NextResponse.json({ success: deleted });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Party ID is required' }, { status: 400 });
+    }
+
+    // Convert total_invited to number if provided
+    if (updates.total_invited !== undefined) {
+      updates.total_invited = Number(updates.total_invited);
+    }
+
+    const party = await WeddingDB.updateParty(id, updates);
+    return NextResponse.json({ success: true, party });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

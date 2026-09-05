@@ -27,8 +27,8 @@ export interface ChaserExecutionReport {
 
 export class DeadlinesChaserAgent {
   public static async runChaserAndBriefingSimulation(): Promise<ChaserExecutionReport> {
-    const guests = WeddingDB.getGuests();
-    const parties = WeddingDB.getParties();
+    const guests = await WeddingDB.getGuests();
+    const parties = await WeddingDB.getParties();
     const pendingPrimaryGuests = guests.filter(g => g.rsvp_status === 'pending' && g.is_primary_contact);
 
     const t21Nudges: ChaserNudgePayload[] = [];
@@ -78,7 +78,7 @@ export class DeadlinesChaserAgent {
       }
     });
 
-    const briefing = WeddingDB.generateDailyBriefing();
+    const briefing = await WeddingDB.generateDailyBriefing();
 
     WeddingDB.addAgentLog(
       'Deadlines & Chaser Agent',

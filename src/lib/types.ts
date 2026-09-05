@@ -33,6 +33,7 @@ export interface Party {
   contact_phone?: string;
   notes?: string;
   special_message?: string;
+  relationship_tag?: TableHierarchy;
   created_at: string;
 }
 

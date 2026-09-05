@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Lookup parameter (code or phone) is required' }, { status: 400 });
     }
 
-    const result = WeddingDB.getPartyByCodeOrPhone(query);
+    const result = await WeddingDB.getPartyByCodeOrPhone(query);
     if (!result) {
       return NextResponse.json({ error: 'Invitation not found. Please verify your code or phone number.' }, { status: 404 });
     }
@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
 
     // 1. Personalized Party RSVP Mode
     if (body.party_id || (body.guests && Array.isArray(body.guests))) {
-      const result = WeddingDB.submitPartyRsvp(body);
+      const result = await WeddingDB.submitPartyRsvp(body);
 
       // Trigger Agent B confirmation draft
-      const primaryGuest = result.guests.find(g => g.is_primary_contact) || result.guests[0];
-      const plusOneGuests = result.guests.filter(g => g.id !== primaryGuest?.id && g.rsvp_status === 'attending');
+      const primaryGuest = result.guests.find((g: any) => g.is_primary_contact) || result.guests[0];
+      const plusOneGuests = result.guests.filter((g: any) => g.id !== primaryGuest?.id && g.rsvp_status === 'attending');
 
       let agentResponse = null;
       if (primaryGuest) {
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { party, primaryGuest, plusOneGuests } = WeddingDB.submitRsvp({
+    const { party, primaryGuest, plusOneGuests } = await WeddingDB.submitRsvp({
       first_name,
       last_name,
       email,
