@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeddingDB } from '@/lib/db';
 import { Party, Guest, Table } from '@/lib/types';
+import { sendDiscordCheckinAlert } from '@/lib/alerts/discord';
 
 function extractCheckInInfo(party: any) {
   let isCheckedIn = !!party.checked_in;
@@ -247,6 +248,25 @@ export async function POST(req: NextRequest) {
       checked_in: true,
       checked_in_at: now
     } as any);
+
+    // Dispatch Discord arrival notification
+    try {
+      const attending = targetParty.guests?.filter((g: any) => g.rsvp_status === 'attending') || [];
+      const firstWithTable = attending.find((g: any) => g.table_id);
+      const tables = await WeddingDB.getTablesWithGuests();
+      const t = firstWithTable?.table_id ? tables.find(tb => tb.id === firstWithTable.table_id) : null;
+      const tableInfo = t ? `Table ${t.table_number}: ${t.name}` : 'General Buffer Table';
+
+      sendDiscordCheckinAlert({
+        partyName: targetParty.primary_guest_name,
+        invitationCode: targetParty.invitation_code,
+        headcount: attending.length || targetParty.total_invited,
+        tableInfo,
+        greeterName: greeter
+      }).catch(console.error);
+    } catch (err) {
+      console.warn('Discord check-in alert warning:', err);
+    }
 
     return NextResponse.json({
       success: true,

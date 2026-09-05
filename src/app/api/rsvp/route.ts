@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeddingDB } from '@/lib/db';
 import { RsvpPipelineAgent } from '@/lib/agents/rsvpAgent';
+import { sendRsvpConfirmationEmail } from '@/lib/email/dispatcher';
+import { sendDiscordRsvpAlert } from '@/lib/alerts/discord';
 
 export async function GET(req: NextRequest) {
   try {
@@ -51,6 +53,38 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Dispatch Instant Discord Push Notification to Alfredo & Trang's Phones
+      try {
+        await sendDiscordRsvpAlert({
+          party: result.party,
+          primaryGuest: primaryGuest || { first_name: result.party.primary_guest_name, last_name: '', rsvp_status: 'attending', dietary_restrictions: [] } as any,
+          allGuests: result.guests,
+          attendingCount: result.attendingCount,
+          declinedCount: result.declinedCount,
+          specialMessage: body.special_message,
+          songRequest: body.song_request?.song_title
+        });
+      } catch (err) {
+        console.warn('Discord alert push warning:', err);
+      }
+
+      // Dispatch Transactional Confirmation Email via Resend with .ics Attachment
+      const recipientEmail = body.contact_email || result.party.contact_email || primaryGuest?.email;
+      let emailResult = null;
+      if (recipientEmail && primaryGuest) {
+        try {
+          emailResult = await sendRsvpConfirmationEmail({
+            party: result.party,
+            primaryGuest,
+            allGuests: result.guests,
+            attendingCount: result.attendingCount,
+            recipientEmail
+          });
+        } catch (err) {
+          console.warn('Resend email dispatch warning:', err);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         party: result.party,
@@ -58,7 +92,8 @@ export async function POST(req: NextRequest) {
         guests: result.guests,
         attendingCount: result.attendingCount,
         declinedCount: result.declinedCount,
-        agentResponse
+        agentResponse,
+        emailSent: emailResult?.success || false
       });
     }
 
