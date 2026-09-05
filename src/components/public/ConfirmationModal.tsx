@@ -68,7 +68,6 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
     invitationCode,
     attendingCount,
     attendingGuestNames: attendingGuestNames.length > 0 ? attendingGuestNames : [primaryName],
-    djSongTitle: agentResp.djSongTitle || undefined,
     lang,
   };
 
@@ -128,7 +127,7 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
             <div className="flex items-center justify-between border-b border-gold-200/80 pb-3 mb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-crimson-800 bg-crimson-50 px-2 py-0.5 rounded border border-crimson-200">
-                  {t.ticket_pass_type}
+                  {lang === 'en' ? "Trang & Alfredo's Wedding" : "Lễ Cưới Trang & Alfredo"}
                 </span>
                 <h4 className="text-base sm:text-lg font-bold font-serif text-stone-900 mt-1">
                   {primaryName}
@@ -173,29 +172,18 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
                 </span>
               </div>
 
-              {attendingGuestNames.length > 1 && (
+              {attendingGuestNames.length > 0 && (
                 <div className="col-span-2 pt-1">
                   <span className="text-[11px] text-stone-400 font-medium block mb-1">
                     {t.ticket_attendees}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {attendingGuestNames.map((name: string, idx: number) => (
-                      <span key={idx} className="text-[11px] bg-gold-50 text-gold-900 border border-gold-200 px-2 py-0.5 rounded-md font-medium">
+                      <span key={idx} className="text-[11px] bg-gold-50 text-gold-900 border border-gold-200 px-2.5 py-1 rounded-md font-medium">
                         {name}
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {agentResp.djSongTitle && (
-                <div className="col-span-2 pt-2 border-t border-gold-200/60">
-                  <span className="text-stone-400 block font-medium text-[11px]">
-                    {lang === 'en' ? 'DJ Queue Song' : 'Bài Hát Đã Đưa Vào Hàng Đợi DJ'}
-                  </span>
-                  <span className="font-semibold text-crimson-800 italic text-xs">
-                    ♫ {agentResp.djSongTitle}
-                  </span>
                 </div>
               )}
             </div>
