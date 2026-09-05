@@ -11,7 +11,7 @@ interface Props {
   onOpened?: () => void;
 }
 
-type AnimationStep = 'ready' | 'walking' | 'kissing' | 'opening' | 'revealed';
+type AnimationStep = 'ready' | 'animating' | 'kissed' | 'revealed';
 
 export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -31,7 +31,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
   const triggerCelebrationConfetti = () => {
     // 1. Central Fountain Confetti Burst
     confetti({
-      particleCount: 85,
+      particleCount: 80,
       spread: 90,
       origin: { y: 0.45, x: 0.5 },
       colors: ['#ffd700', '#ff4d4d', '#ffffff', '#ffaa00', '#d4af37'],
@@ -39,7 +39,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
     });
 
     // 2. Dual-corner firework launch sequence
-    const duration = 2500;
+    const duration = 2400;
     const animationEnd = Date.now() + duration;
     const defaults = { startVelocity: 35, spread: 360, ticks: 70, zIndex: 120 };
 
@@ -55,7 +55,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
         ...defaults,
         particleCount,
         origin: { x: 0.2 + Math.random() * 0.15, y: Math.random() * 0.35 + 0.2 },
-        colors: ['#ffd700', '#ff3366', '#ffcc00', '#ffffff', '#c41e3a']
+        colors: ['#ffd700', '#ff3366', '#ffcc00', '#ffffff', '#c41e3a'],
       });
 
       // Right corner
@@ -63,7 +63,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
         ...defaults,
         particleCount,
         origin: { x: 0.65 + Math.random() * 0.15, y: Math.random() * 0.35 + 0.2 },
-        colors: ['#ffd700', '#ff9900', '#ff0033', '#ffffff', '#fae19c']
+        colors: ['#ffd700', '#ff9900', '#ff0033', '#ffffff', '#fae19c'],
       });
     }, 300);
   };
@@ -71,29 +71,24 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
   const handleStartExperience = () => {
     if (step !== 'ready') return;
 
-    // 1. Audio begins immediately upon user tap
+    // 1. Instant audio response on user tap
     weddingAudio.playFireworkShow();
     weddingAudio.startMusic();
     window.dispatchEvent(new CustomEvent('wedding:start_youtube_audio'));
 
-    // 2. Step 1: Couple starts walking in from sides
-    setStep('walking');
+    // 2. Continuous animation begins: couple glides together smoothly
+    setStep('animating');
 
-    // 3. Step 2: Couple meets in the middle and kisses (at 1000ms)
+    // 3. Kiss meets at 1050ms: hearts erupt, fireworks boom
     setTimeout(() => {
-      setStep('kissing');
-    }, 1000);
-
-    // 4. Step 3: Top flap opens & confetti triggers (at 1700ms)
-    setTimeout(() => {
-      setStep('opening');
+      setStep('kissed');
       triggerCelebrationConfetti();
-    }, 1700);
+    }, 1050);
 
-    // 5. Step 4: Golden invitation card slides up & centers (at 2000ms)
+    // 4. Golden invitation card glides up into center view at 1800ms
     setTimeout(() => {
       setStep('revealed');
-    }, 2000);
+    }, 1800);
   };
 
   const handleCompleteIntro = () => {
@@ -114,8 +109,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
 
   if (!isVisible && hasOpened) return null;
 
-  const isFlapOpen = step === 'opening' || step === 'revealed';
-  const isKissingOrRevealed = step === 'kissing' || step === 'opening' || step === 'revealed';
+  const isKissedOrRevealed = step === 'kissed' || step === 'revealed';
 
   return (
     <div
@@ -131,7 +125,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
       {/* Floating Sparkles & Golden Glow */}
       <div
         className={`absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-400/20 via-crimson-900/10 to-transparent transition-opacity duration-700 pointer-events-none ${
-          isKissingOrRevealed ? 'opacity-100' : 'opacity-0'
+          isKissedOrRevealed ? 'opacity-100' : 'opacity-0'
         }`}
       />
 
@@ -149,7 +143,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
         {/* Skip button */}
         <button
           onClick={handleSkip}
-          className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 border border-stone-600/50 text-stone-300 hover:text-white text-xs backdrop-blur-md transition-all flex items-center gap-1 shadow-lg"
+          className="px-3 py-1.5 rounded-full bg-black/70 hover:bg-black/90 border border-stone-600/50 text-stone-300 hover:text-white text-xs backdrop-blur-md transition-all flex items-center gap-1 shadow-lg cursor-pointer"
         >
           <span>{lang === 'en' ? 'Skip' : 'Bỏ qua'}</span>
           <X className="w-3.5 h-3.5" />
@@ -159,7 +153,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
       {/* 2. Main Festive Wedding Poster Stage Canvas */}
       <div
         onClick={handleStartExperience}
-        className={`relative w-full max-w-[400px] sm:max-w-[440px] aspect-[2/3] max-h-[90vh] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-amber-400/40 transition-all duration-700 ${
+        className={`relative w-full max-w-[390px] sm:max-w-[430px] aspect-[848/1264] max-h-[88vh] rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.85)] border border-amber-400/40 transition-all duration-700 ${
           step === 'ready' ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : ''
         }`}
       >
@@ -174,93 +168,72 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
         {/* Subtle Vignette on Stage Edges */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_60%,rgba(10,2,4,0.35)_100%)] pointer-events-none" />
 
-        {/* 3. Top Red Envelope Flap on the Central Plaque */}
-        <div
-          style={{ perspective: '1000px' }}
-          className="absolute top-[4.8%] left-[18%] right-[18%] h-[8%] z-20 pointer-events-none"
-        >
-          <div
-            className="w-full h-full relative transition-transform duration-600 ease-out"
-            style={{
-              transformOrigin: 'top center',
-              transformStyle: 'preserve-3d',
-              transform: isFlapOpen ? 'rotateX(180deg)' : 'rotateX(0deg)',
-            }}
-          >
-            {/* Front of Flap: Crimson triangular flap with delicate gold border */}
-            <div
-              className="absolute inset-0 rounded-b-xl bg-gradient-to-b from-[#b3141e] to-[#800b12] border-b-2 border-x border-amber-400/80 shadow-md flex items-center justify-center"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              {/* Little Gold Diamond Seal */}
-              <div className="w-3.5 h-3.5 rotate-45 bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 shadow-sm border border-amber-100" />
-            </div>
-
-            {/* Back of Flap (Visible when flipped open) */}
-            <div
-              className="absolute inset-0 rounded-t-xl bg-gradient-to-b from-[#5c060c] to-[#7a0d14] border-t-2 border-x border-amber-400/50 shadow-inner"
-              style={{
-                transform: 'rotateX(180deg)',
-                backfaceVisibility: 'hidden',
-              }}
-            />
-          </div>
+        {/* Golden Diamond Seal at Top of Red Plaque */}
+        <div className="absolute top-[3.2%] left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <div className="w-3.5 h-3.5 rotate-45 bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 shadow-sm border border-amber-100/90" />
         </div>
 
-        {/* 4. The Interactive Cartoon Couple Stage (Bottom Anchor in front of 囍 Seal) */}
-        <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 w-[310px] sm:w-[350px] h-[230px] sm:h-[260px] pointer-events-none z-30 flex items-center justify-center">
-          {/* A. When Walking In ('walking' or 'ready' state) */}
-          {!isKissingOrRevealed && (
-            <div className="relative w-full h-full">
-              {/* Bride walking in from Left */}
-              <div
-                className={`absolute bottom-0 left-0 w-[45%] h-[92%] transition-all duration-1000 ease-out ${
-                  step === 'walking'
-                    ? 'translate-x-[48px] sm:translate-x-[58px]'
-                    : '-translate-x-[50px] opacity-80'
-                }`}
-                style={{
-                  animation: step === 'walking' ? 'walkBob 0.3s ease-in-out infinite alternate' : 'none',
-                }}
-              >
-                <img
-                  src="/images/cartoon-bride-walk.png"
-                  alt="Bride"
-                  className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)]"
-                />
-              </div>
+        {/* 3. The Animated Couple Layer */}
+        <div className="absolute bottom-[1.6%] inset-x-0 h-[44.2%] pointer-events-none z-30">
+          {/* Walking Bride */}
+          <div
+            className={`absolute bottom-0 h-full aspect-[496/860] transition-all duration-1000 ease-out ${
+              isKissedOrRevealed ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
+            }`}
+            style={{
+              left: '17.7%',
+              transform: step === 'ready' ? 'translateX(-35%)' : 'translateX(0%)',
+            }}
+          >
+            <img
+              src="/images/bride-walk-calibrated.png"
+              alt="Bride"
+              className={`w-full h-full object-contain ${
+                step === 'animating'
+                  ? 'animate-[walkBob_0.35s_ease-in-out_infinite]'
+                  : 'animate-[gentleSway_3s_ease-in-out_infinite]'
+              } drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]`}
+            />
+          </div>
 
-              {/* Groom walking in from Right */}
-              <div
-                className={`absolute bottom-0 right-0 w-[46%] h-[95%] transition-all duration-1000 ease-out ${
-                  step === 'walking'
-                    ? '-translate-x-[48px] sm:-translate-x-[58px]'
-                    : 'translate-x-[50px] opacity-80'
-                }`}
-                style={{
-                  animation: step === 'walking' ? 'walkBob 0.3s ease-in-out infinite alternate 0.15s' : 'none',
-                }}
-              >
-                <img
-                  src="/images/cartoon-groom-walk.png"
-                  alt="Groom"
-                  className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)]"
-                />
-              </div>
-            </div>
-          )}
+          {/* Walking Groom */}
+          <div
+            className={`absolute bottom-0 h-full aspect-[576/860] transition-all duration-1000 ease-out ${
+              isKissedOrRevealed ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
+            }`}
+            style={{
+              right: '17.6%',
+              transform: step === 'ready' ? 'translateX(35%)' : 'translateX(0%)',
+            }}
+          >
+            <img
+              src="/images/groom-walk-calibrated.png"
+              alt="Groom"
+              className={`w-full h-full object-contain ${
+                step === 'animating'
+                  ? 'animate-[walkBob_0.35s_ease-in-out_infinite_0.17s]'
+                  : 'animate-[gentleSway_3s_ease-in-out_infinite_1.5s]'
+              } drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]`}
+            />
+          </div>
 
-          {/* B. When Meeting & Kissing ('kissing' or 'revealed' state) */}
-          {isKissingOrRevealed && (
-            <div className="relative w-[85%] h-full flex items-center justify-center animate-scale-up">
-              <img
-                src="/images/cartoon-couple-kiss.png"
-                alt="Trang & Alfredo Kissing"
-                className="w-full h-full object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]"
-              />
+          {/* Kissing Couple (Leaning into the kiss with closed eyes & flower ball united) */}
+          <div
+            className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-full aspect-[695/860] transition-all duration-500 ease-out ${
+              isKissedOrRevealed
+                ? 'opacity-100 scale-100'
+                : 'opacity-0 scale-95 pointer-events-none'
+            }`}
+          >
+            <img
+              src="/images/cartoon-couple-kiss.png"
+              alt="Bride and Groom Kiss"
+              className="w-full h-full object-contain drop-shadow-[0_12px_25px_rgba(0,0,0,0.5)]"
+            />
 
-              {/* Sweet Floating Hearts Erupting from Kiss */}
-              <div className="absolute top-[28%] left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none">
+            {/* Sweet Floating Hearts Erupting Exactly from the Kiss */}
+            {isKissedOrRevealed && (
+              <div className="absolute top-[26%] left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none z-40">
                 <div className="absolute animate-[floatHeart_1.8s_ease-out_infinite] text-rose-400">
                   <Heart className="w-5 h-5 fill-rose-500 text-rose-300 drop-shadow" />
                 </div>
@@ -271,37 +244,45 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
                   <Heart className="w-4 h-4 fill-red-500 text-red-200 drop-shadow" />
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* 5. "Tap to Open" Interactive Call to Action Banner (Initial state) */}
-        {step === 'ready' && (
-          <div className="absolute bottom-[28%] left-1/2 -translate-x-1/2 z-40 text-center w-[85%] animate-bounce">
+        {/* 4. Perfectly Centered "Tap to Open" Call to Action Badge */}
+        <div
+          className={`absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 w-full px-6 flex flex-col items-center pointer-events-none transition-all duration-300 ${
+            step === 'ready' ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-90'
+          }`}
+        >
+          <div className="animate-bounce">
             <button
+              type="button"
               onClick={handleStartExperience}
-              className="w-full py-2.5 px-4 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:brightness-110 text-stone-950 font-bold text-xs sm:text-sm shadow-[0_10px_25px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 border border-amber-200/70 transition-transform active:scale-95"
+              className="py-3 px-5 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:brightness-110 text-stone-950 font-bold text-xs sm:text-sm shadow-[0_12px_30px_rgba(0,0,0,0.7)] flex items-center justify-center gap-2 border-2 border-amber-200/90 whitespace-nowrap cursor-pointer transition-transform active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-stone-900" />
               <span>
                 {lang === 'en'
-                  ? 'Tap to Open Wedding Delivery'
-                  : 'Chạm Để Mở Thiệp Cưới'}
+                  ? 'Tap to Open Wedding Invitation'
+                  : 'Chạm Để Mở Thiệp Báo Hỷ'}
               </span>
             </button>
           </div>
-        )}
+          <p className="mt-2 text-[11px] text-amber-200/90 font-serif tracking-wider drop-shadow-md">
+            {lang === 'en' ? 'Trang & Alfredo • Dec 5, 2026' : 'Trang & Alfredo • 05.12.2026'}
+          </p>
+        </div>
       </div>
 
-      {/* 6. The Unveiled Golden Wedding Invitation Card (Centered, Crystal-Clear Legibility) */}
+      {/* 5. The Unveiled Golden Wedding Invitation Card (Centered, Crystal-Clear Legibility) */}
       {step === 'revealed' && (
         <div
           onClick={handleCompleteIntro}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs transition-opacity duration-500 animate-fade-in cursor-pointer"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-500 animate-fade-in cursor-pointer"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-[340px] sm:max-w-[380px] rounded-2xl bg-gradient-to-b from-[#fffefc] via-[#faf5ea] to-[#f4ecd8] text-stone-900 p-5 sm:p-6 flex flex-col justify-between items-center text-center border-2 border-amber-400/90 shadow-[0_25px_60px_rgba(0,0,0,0.8)] animate-scale-up cursor-default overflow-hidden"
+            className="relative w-full max-w-[340px] sm:max-w-[380px] rounded-2xl bg-gradient-to-b from-[#fffefc] via-[#faf5ea] to-[#f4ecd8] text-stone-900 p-5 sm:p-6 flex flex-col justify-between items-center text-center border-2 border-amber-400/90 shadow-[0_25px_60px_rgba(0,0,0,0.85)] animate-scale-up cursor-default overflow-hidden"
           >
             {/* Shimmering Foil Effect */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none" />
@@ -356,7 +337,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
             <button
               type="button"
               onClick={handleCompleteIntro}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-bold text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 group cursor-pointer"
             >
               <span>{lang === 'en' ? 'Enter Celebration' : 'Vào Tiệc Cưới'}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -365,17 +346,22 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
         </div>
       )}
 
-      {/* Embedded CSS for Walk Cycle & Floating Hearts */}
+      {/* Embedded CSS for Floating Hearts and Step Bobbing */}
       <style jsx>{`
-        @keyframes walkBob {
-          0% {
+        @keyframes gentleSway {
+          0%, 100% {
             transform: translateY(0) rotate(0deg);
           }
           50% {
-            transform: translateY(-8px) rotate(-1.5deg);
+            transform: translateY(-4px) rotate(1deg);
           }
-          100% {
-            transform: translateY(0) rotate(0deg);
+        }
+        @keyframes walkBob {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-5px);
           }
         }
         @keyframes floatHeart {
@@ -400,5 +386,3 @@ export const WeddingIntroExperience: React.FC<Props> = ({ lang, onOpened }) => {
     </div>
   );
 };
-
-
