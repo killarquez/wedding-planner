@@ -1,5 +1,6 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { WeddingDB } from '@/lib/db';
+import { sendDiscordBudgetSetupAlert } from '@/lib/alerts/discord';
 
 export async function GET() {
   try {
@@ -21,6 +22,11 @@ export async function POST(req: NextRequest) {
       ...body,
       setup_completed: true
     });
+
+    // Notify #wedding-ledger channel in Discord
+    sendDiscordBudgetSetupAlert(body, result.metrics).catch(e =>
+      console.error('[API Setup] Failed to send Discord ledger alert:', e)
+    );
 
     return NextResponse.json({
       success: true,

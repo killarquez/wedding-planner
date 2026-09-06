@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeddingDB } from '@/lib/db';
+import { sendDiscordLedgerAlert } from '@/lib/alerts/discord';
 
 export async function GET() {
   try {
@@ -47,6 +48,14 @@ export async function POST(req: NextRequest) {
     });
 
     const metrics = await WeddingDB.getBudgetMetrics();
+
+    // Asynchronously notify #wedding-ledger Discord channel
+    sendDiscordLedgerAlert({
+      action: Number(deposit_paid || 0) > 0 ? 'paid' : 'created',
+      expense,
+      metrics
+    }).catch(e => console.error('[API Budget] Error sending Discord alert:', e));
+
     return NextResponse.json({ success: true, expense, metrics });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -63,6 +72,16 @@ export async function PUT(req: NextRequest) {
 
     const updated = await WeddingDB.updateExpense(id, updates);
     const metrics = await WeddingDB.getBudgetMetrics();
+
+    // Asynchronously notify #wedding-ledger Discord channel
+    if (updated) {
+      sendDiscordLedgerAlert({
+        action: updates.payment_status === 'paid' || (updates.deposit_paid && Number(updates.deposit_paid) > 0) ? 'paid' : 'updated',
+        expense: updated,
+        metrics
+      }).catch(e => console.error('[API Budget] Error sending Discord alert:', e));
+    }
+
     return NextResponse.json({ success: true, expense: updated, metrics });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -79,6 +98,15 @@ export async function DELETE(req: NextRequest) {
 
     const deleted = await WeddingDB.deleteExpense(id);
     const metrics = await WeddingDB.getBudgetMetrics();
+
+    if (deleted) {
+      sendDiscordLedgerAlert({
+        action: 'deleted',
+        expense: { id, vendor_name: `Expense #${id}` },
+        metrics
+      }).catch(e => console.error('[API Budget] Error sending Discord alert:', e));
+    }
+
     return NextResponse.json({ success: deleted, metrics });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
