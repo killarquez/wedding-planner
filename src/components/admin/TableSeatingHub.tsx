@@ -187,52 +187,9 @@ export const TableSeatingHub: React.FC<Props> = ({
       ? seated.map(g => `${g.first_name} ${g.last_name}`.trim()).slice(0, 3).join(', ') + (seated.length > 3 ? '...' : '')
       : (lang === 'en' ? 'Pending guest assignment' : 'Chưa xếp khách');
 
-    const defaultProtocols: Record<number, { en: string; vi: string; duration: string }> = {
-      1: {
-        en: 'Traditional Cognac toast, bowing to family elders, receiving marriage blessings and guidance.',
-        vi: 'Nghi thức dâng rượu mừng Trưởng Bối, nhận lời chúc phúc dặn dò của bậc trưởng thượng.',
-        duration: '7 mins'
-      },
-      2: {
-        en: 'Bilingual celebratory toast welcoming the newly married couple into both families.',
-        vi: 'Nâng ly chúc mừng gia đình nội ngoại, gắn kết hai gia đình và chào đón dâu hiền rể thảo.',
-        duration: '6 mins'
-      },
-      3: {
-        en: 'Table toast with aunts, uncles and relatives, collecting Bao Lì Xì and table photos.',
-        vi: 'Chào rượu các cô chú bác, nhận phong bao đỏ may mắn và chụp ảnh kỷ niệm ấm cúng.',
-        duration: '6 mins'
-      },
-      4: {
-        en: 'Joyful toasts with cousins and extended family, sharing laughter and well-wishes.',
-        vi: 'Nâng ly rôm rả cùng anh chị em họ hàng, trao gửi những lời chúc trăm năm hạnh phúc.',
-        duration: '5 mins'
-      },
-      5: {
-        en: 'High-energy "Một, Hai, Ba, Dô!" toast chants, Cognac shots near the open bar.',
-        vi: 'Hô vang "Một, Hai, Ba, Dô!", cạn ly tưng bừng cùng bạn bè gần quầy bar.',
-        duration: '6 mins'
-      },
-      6: {
-        en: 'Lively toasts with close friends and alumni, sharing memories and celebration drinks.',
-        vi: 'Nâng ly chúc mừng thân thiết, chia sẻ kỷ niệm và cùng chụp ảnh selfie kỷ niệm.',
-        duration: '5 mins'
-      },
-      7: {
-        en: 'Camaraderie toasts with teammates and colleagues, gearing up for the dance floor.',
-        vi: 'Chúc mừng sôi nổi cùng đồng nghiệp và bạn hữu, khuấy động tinh thần khiêu vũ.',
-        duration: '5 mins'
-      },
-      8: {
-        en: 'Final banquet table toast, thanking guests followed by grand transition to Dance Floor & La Hora Loca!',
-        vi: 'Nâng ly trọn vẹn vòng Chào Bàn, dẫn dắt toàn thể khách mời tiến ra sàn khiêu vũ La Hora Loca!',
-        duration: '6 mins'
-      }
-    };
-
-    const protocol = defaultProtocols[table.table_number] || {
-      en: `Table toast with Table ${table.table_number} guests and commemorative celebration drinks.`,
-      vi: `Chào rượu thân tình cùng bàn ${table.table_number} và chụp ảnh kỷ niệm.`,
+    const protocol = {
+      en: `Table toast with ${table.name} guests, sharing celebratory cheers and group photos.`,
+      vi: `Nâng ly chúc mừng cùng khách mời ${table.name}, sẻ chia niềm vui và chụp ảnh kỷ niệm.`,
       duration: '5 mins'
     };
 
@@ -642,7 +599,7 @@ export const TableSeatingHub: React.FC<Props> = ({
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs font-bold text-crimson-900 uppercase tracking-wider flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-crimson-700" />
-                    {lang === 'en' ? 'Stage-Front VIP Row (Parents & Elders)' : 'Hàng 1 Sát Sân Khấu (Trưởng Bối & Cha Mẹ)'}
+                    {lang === 'en' ? 'Stage-Front VIP Row (Tables 1 & 2)' : 'Hàng 1 Sát Sân Khấu (Bàn 1 & 2)'}
                   </span>
                   <span className="text-[11px] text-stone-500">10 seats / table</span>
                 </div>
@@ -651,12 +608,12 @@ export const TableSeatingHub: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Center Rows: Relatives (Tables 3 & 4) */}
+              {/* Center Rows (Tables 3 & 4) */}
               <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
                     <Building className="w-3.5 h-3.5 text-amber-700" />
-                    {lang === 'en' ? 'Center Rows (Extended Relatives & Cousins)' : 'Hàng Giữa (Họ Hàng Nội Ngoại & Anh Em Họ)'}
+                    {lang === 'en' ? 'Center Rows (Tables 3 & 4)' : 'Hàng Giữa (Bàn 3 & 4)'}
                   </span>
                   <span className="text-[11px] text-stone-500">10 seats / table</span>
                 </div>
@@ -683,12 +640,12 @@ export const TableSeatingHub: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Friends & Buffer Rows (Tables 5 to 8+) */}
+              {/* Banquet Rows (Tables 5 to 10+) */}
               <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-stone-600" />
-                    {lang === 'en' ? 'Friends, Alumni & Buffer Rows' : 'Hàng Bạn Bè, Đồng Nghiệp & Bàn Dự Phòng'}
+                    {lang === 'en' ? 'Banquet Rows (Tables 5 to 10+)' : 'Khu Vực Bàn Tiệc (Bàn 5 Đến 10+)'}
                   </span>
                   <span className="text-[11px] text-stone-500">10 seats / table</span>
                 </div>
@@ -758,9 +715,9 @@ export const TableSeatingHub: React.FC<Props> = ({
                 <div className="flex items-center justify-between px-1">
                   <h4 className="text-sm font-bold font-serif text-stone-900 flex items-center gap-2">
                     <Footprints className="w-4 h-4 text-crimson-800" />
-                    <span>{lang === 'en' ? 'Ordered Table Walking Route Sequence (Station 1 → 8)' : 'Thứ Tự Đi Chào Bàn Chi Tiết (Từ Trạm 1 Đến 8)'}</span>
+                    <span>{lang === 'en' ? `Ordered Table Walking Route Sequence (Station 1 → ${tables.length})` : `Thứ Tự Đi Chào Bàn Chi Tiết (Từ Trạm 1 Đến ${tables.length})`}</span>
                   </h4>
-                  <span className="text-xs text-stone-500 font-mono">Total: 8 Tables</span>
+                  <span className="text-xs text-stone-500 font-mono">Total: {tables.length} Tables</span>
                 </div>
 
                 <div className="space-y-3">
@@ -1068,7 +1025,7 @@ export const TableSeatingHub: React.FC<Props> = ({
                 required
                 value={newTableName}
                 onChange={(e) => setNewTableName(e.target.value)}
-                placeholder="e.g. Bàn 9: University Friends & Coworkers"
+                placeholder={lang === 'en' ? 'e.g. Table 11' : 'vd: Bàn 11'}
                 className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-crimson-700"
               />
             </div>

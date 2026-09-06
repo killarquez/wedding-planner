@@ -87,7 +87,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-1',
     table_number: 1,
-    name: 'Bàn 1: Trưởng Bối & VIP Family (Stage-Front Left)',
+    name: 'Table 1',
     capacity: 10,
     hierarchy_tag: 'vip_family',
     stage_position: 'stage_front_left'
@@ -95,7 +95,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-2',
     table_number: 2,
-    name: 'Bàn 2: Rossi Family & Godparents (Stage-Front Right)',
+    name: 'Table 2',
     capacity: 10,
     hierarchy_tag: 'vip_family',
     stage_position: 'stage_front_right'
@@ -103,7 +103,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-3',
     table_number: 3,
-    name: 'Bàn 3: Họ Hàng Nhà Gái (Cô, Dì, Chú, Bác)',
+    name: 'Table 3',
     capacity: 10,
     hierarchy_tag: 'extended_relatives',
     stage_position: 'center'
@@ -111,7 +111,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-4',
     table_number: 4,
-    name: 'Bàn 4: Họ Hàng & Anh Chị Em Họ (Cousins & Relatives)',
+    name: 'Table 4',
     capacity: 10,
     hierarchy_tag: 'extended_relatives',
     stage_position: 'center'
@@ -119,7 +119,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-5',
     table_number: 5,
-    name: 'Bàn 5: Tech & Creative Friends (Near Bar)',
+    name: 'Table 5',
     capacity: 10,
     hierarchy_tag: 'friends_bar',
     stage_position: 'near_bar'
@@ -127,7 +127,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-6',
     table_number: 6,
-    name: 'Bàn 6: College & High School Alumni Crew',
+    name: 'Table 6',
     capacity: 10,
     hierarchy_tag: 'friends_bar',
     stage_position: 'near_bar'
@@ -135,7 +135,7 @@ export const initialTables: Table[] = [
   {
     id: 'table-7',
     table_number: 7,
-    name: 'Bàn 7: Bowling & Sports League Teammates',
+    name: 'Table 7',
     capacity: 10,
     hierarchy_tag: 'friends_bar',
     stage_position: 'back'
@@ -143,7 +143,23 @@ export const initialTables: Table[] = [
   {
     id: 'table-8',
     table_number: 8,
-    name: 'Bàn 8: Buffer & Open Banquet Table',
+    name: 'Table 8',
+    capacity: 10,
+    hierarchy_tag: 'general',
+    stage_position: 'back'
+  },
+  {
+    id: 'table-9',
+    table_number: 9,
+    name: 'Table 9',
+    capacity: 10,
+    hierarchy_tag: 'general',
+    stage_position: 'back'
+  },
+  {
+    id: 'table-10',
+    table_number: 10,
+    name: 'Table 10',
     capacity: 10,
     hierarchy_tag: 'general',
     stage_position: 'back'
