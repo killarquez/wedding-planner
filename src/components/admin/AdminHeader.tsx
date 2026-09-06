@@ -3,7 +3,7 @@
 import React from 'react';
 import { Language, translations } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
-import { Sparkles, Bot, RotateCcw, ExternalLink, ShieldCheck, LogOut, User, QrCode } from 'lucide-react';
+import { Sparkles, Bot, ExternalLink, ShieldCheck, LogOut, User, QrCode } from 'lucide-react';
 import Link from 'next/link';
 
 interface Props {
@@ -11,9 +11,7 @@ interface Props {
   userEmail?: string | null;
   onLangToggle: (l: Language) => void;
   onOpenBriefing: () => void;
-  onResetSeed: () => void;
   onSignOut?: () => void;
-  isResetting: boolean;
 }
 
 export const AdminHeader: React.FC<Props> = ({
@@ -21,9 +19,7 @@ export const AdminHeader: React.FC<Props> = ({
   userEmail,
   onLangToggle,
   onOpenBriefing,
-  onResetSeed,
-  onSignOut,
-  isResetting
+  onSignOut
 }) => {
   const t = translations[lang];
 
@@ -70,18 +66,6 @@ export const AdminHeader: React.FC<Props> = ({
           >
             <Bot className="w-3.5 h-3.5 text-gold-300" />
             <span>{t.view_briefing_btn}</span>
-          </button>
-
-          {/* Reset Seed Button */}
-          <button
-            type="button"
-            onClick={onResetSeed}
-            disabled={isResetting}
-            className="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium flex items-center gap-1.5 border border-stone-700 transition-colors disabled:opacity-50"
-            title="Reset DB with realistic demo data"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">{lang === 'en' ? 'Reset Seed' : 'Tải Lại'}</span>
           </button>
 
           {/* Reception Check-In Scanner */}

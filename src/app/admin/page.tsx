@@ -56,7 +56,6 @@ export default function AdminCrmPage() {
 
   // Modals & Loaders
   const [isBriefingOpen, setIsBriefingOpen] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const t = translations[lang];
@@ -132,24 +131,6 @@ export default function AdminCrmPage() {
     fetchAllData();
   }, []);
 
-  const handleResetSeed = async () => {
-    const confirmation = prompt(
-      lang === 'en'
-        ? 'DANGER: This will overwrite all current guests and load demo mock data! Type "RESET" to confirm:'
-        : 'CẢNH BÁO NGUY HIỂM: Thao tác này sẽ ghi đè toàn bộ khách thật và nạp dữ liệu mẫu! Nhập "RESET" để xác nhận:'
-    );
-    if (confirmation !== 'RESET') return;
-    setIsResetting(true);
-    try {
-      await fetch('/api/seed', { method: 'POST' });
-      await fetchAllData();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#faf8f5] text-stone-900 pb-20">
       {/* Header Bar */}
@@ -158,9 +139,7 @@ export default function AdminCrmPage() {
         userEmail={userEmail}
         onLangToggle={setLang}
         onOpenBriefing={() => setIsBriefingOpen(true)}
-        onResetSeed={handleResetSeed}
         onSignOut={handleSignOut}
-        isResetting={isResetting}
       />
 
       {/* Main Single-Pane-of-Glass Content Area */}
