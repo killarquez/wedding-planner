@@ -131,7 +131,12 @@ export default function AdminCrmPage() {
   }, []);
 
   const handleResetSeed = async () => {
-    if (!confirm(lang === 'en' ? 'Reset all data to default wedding celebration seed dataset?' : 'Khôi phục lại toàn bộ dữ liệu mẫu ban đầu?')) return;
+    const confirmation = prompt(
+      lang === 'en'
+        ? 'DANGER: This will overwrite all current guests and load demo mock data! Type "RESET" to confirm:'
+        : 'CẢNH BÁO NGUY HIỂM: Thao tác này sẽ ghi đè toàn bộ khách thật và nạp dữ liệu mẫu! Nhập "RESET" để xác nhận:'
+    );
+    if (confirmation !== 'RESET') return;
     setIsResetting(true);
     try {
       await fetch('/api/seed', { method: 'POST' });

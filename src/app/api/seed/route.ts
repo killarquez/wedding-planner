@@ -16,3 +16,17 @@ export async function POST() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE() {
+  try {
+    const result = await WeddingDB.clearAllGuestsAndParties();
+    return NextResponse.json({
+      success: true,
+      message: 'All temporary guests, parties, and song requests successfully purged',
+      ...result
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

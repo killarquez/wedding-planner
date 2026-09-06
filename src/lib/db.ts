@@ -61,20 +61,14 @@ function loadState(): DatabaseState {
   }
 
   const defaultState: DatabaseState = {
-    parties: [...initialParties],
-    guests: [...initialGuests],
+    parties: [],
+    guests: [],
     tables: [...initialTables],
     expenses: [...initialExpenses],
     milestones: [...initialMilestones],
-    song_requests: [...initialSongRequests],
+    song_requests: [],
     venues: [...initialSourcedVenues],
-    agent_logs: [
-      {
-        timestamp: new Date().toISOString(),
-        agent: 'System',
-        action: 'Database initialized with wedding celebration seed data'
-      }
-    ]
+    agent_logs: []
   };
 
   saveState(defaultState);
@@ -150,6 +144,35 @@ export class WeddingDB {
     }
 
     return fresh;
+  }
+
+  public static async clearAllGuestsAndParties(): Promise<{ deletedGuests: number; deletedParties: number; deletedSongs: number }> {
+    let deletedGuests = 0;
+    let deletedParties = 0;
+    let deletedSongs = 0;
+
+    const supabase = createAdminClient();
+    if (supabase) {
+      try {
+        const { count: gCount } = await supabase.from('guests').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
+        const { count: pCount } = await supabase.from('parties').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
+        const { count: sCount } = await supabase.from('song_requests').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
+        deletedGuests = gCount || 0;
+        deletedParties = pCount || 0;
+        deletedSongs = sCount || 0;
+      } catch (e) {
+        console.warn('Could not clear Supabase data:', e);
+      }
+    }
+
+    this.updateState(s => {
+      s.guests = [];
+      s.parties = [];
+      s.song_requests = [];
+      s.agent_logs = [];
+    });
+
+    return { deletedGuests, deletedParties, deletedSongs };
   }
 
   // ==========================================
