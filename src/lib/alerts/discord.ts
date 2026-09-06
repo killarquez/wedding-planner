@@ -1,4 +1,4 @@
-import { Party, Guest, Expense, WeddingSettings } from '../types';
+import { Party, Guest, Expense, WeddingSettings, Milestone } from '../types';
 
 export interface DiscordRsvpAlertParams {
   party: Party;
@@ -448,6 +448,148 @@ export async function sendDiscordLedgerAlert(params: {
     return res.ok;
   } catch (err) {
     console.error('[Discord Ledger Alert] Error posting ledger alert:', err);
+    return false;
+  }
+}
+
+// ==========================================
+// 4. WEDDING MILESTONES & CELEBRATION
+// ==========================================
+
+function getMilestonesWebhookUrl(): string | undefined {
+  return process.env.DISCORD_MILESTONES_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL;
+}
+
+export async function sendDiscordMilestoneAlert(params: {
+  action: 'created' | 'completed' | 'in_progress' | 'updated';
+  milestone: Milestone;
+  totalCompleted?: number;
+  totalMilestones?: number;
+}): Promise<boolean> {
+  const webhookUrl = getMilestonesWebhookUrl();
+  if (!webhookUrl || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+    return false;
+  }
+
+  const { action, milestone, totalCompleted = 0, totalMilestones = 0 } = params;
+
+  const isCompleted = action === 'completed' || milestone.status === 'completed';
+  const isInProgress = action === 'in_progress' || milestone.status === 'in_progress';
+  const isCreated = action === 'created';
+
+  let title = `📌 Milestone Update: ${milestone.title_en}`;
+  let color = 0x6366F1; // Indigo
+  let desc = `Milestone status updated for **Sunday, Dec 20, 2026**.`;
+  let username = 'Wedding Milestone Bot';
+
+  if (isCompleted) {
+    title = `🥂 VICTORY! Milestone Completed: ${milestone.title_en}`;
+    color = 0xF59E0B; // Vibrant Gold / Champagne
+    desc = `🍾 **Huge congratulations to Trang & Alfredo!** Another major wedding milestone has been officially completed! ✨`;
+    username = 'Milestone Celebration Bot';
+  } else if (isCreated) {
+    title = `🎯 New Milestone Set: ${milestone.title_en}`;
+    color = 0x3B82F6; // Blue
+    desc = `A new target milestone has been added to the wedding countdown roadmap.`;
+    username = 'Wedding Milestone Bot';
+  } else if (isInProgress) {
+    title = `⚡ Work in Progress: ${milestone.title_en}`;
+    color = 0x8B5CF6; // Purple
+    desc = `Trang & Alfredo have kicked off execution on this milestone!`;
+    username = 'Wedding Milestone Bot';
+  }
+
+  const priorityEmoji = {
+    critical: '🚨 CRITICAL',
+    high: '🔴 HIGH',
+    medium: '🟡 MEDIUM',
+    low: '🟢 LOW'
+  }[milestone.priority] || milestone.priority.toUpperCase();
+
+  const statusDisplay = {
+    completed: '✅ COMPLETED / VICTORY',
+    in_progress: '⚡ IN PROGRESS',
+    pending: '⏳ PENDING',
+    blocked: '🛑 BLOCKED'
+  }[milestone.status] || milestone.status.toUpperCase();
+
+  const fields: Array<{ name: string; value: string; inline: boolean }> = [
+    {
+      name: '🎯 Milestone Title',
+      value: `**${milestone.title_en}**\n*(${milestone.title_vi || milestone.title_en})*`,
+      inline: false
+    },
+    {
+      name: '📅 Target Date',
+      value: `**${milestone.target_date}**`,
+      inline: true
+    },
+    {
+      name: '🏷️ Status',
+      value: `**${statusDisplay}**`,
+      inline: true
+    },
+    {
+      name: '🚩 Priority',
+      value: priorityEmoji,
+      inline: true
+    },
+    {
+      name: '👤 Assigned To',
+      value: milestone.assignee || 'Trang & Alfredo',
+      inline: true
+    },
+    {
+      name: '🗂️ Category',
+      value: milestone.category.toUpperCase(),
+      inline: true
+    }
+  ];
+
+  if (milestone.cultural_notes && milestone.cultural_notes.trim()) {
+    fields.push({
+      name: '🏮 Cultural & Banquet Notes',
+      value: milestone.cultural_notes.trim(),
+      inline: false
+    });
+  }
+
+  if (totalMilestones > 0) {
+    const pct = Math.round((totalCompleted / totalMilestones) * 100);
+    const filledBlocks = Math.round(pct / 10);
+    const emptyBlocks = Math.max(0, 10 - filledBlocks);
+    const progressBar = '🟩'.repeat(filledBlocks) + '⬜'.repeat(emptyBlocks);
+
+    fields.push({
+      name: '🏆 Roadmap Sprint Progress',
+      value: `${progressBar} **${totalCompleted} / ${totalMilestones} Milestones Completed (${pct}%)**`,
+      inline: false
+    });
+  }
+
+  const embed = {
+    title,
+    description: desc,
+    color,
+    fields,
+    footer: {
+      text: 'Trang & Alfredo Wedding Roadmap • Sunday, December 20, 2026'
+    },
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    const res = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        embeds: [embed]
+      })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('[Discord Milestone Alert] Error posting milestone alert:', err);
     return false;
   }
 }

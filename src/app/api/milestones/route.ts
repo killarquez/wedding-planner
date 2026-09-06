@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { WeddingDB } from '@/lib/db';
+import { sendDiscordMilestoneAlert } from '@/lib/alerts/discord';
 
 export async function GET() {
   try {
@@ -30,6 +31,17 @@ export async function POST(req: NextRequest) {
       cultural_notes
     });
 
+    // Notify #wedding-milestones channel asynchronously
+    WeddingDB.getMilestones().then(allMs => {
+      const completedCount = allMs.filter(m => m.status === 'completed').length;
+      sendDiscordMilestoneAlert({
+        action: 'created',
+        milestone,
+        totalCompleted: completedCount,
+        totalMilestones: allMs.length
+      });
+    }).catch(e => console.error('[API Milestones] Error sending Discord alert:', e));
+
     return NextResponse.json({ success: true, milestone });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -45,6 +57,26 @@ export async function PUT(req: NextRequest) {
     }
 
     const updated = await WeddingDB.updateMilestone(id, updates);
+
+    // Notify #wedding-milestones channel asynchronously
+    if (updated) {
+      WeddingDB.getMilestones().then(allMs => {
+        const completedCount = allMs.filter(m => m.status === 'completed').length;
+        const action = updates.status === 'completed'
+          ? 'completed'
+          : updates.status === 'in_progress'
+          ? 'in_progress'
+          : 'updated';
+
+        sendDiscordMilestoneAlert({
+          action,
+          milestone: updated,
+          totalCompleted: completedCount,
+          totalMilestones: allMs.length
+        });
+      }).catch(e => console.error('[API Milestones] Error sending Discord alert:', e));
+    }
+
     return NextResponse.json({ success: true, milestone: updated });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
