@@ -6,7 +6,7 @@ export const translations = {
     title: "Trang & Alfredo's Wedding Celebration",
     subtitle: "We said 'I do,' now let's celebrate!",
     tagline: "We're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.",
-    date_display: "Saturday, December 12, 2026",
+    date_display: "Sunday, December 20, 2026",
     time_display: "5:30 PM Welcome Reception | 6:30 PM Banquet & Wedding Program",
     venue_name: "Grand Harbor Restaurant",
     venue_address: "5733 Rosemead Blvd., Temple City, CA 91780",
@@ -86,7 +86,7 @@ export const translations = {
     
     submit_rsvp: "Confirm & Submit RSVP",
     submitting: "Submitting Your RSVP...",
-    rsvp_success_title: "You're Confirmed! See You on Dec 12, 2026!",
+    rsvp_success_title: "You're Confirmed! See You on Dec 20, 2026!",
     rsvp_success_desc: "We are thrilled to celebrate with you! A personalized confirmation message and digital pass have been created.",
     rsvp_declined_title: "We Will Miss You!",
     rsvp_declined_desc: "Thank you for letting us know. You will be in our thoughts as we celebrate!",
@@ -175,7 +175,7 @@ export const translations = {
 
     // CRM Translations
     crm_title: "Wedding Operations Hub & Couple CRM",
-    crm_subtitle: "December 12, 2026 | Trang & Alfredo Wedding Celebration",
+    crm_subtitle: "December 20, 2026 | Trang & Alfredo Wedding Celebration",
     crm_tab_overview: "Seating & Table Math",
     crm_tab_budget: "Budget & Ledger",
     crm_tab_timeline: "Sprint Milestones",
@@ -262,12 +262,12 @@ export const translations = {
     
     // Payment Calendar & Night-of Envelopes
     payment_timeline_title: "Payment Milestone Schedule & Countdown",
-    payment_timeline_desc: "Visual roadmap of cleared deposits, upcoming vendor balances, and wedding night cash envelopes leading to Dec 12, 2026.",
+    payment_timeline_desc: "Visual roadmap of cleared deposits, upcoming vendor balances, and wedding night cash envelopes leading to Dec 20, 2026.",
     wedding_night_envelopes: "Wedding Night Cash Envelopes (Final Balances & Tips)",
     wedding_night_desc: "Cash envelopes to be prepared in advance and handed out by the Best Man / Treasurer at the conclusion of the banquet.",
     
     // Milestones
-    milestone_sprint_title: "Countdown Sprint to Dec 12, 2026",
+    milestone_sprint_title: "Countdown Sprint to Dec 20, 2026",
     milestone_overdue: "Overdue Actions",
     milestone_in_progress: "In Progress",
     milestone_completed: "Completed",
@@ -313,7 +313,7 @@ export const translations = {
     title: "Tiệc Cưới Trang & Alfredo",
     subtitle: "Chúng mình đã nên duyên, nay cùng nâng ly chúc mừng!",
     tagline: "Chúng mình vô cùng hào hứng được đón tiếp quý khách đến chung vui trong ngày cưới! Hãy cùng chia sẻ một buổi tối ấm cúng, tràn đầy niềm vui bên gia đình và bạn bè thân hữu, thưởng thức thực đơn yến tiệc thịnh soạn, cùng nâng ly chúc mừng trong điệu nhạc và những kỷ niệm đáng nhớ.",
-    date_display: "Thứ Bảy, ngày 12 tháng 12 năm 2026",
+    date_display: "Chủ Nhật, ngày 20 tháng 12 năm 2026",
     time_display: "17:30 Đón Khách & Chụp Ảnh | 18:30 Khai Tiệc & Chương Trình Hôn Lễ",
     venue_name: "Nhà Hàng Grand Harbor",
     venue_address: "5733 Rosemead Blvd., Temple City, CA 91780",
@@ -393,7 +393,7 @@ export const translations = {
     
     submit_rsvp: "Xác Nhận Gửi RSVP",
     submitting: "Đang Lưu Thông Tin...",
-    rsvp_success_title: "Đã Nhận Xác Nhận! Hẹn Gặp Bạn Ngày 12/12/2026!",
+    rsvp_success_title: "Đã Nhận Xác Nhận! Hẹn Gặp Bạn Ngày 20/12/2026!",
     rsvp_success_desc: "Chúng mình rất vinh hạnh và mong chờ được nâng ly cùng bạn! Thẻ tham dự điện tử đã được tạo thành công.",
     rsvp_declined_title: "Cảm Ơn Quý Khách Đã Thông Báo!",
     rsvp_declined_desc: "Dù rất tiếc không thể gặp mặt, sự quan tâm và lời chúc của bạn luôn là món quà quý giá với chúng mình!",
@@ -482,7 +482,7 @@ export const translations = {
 
     // CRM Translations
     crm_title: "Trung Tâm Điều Hành Đám Cưới & CRM Cặp Đôi",
-    crm_subtitle: "12/12/2026 | Dạ Tiệc Cưới Trang & Alfredo",
+    crm_subtitle: "20/12/2026 | Dạ Tiệc Cưới Trang & Alfredo",
     crm_tab_overview: "Sắp Bàn & Công Thức Bàn 10 Người",
     crm_tab_budget: "Ngân Sách & Chi Tiêu",
     crm_tab_timeline: "Tiến Độ & Deadline",
@@ -569,12 +569,12 @@ export const translations = {
     
     // Payment Calendar & Night-of Envelopes
     payment_timeline_title: "Lịch Trình Hạn Thanh Toán & Đếm Ngược",
-    payment_timeline_desc: "Sơ đồ theo dõi các khoản đã cọc, hạn thanh toán sắp tới và phong bì tiền mặt chi trả đêm tiệc 12/12/2026.",
+    payment_timeline_desc: "Sơ đồ theo dõi các khoản đã cọc, hạn thanh toán sắp tới và phong bì tiền mặt chi trả đêm tiệc 20/12/2026.",
     wedding_night_envelopes: "Phong Bì Tiền Mặt Đêm Tiệc (Hợp Đồng Cuối & Tiền Tips)",
     wedding_night_desc: "Các phong bì tiền mặt được chuẩn bị trước để Phù rể trưởng hoặc Thủ quỹ thanh toán khi kết thúc tiệc cưới.",
     
     // Milestones
-    milestone_sprint_title: "Tiến Độ Sprint Hướng Đến 12/12/2026",
+    milestone_sprint_title: "Tiến Độ Sprint Hướng Đến 20/12/2026",
     milestone_overdue: "Nhiệm Vụ Quá Hạn",
     milestone_in_progress: "Đang Thực Hiện",
     milestone_completed: "Đã Hoàn Thành",

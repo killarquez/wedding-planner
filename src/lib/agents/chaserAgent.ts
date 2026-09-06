@@ -48,13 +48,13 @@ export class DeadlinesChaserAgent {
       const daysTextVi = stage === 'T-21' ? '3 tuần nữa' : '7 ngày nữa';
 
       const emailSubjectEn = `Friendly Reminder: RSVP for Trang & Alfredo's Wedding (Cutoff ${rsvpCutoffDate})`;
-      const emailBodyEn = `Dear ${guest.first_name},\n\nWe hope you are having a wonderful week! We are in the final stages of locking in our 10-top round banquet tables and banquet dining menu for our Wedding Celebration on December 12, 2026 at Grand Harbor Restaurant.\n\nThe RSVP deadline is in ${daysTextEn} (${rsvpCutoffDate}). Please let us know if you and your party will be attending so we can reserve your banquet seats and table placement!\n\nRSVP Online in 60 seconds with your personal invitation link: ${directRsvpLink}\n\nWarmly,\nTrang & Alfredo`;
+      const emailBodyEn = `Dear ${guest.first_name},\n\nWe hope you are having a wonderful week! We are in the final stages of locking in our 10-top round banquet tables and banquet dining menu for our Wedding Celebration on December 20, 2026 at Grand Harbor Restaurant.\n\nThe RSVP deadline is in ${daysTextEn} (${rsvpCutoffDate}). Please let us know if you and your party will be attending so we can reserve your banquet seats and table placement!\n\nRSVP Online in 60 seconds with your personal invitation link: ${directRsvpLink}\n\nWarmly,\nTrang & Alfredo`;
 
       const emailSubjectVi = `Nhắc Nhở Thân Tình: Xác Nhận Tham Dự Tiệc Cưới Trang & Alfredo (Hạn ${rsvpCutoffDate})`;
-      const emailBodyVi = `Kính gửi ${guest.first_name},\n\nChúng mình đang hoàn tất danh sách bàn tròn 10 người và khẩu phần yến tiệc cho đêm tiệc 12/12/2026 sắp tới tại Nhà Hàng Grand Harbor.\n\nThời hạn chốt danh sách chỉ còn ${daysTextVi} (${rsvpCutoffDate}). Kính mong bạn dành chút thời gian xác nhận để chúng mình tiện sắp xếp bàn tiệc đón tiếp chu đáo nhất!\n\nXác nhận nhanh qua link thiệp riêng của gia đình: ${directRsvpLink}\n\nThân ái,\nTrang & Alfredo`;
+      const emailBodyVi = `Kính gửi ${guest.first_name},\n\nChúng mình đang hoàn tất danh sách bàn tròn 10 người và khẩu phần yến tiệc cho đêm tiệc 20/12/2026 sắp tới tại Nhà Hàng Grand Harbor.\n\nThời hạn chốt danh sách chỉ còn ${daysTextVi} (${rsvpCutoffDate}). Kính mong bạn dành chút thời gian xác nhận để chúng mình tiện sắp xếp bàn tiệc đón tiếp chu đáo nhất!\n\nXác nhận nhanh qua link thiệp riêng của gia đình: ${directRsvpLink}\n\nThân ái,\nTrang & Alfredo`;
 
-      const smsEn = `Hi ${guest.first_name}! Friendly reminder to RSVP for Trang & Alfredo's Wedding (Dec 12, 2026) by ${rsvpCutoffDate}. View your personal invitation: ${directRsvpLink}`;
-      const smsVi = `Chào ${guest.first_name}! Nhắc hẹn thân tình xác nhận tham dự Tiệc Cưới Trang & Alfredo ngày 12/12/2026 trước ngày ${rsvpCutoffDate}. Mở link thiệp của bạn tại: ${directRsvpLink}`;
+      const smsEn = `Hi ${guest.first_name}! Friendly reminder to RSVP for Trang & Alfredo's Wedding (Dec 20, 2026) by ${rsvpCutoffDate}. View your personal invitation: ${directRsvpLink}`;
+      const smsVi = `Chào ${guest.first_name}! Nhắc hẹn thân tình xác nhận tham dự Tiệc Cưới Trang & Alfredo ngày 20/12/2026 trước ngày ${rsvpCutoffDate}. Mở link thiệp của bạn tại: ${directRsvpLink}`;
 
       const nudge: ChaserNudgePayload = {
         guestId: guest.id,

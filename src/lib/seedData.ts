@@ -587,7 +587,7 @@ export const initialExpenses: Expense[] = [
     actual_invoiced: 3800,
     deposit_paid: 1500,
     remaining_balance: 2300,
-    payment_due_date: '2026-12-12',
+    payment_due_date: '2026-12-20',
     payment_status: 'pending',
     notes: 'Final balance due on wedding night',
     created_at: '2026-08-12T10:00:00Z'
@@ -710,9 +710,9 @@ export const initialMilestones: Milestone[] = [
   {
     id: 'ms-8',
     title_en: 'The Wedding Celebration Night!',
-    title_vi: 'Đêm Dạ Tiệc Cưới Chính Thức (12/12/2026)!',
+    title_vi: 'Đêm Dạ Tiệc Cưới Chính Thức (20/12/2026)!',
     category: 'ceremony',
-    target_date: '2026-12-12',
+    target_date: '2026-12-20',
     status: 'pending',
     priority: 'critical',
     assignee: 'Trang & Alfredo',
@@ -790,8 +790,8 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Top tier Chinese & Vietnamese banquet chefs, intimate celebration ambience, exceptional live seafood specialties, experienced bilingual banquet staff.',
     contact_email: 'banquets@grandharborevents.com',
     contact_phone: '+1 (626) 280-2998',
-    inquiry_email_draft_en: `Subject: Banquet Inquiry for Wedding Celebration (Dec 12, 2026) - Trang & Alfredo\n\nDear Grand Harbor Banquet Director,\n\nWe are hosting our Wedding Celebration on Saturday, December 12, 2026 for approximately 80-100 guests (8 to 10 ten-top round tables). We would like to confirm package pricing for your banquet menu (featuring Lobster, Peking Duck, and Seabass), along with corkage terms for host-supplied Hennessy XO and wine.\n\nPlease provide your banquet pacing schedule, AV/lighting specifications, and deposit requirements.\n\nWarmly,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Đặt Tiệc Cưới Ngày 12/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Yến Tiệc Nhà Hàng Grand Harbor,\n\nChúng tôi dự kiến tổ chức Dạ Tiệc Cưới vào Thứ Bảy, 12/12/2026 với quy mô 8 - 10 bàn tiệc tròn 10 người (80 - 100 khách). Xin vui lòng gửi bảng giá chi tiết thực đơn yến tiệc cao cấp (gồm Tôm Hùm, Vịt Quay Bắc Kinh, Cá Chẽm Hấp), kèm chính sách phí phục vụ cho rượu Hennessy XO và rượu vang do gia đình chuẩn bị.\n\nTrân trọng cảm ơn,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Banquet Inquiry for Wedding Celebration (Dec 20, 2026) - Trang & Alfredo\n\nDear Grand Harbor Banquet Director,\n\nWe are hosting our Wedding Celebration on Sunday, December 20, 2026 for approximately 80-100 guests (8 to 10 ten-top round tables). We would like to confirm package pricing for your banquet menu (featuring Lobster, Peking Duck, and Seabass), along with corkage terms for host-supplied Hennessy XO and wine.\n\nPlease provide your banquet pacing schedule, AV/lighting specifications, and deposit requirements.\n\nWarmly,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Đặt Tiệc Cưới Ngày 20/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Yến Tiệc Nhà Hàng Grand Harbor,\n\nChúng tôi dự kiến tổ chức Dạ Tiệc Cưới vào Chủ Nhật, 20/12/2026 với quy mô 8 - 10 bàn tiệc tròn 10 người (80 - 100 khách). Xin vui lòng gửi bảng giá chi tiết thực đơn yến tiệc cao cấp (gồm Tôm Hùm, Vịt Quay Bắc Kinh, Cá Chẽm Hấp), kèm chính sách phí phục vụ cho rượu Hennessy XO và rượu vang do gia đình chuẩn bị.\n\nTrân trọng cảm ơn,\nTrang & Alfredo`
   },
   {
     id: 'venue-2',
@@ -808,8 +808,8 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Famous for authentic seafood banquets, expansive LED backdrop wall, ample parking.',
     contact_email: 'events@dragonpalaceoc.com',
     contact_phone: '+1 (714) 539-9988',
-    inquiry_email_draft_en: `Subject: Banquet Availability Inquiry (Dec 12, 2026) - Trang & Alfredo\n\nDear Dragon Palace Team,\n\nWe are planning our 80-person wedding celebration banquet for Dec 12, 2026. We are interested in your 8-course banquet package and bringing our own Cognac bottles for table toasting.\n\nBest regards,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Tư Vấn Tiệc Cưới 12/12/2026 - Trang & Alfredo\n\nKính gửi Dragon Palace Imperial,\n\nChúng tôi muốn tìm hiểu về sảnh tiệc 8-10 bàn 10 người cho tiệc cưới ngày 12/12/2026 và thực đơn yến tiệc hải sản.\n\nTrân trọng,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Banquet Availability Inquiry (Dec 20, 2026) - Trang & Alfredo\n\nDear Dragon Palace Team,\n\nWe are planning our 80-person wedding celebration banquet for Dec 20, 2026. We are interested in your 8-course banquet package and bringing our own Cognac bottles for table toasting.\n\nBest regards,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Tư Vấn Tiệc Cưới 20/12/2026 - Trang & Alfredo\n\nKính gửi Dragon Palace Imperial,\n\nChúng tôi muốn tìm hiểu về sảnh tiệc 8-10 bàn 10 người cho tiệc cưới ngày 20/12/2026 và thực đơn yến tiệc hải sản.\n\nTrân trọng,\nTrang & Alfredo`
   },
   {
     id: 'venue-3',
@@ -826,7 +826,7 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     notes: 'Modern luxury aesthetic with outdoor cocktail garden terrace, higher rental baseline.',
     contact_email: 'weddings@crownpavilionoc.com',
     contact_phone: '+1 (949) 755-1234',
-    inquiry_email_draft_en: `Subject: Wedding Reception Inquiry (Dec 12, 2026) - Trang & Alfredo\n\nDear Crown Pavilion Team,\n\nWe are looking to hold our reception on December 12, 2026 for 80-100 guests with outside Vietnamese banquet catering and host-supplied bar service.\n\nWarm regards,\nTrang & Alfredo`,
-    inquiry_email_draft_vi: `Tiêu đề: Liên Hệ Thuê Sảnh Tiệc Ngày 12/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Crown Pavilion,\n\nChúng tôi quan tâm đến sảnh tiệc cho 80-100 khách với hình thức catering món Á bên ngoài.\n\nTrân trọng,\nTrang & Alfredo`
+    inquiry_email_draft_en: `Subject: Wedding Reception Inquiry (Dec 20, 2026) - Trang & Alfredo\n\nDear Crown Pavilion Team,\n\nWe are looking to hold our reception on December 20, 2026 for 80-100 guests with outside Vietnamese banquet catering and host-supplied bar service.\n\nWarm regards,\nTrang & Alfredo`,
+    inquiry_email_draft_vi: `Tiêu đề: Liên Hệ Thuê Sảnh Tiệc Ngày 20/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Crown Pavilion,\n\nChúng tôi quan tâm đến sảnh tiệc cho 80-100 khách với hình thức catering món Á bên ngoài.\n\nTrân trọng,\nTrang & Alfredo`
   }
 ];

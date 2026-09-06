@@ -716,8 +716,8 @@ export const KitchenDjOverview: React.FC<Props> = ({
             </h3>
             <p className="text-xs text-stone-500">
               {lang === 'en'
-                ? 'Master audio cues and volume pacing for DJ Danny K and bilingual MC across the December 12, 2026 program.'
-                : 'Kịch bản điều phối nhạc nền, thời lượng và âm lượng cho DJ và MC song ngữ trong suốt chương trình 12/12/2026.'}
+                ? 'Master audio cues and volume pacing for DJ Danny K and bilingual MC across the December 20, 2026 program.'
+                : 'Kịch bản điều phối nhạc nền, thời lượng và âm lượng cho DJ và MC song ngữ trong suốt chương trình 20/12/2026.'}
             </p>
           </div>
 
@@ -1009,7 +1009,7 @@ export const KitchenDjOverview: React.FC<Props> = ({
                     <span>Instant Calendar Invite</span>
                   </div>
                   <p className="text-stone-600 text-[11px]">
-                    Generated .ics file for Saturday, Dec 12, 2026 (5:30 PM PST).
+                    Generated .ics file for Sunday, Dec 20, 2026 (5:30 PM PST).
                   </p>
                 </div>
               </div>
@@ -1034,7 +1034,7 @@ export const KitchenDjOverview: React.FC<Props> = ({
       <div className="hidden print:block space-y-6 p-6">
         <div className="border-b-2 border-stone-900 pb-4">
           <h1 className="text-2xl font-bold font-serif">Grand Harbor Restaurant • Head Chef Banquet Spec Sheet</h1>
-          <p className="text-sm text-stone-600">Trang & Alfredo Wedding Celebration • Saturday, December 12, 2026</p>
+          <p className="text-sm text-stone-600">Trang & Alfredo Wedding Celebration • Sunday, December 20, 2026</p>
           <p className="text-xs text-stone-500">8-Course Grand Banquet • 8 Ten-Top Round Tables • Total Special Meals: {totalDietaryGuestsCount}</p>
         </div>
 

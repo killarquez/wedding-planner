@@ -25,7 +25,7 @@ export const HeroSection: React.FC<Props> = ({ lang, guestParty, onRsvpClick }) 
           <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-spin" style={{ animationDuration: '6s' }} />
           <span className="font-serif">{lang === 'en' ? 'The Wedding Celebration' : 'Dạ Tiệc Cưới Thân Mật'}</span>
           <span className="text-crimson-300">•</span>
-          <span>{lang === 'en' ? 'December 12, 2026' : '12 Tháng 12, 2026'}</span>
+          <span>{lang === 'en' ? 'December 20, 2026' : '20 Tháng 12, 2026'}</span>
         </div>
       </div>
 

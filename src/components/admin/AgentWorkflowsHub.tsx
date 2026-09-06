@@ -495,7 +495,7 @@ export const AgentWorkflowsHub: React.FC<Props> = ({
                   <span>Calendar Invite (.ics)</span>
                 </div>
                 <p className="text-stone-600 text-[11px]">
-                  Attached Dec 12, 2026 (5:30 PM PST, Grand Harbor Restaurant).
+                  Attached Dec 20, 2026 (5:30 PM PST, Grand Harbor Restaurant).
                 </p>
                 <span className="text-[10px] text-gold-800 font-bold block">✓ Status: Encoded</span>
               </div>

@@ -397,7 +397,7 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
               {lang === 'en' ? 'Pending due dates' : 'Còn phải thanh toán'}
             </span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-crimson-100 text-crimson-700 font-medium">
-              {lang === 'en' ? 'Due by 12/12' : 'Trước 12/12'}
+              {lang === 'en' ? 'Due by 12/20' : 'Trước 20/12'}
             </span>
           </div>
         </div>
@@ -415,7 +415,7 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
             </h3>
           </div>
           <span className="text-xs text-gold-300 font-medium">
-            {lang === 'en' ? 'Wedding Date: Saturday, Dec 12, 2026' : 'Ngày Cưới: Thứ Bảy, 12/12/2026'}
+            {lang === 'en' ? 'Wedding Date: Sunday, Dec 20, 2026' : 'Ngày Cưới: Chủ Nhật, 20/12/2026'}
           </span>
         </div>
 
@@ -1270,12 +1270,12 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
                 </div>
               </div>
 
-              {/* Group 4: December 12, 2026 Event Week & Wedding Night */}
+              {/* Group 4: December 20, 2026 Event Week & Wedding Night */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-gold-500" />
                   <h4 className="text-xs font-bold uppercase tracking-wider text-stone-700">
-                    {lang === 'en' ? 'December 12, 2026 — Wedding Night Final Balances' : 'Ngày 12/12/2026 — Quyết Toán Đêm Tiệc'}
+                    {lang === 'en' ? 'December 20, 2026 — Wedding Night Final Balances' : 'Ngày 20/12/2026 — Quyết Toán Đêm Tiệc'}
                   </h4>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold-100 text-gold-900 font-bold">
                     $3,100 Due On-Site
@@ -1569,7 +1569,7 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
       <div className="hidden print:block space-y-6 p-6">
         <div className="border-b-2 border-stone-900 pb-4">
           <h1 className="text-2xl font-bold font-serif">Trang & Alfredo Wedding Celebration</h1>
-          <p className="text-sm text-stone-600">Executive Budget & Vendor Payout Sheet • Saturday, December 12, 2026</p>
+          <p className="text-sm text-stone-600">Executive Budget & Vendor Payout Sheet • Sunday, December 20, 2026</p>
           <p className="text-xs text-stone-500">Grand Harbor Restaurant • 5733 Rosemead Blvd., Temple City, CA 91780</p>
         </div>
 

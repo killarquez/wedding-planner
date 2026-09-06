@@ -332,7 +332,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({
             </button>
           </div>
           <p className="mt-2 text-[11px] text-amber-200/90 font-serif tracking-wider drop-shadow-md">
-            {lang === 'en' ? 'Dec 12, 2026' : '12.12.2026'}
+            {lang === 'en' ? 'Dec 20, 2026' : '20.12.2026'}
           </p>
         </div>
       </div>
@@ -395,7 +395,7 @@ export const WeddingIntroExperience: React.FC<Props> = ({
             {/* Date & Venue Box */}
             <div className="w-full py-2.5 border-t border-b border-amber-400/40 space-y-1 text-center bg-amber-50/50 rounded-lg mb-4">
               <p className="text-xs sm:text-sm font-serif font-bold text-crimson-900">
-                Saturday, December 12, 2026
+                {lang === 'en' ? 'Sunday, December 20, 2026' : 'Chủ Nhật, ngày 20 tháng 12 năm 2026'}
               </p>
               <p className="text-[11px] text-stone-700 font-medium">
                 5:30 PM Reception • 6:30 PM Banquet

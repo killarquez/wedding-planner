@@ -44,7 +44,7 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
 
   // Subject line
   const subject = isAttending
-    ? `RSVP Confirmed: See You Dec 12, 2026! | Trang & Alfredo's Wedding`
+    ? `RSVP Confirmed: See You Dec 20, 2026! | Trang & Alfredo's Wedding`
     : `Thank You for Letting Us Know | Trang & Alfredo's Wedding`;
 
   // Generate .ics calendar data
@@ -73,7 +73,7 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
           Trang & Alfredo's Wedding
         </h1>
         <p style="margin: 6px 0 0 0; color: #FFD4D8; font-size: 13px; font-family: sans-serif; letter-spacing: 0.5px;">
-          Saturday, December 12, 2026 • Temple City, California
+          Sunday, December 20, 2026 • Temple City, California
         </p>
       </td>
     </tr>
@@ -92,7 +92,7 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
         <p style="font-size: 15px; line-height: 1.6; color: #333333; margin-bottom: 24px;">
           ${isAttending 
             ? "We are overjoyed to celebrate our wedding banquet with you! Your party attendance has been recorded in our reservation system. Below are your event details and attached calendar invite."
-            : "Thank you for letting us know that you won't be able to make it. While we will dearly miss your presence on December 12, we truly appreciate your warm thoughts and heartfelt blessings!"}
+            : "Thank you for letting us know that you won't be able to make it. While we will dearly miss your presence on December 20, we truly appreciate your warm thoughts and heartfelt blessings!"}
         </p>
 
         ${isAttending ? `
@@ -119,7 +119,7 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
                 </tr>
                 <tr>
                   <td style="color: #666666;">Date & Time:</td>
-                  <td style="color: #1F2937; font-weight: 600;">Dec 12, 2026 @ 5:30 PM Reception</td>
+                  <td style="color: #1F2937; font-weight: 600;">Dec 20, 2026 @ 5:30 PM Reception</td>
                 </tr>
                 <tr>
                   <td style="color: #666666; vertical-align: top;">Banquet Venue:</td>
@@ -148,7 +148,7 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
         <!-- Bilingual Vietnamese Note -->
         <div style="background-color: #FBF9F5; border-left: 3px solid #C59A3F; padding: 14px 16px; border-radius: 4px; font-size: 13px; color: #555555; line-height: 1.5; font-style: italic;">
           ${isAttending 
-            ? "Chúng mình rất mong chờ được đón tiếp và nâng ly chúc mừng cùng bạn và gia đình vào Thứ Bảy, 12/12/2026 tại Nhà Hàng Grand Harbor! File lịch (.ics) đã được đính kèm để bạn tiện lưu vào điện thoại."
+            ? "Chúng mình rất mong chờ được đón tiếp và nâng ly chúc mừng cùng bạn và gia đình vào Chủ Nhật, 20/12/2026 tại Nhà Hàng Grand Harbor! File lịch (.ics) đã được đính kèm để bạn tiện lưu vào điện thoại."
             : "Trang và Alfredo xin chân thành cảm ơn phản hồi của bạn. Chúng mình luôn trân quý tình cảm và lời chúc phúc của bạn!"}
         </div>
 
@@ -162,7 +162,7 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
     <!-- Footer -->
     <tr>
       <td style="background-color: #F8F5EE; padding: 18px 24px; text-align: center; border-top: 1px solid #E5D6B5; font-family: sans-serif; font-size: 11px; color: #78716C;">
-        Trang & Alfredo's Wedding Celebration • December 12, 2026<br>
+        Trang & Alfredo's Wedding Celebration • December 20, 2026<br>
         If you have any questions, feel free to reply directly to this email!
       </td>
     </tr>

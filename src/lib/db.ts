@@ -976,7 +976,7 @@ export class WeddingDB {
     const declined = guests.filter(g => g.rsvp_status === 'declined').length;
     const pending = guests.filter(g => g.rsvp_status === 'pending').length;
 
-    const weddingDate = new Date('2026-12-12');
+    const weddingDate = new Date('2026-12-20');
     const today = new Date('2026-08-30');
     const daysUntil = Math.ceil((weddingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 

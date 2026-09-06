@@ -73,7 +73,7 @@ function WeddingPageContent() {
             Trang & Alfredo
           </span>
           <span className="text-xs text-crimson-800 font-semibold uppercase tracking-wider hidden md:inline">
-            • Dec 12, 2026
+            • Dec 20, 2026
           </span>
         </div>
 
@@ -154,7 +154,7 @@ function WeddingPageContent() {
             Trang & Alfredo
           </p>
           <p className="text-xs text-stone-500 mt-1">
-            Saturday, December 12, 2026 • Grand Harbor Restaurant, Temple City, CA
+            Sunday, December 20, 2026 • Grand Harbor Restaurant, Temple City, CA
           </p>
           <p className="text-[11px] text-stone-400 mt-4">
             Bilingual Wedding Operations & Guest Portal • The Wedding Celebration

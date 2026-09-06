@@ -145,7 +145,7 @@ function CheckinScannerContent() {
   // Handle Passcode Unlock
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pinInput === '121226' || pinInput === '1212') {
+    if (pinInput === '122026' || pinInput === '1220' || pinInput === '121226' || pinInput === '1212') {
       setIsUnlocked(true);
       setPinError(false);
       localStorage.setItem('wedding_greeter_unlocked', 'true');
@@ -378,7 +378,7 @@ function CheckinScannerContent() {
               />
               {pinError && (
                 <p className="text-xs text-rose-400 mt-1.5 font-semibold animate-shake">
-                  Incorrect passcode. (Try 121226)
+                  Incorrect passcode. (Try 122026)
                 </p>
               )}
             </div>
@@ -393,7 +393,7 @@ function CheckinScannerContent() {
           </form>
 
           <div className="mt-6 pt-4 border-t border-stone-800 text-[11px] text-stone-500">
-            Trang & Alfredo's Wedding Banquet • Dec 12, 2026
+            Trang & Alfredo's Wedding Banquet • Dec 20, 2026
           </div>
         </div>
       </main>

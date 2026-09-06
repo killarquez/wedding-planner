@@ -118,7 +118,7 @@ export async function sendDiscordRsvpAlert(params: DiscordRsvpAlertParams): Prom
     title: isAttending 
       ? `🎉 New RSVP: ${primaryName} is Attending! (${attendingCount} Guests)`
       : `💌 RSVP Update: ${primaryName} Regretfully Cannot Attend`,
-    description: `Party **${party.primary_guest_name}** has confirmed their RSVP for **Saturday, Dec 12, 2026** at **Grand Harbor Restaurant**.`,
+    description: `Party **${party.primary_guest_name}** has confirmed their RSVP for **Sunday, Dec 20, 2026** at **Grand Harbor Restaurant**.`,
     color: isAttending ? 0x10B981 : 0x64748B, // Emerald Green or Slate
     fields,
     footer: {

@@ -97,8 +97,8 @@ export async function generateTicketCanvas(data: TicketData): Promise<HTMLCanvas
   ctx.font = 'bold 14px "Cinzel", "Times New Roman", serif';
   ctx.fillText(
     data.lang === 'en'
-      ? 'SATURDAY, DECEMBER 12, 2026 • TEMPLE CITY, CA'
-      : 'THỨ BẢY, 12 THÁNG 12 NĂM 2026 • TEMPLE CITY, CA',
+      ? 'SUNDAY, DECEMBER 20, 2026 • TEMPLE CITY, CA'
+      : 'CHỦ NHẬT, 20 THÁNG 12 NĂM 2026 • TEMPLE CITY, CA',
     width / 2,
     128
   );
@@ -269,7 +269,7 @@ export async function generateTicketCanvas(data: TicketData): Promise<HTMLCanvas
 
   ctx.fillStyle = '#A8A29E';
   ctx.font = '11px monospace';
-  ctx.fillText('DECEMBER 12, 2026 • TEMPLE CITY, CALIFORNIA', width / 2, 1098);
+  ctx.fillText('DECEMBER 20, 2026 • TEMPLE CITY, CALIFORNIA', width / 2, 1098);
 
   return canvas;
 }
@@ -303,7 +303,7 @@ export async function saveTicketToPhotos(data: TicketData): Promise<{ success: b
             await navigator.share({
               files: [file],
               title: "Trang & Alfredo's Wedding Banquet Pass",
-              text: `VIP Wedding Pass for ${data.primaryName} • Saturday, Dec 12, 2026`
+              text: `VIP Wedding Pass for ${data.primaryName} • Sunday, Dec 20, 2026`
             });
             resolve({ success: true, method: 'shared' });
             return;
