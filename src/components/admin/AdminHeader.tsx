@@ -32,12 +32,16 @@ export const AdminHeader: React.FC<Props> = ({
             囍
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-serif font-bold text-base sm:text-lg text-stone-100">
                 {t.crm_title}
               </h1>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gold-950 text-gold-400 border border-gold-800/80 uppercase">
                 Wedding Hub
+              </span>
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Live Sync</span>
               </span>
             </div>
             <p className="text-xs text-stone-400">

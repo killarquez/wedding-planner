@@ -88,9 +88,9 @@ export default function AdminCrmPage() {
     router.refresh();
   };
 
-  const fetchAllData = async () => {
+  const fetchAllData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const [partiesRes, tablesRes, guestsRes, budgetRes, milestonesRes, djRes, briefingRes] = await Promise.all([
         fetch('/api/parties'),
         fetch('/api/tables'),
@@ -123,12 +123,85 @@ export default function AdminCrmPage() {
     } catch (err) {
       console.error('Error fetching admin data:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
+  // Real-Time Multi-Device Auto-Sync
   useEffect(() => {
+    // 1. Initial Load
     fetchAllData();
+
+    // 2. Window Focus & Tab Visibility Auto-Refetch (when unlocking phone or switching tabs)
+    let lastFetched = Date.now();
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastFetched > 3000) {
+        lastFetched = Date.now();
+        fetchAllData(true);
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    // 3. Gentle Background Heartbeat (every 12s when actively viewing the page)
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchAllData(true);
+      }
+    }, 12000);
+
+    // 4. Supabase Realtime WebSocket Push
+    const supabase = createClient();
+    let channel: any = null;
+    if (supabase) {
+      try {
+        channel = supabase
+          .channel('couple-crm-live-sync')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'guests' },
+            () => fetchAllData(true)
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'parties' },
+            () => fetchAllData(true)
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'expenses' },
+            () => fetchAllData(true)
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'milestones' },
+            () => fetchAllData(true)
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'tables' },
+            () => fetchAllData(true)
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'song_requests' },
+            () => fetchAllData(true)
+          )
+          .subscribe();
+      } catch (e) {
+        console.warn('Supabase Realtime channel setup error:', e);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      clearInterval(interval);
+      if (supabase && channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   return (
