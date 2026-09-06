@@ -13,6 +13,7 @@ import { KitchenDjOverview } from '@/components/admin/KitchenDjOverview';
 import { AgentWorkflowsHub } from '@/components/admin/AgentWorkflowsHub';
 import { BriefingModal } from '@/components/admin/BriefingModal';
 import { GuestListHub } from '@/components/admin/GuestListHub';
+import { WeddingSetupWizard } from '@/components/admin/WeddingSetupWizard';
 import { Table, Guest, Party, Expense, Milestone, SongRequest, DailyBriefing } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -21,13 +22,14 @@ import {
   CalendarCheck,
   UtensilsCrossed,
   Bot,
-  Link2
+  Link2,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function AdminCrmPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
-  const [activeTab, setActiveTab] = useState<'guests_links' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents'>('guests_links');
+  const [activeTab, setActiveTab] = useState<'setup' | 'guests_links' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents'>('setup');
 
   // Supabase Auth User State
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -167,6 +169,20 @@ export default function AdminCrmPage() {
         <div className="bg-white p-1.5 rounded-2xl border border-stone-200 shadow-2xs flex flex-wrap gap-1.5">
           <button
             type="button"
+            onClick={() => setActiveTab('setup')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'setup'
+                ? 'bg-gold-500 text-stone-950 shadow-sm ring-2 ring-gold-400/50'
+                : 'text-stone-700 hover:text-stone-900 hover:bg-gold-50/60 font-semibold'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4 text-stone-950" />
+            <span>{t.crm_tab_setup}</span>
+            <span className="px-1.5 py-0.5 bg-stone-900 text-gold-400 text-[10px] rounded-md font-bold uppercase tracking-wider">Start</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('guests_links')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'guests_links'
@@ -245,6 +261,14 @@ export default function AdminCrmPage() {
         </div>
 
         {/* Tab Modules View */}
+        {activeTab === 'setup' && (
+          <WeddingSetupWizard
+            lang={lang}
+            onRefresh={fetchAllData}
+            onNavigateToBudget={() => setActiveTab('budget')}
+          />
+        )}
+
         {activeTab === 'guests_links' && (
           <GuestListHub
             lang={lang}

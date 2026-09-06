@@ -180,3 +180,34 @@ export interface DailyBriefing {
     t7_candidates: Guest[];
   };
 }
+
+export interface WeddingCategorySetup {
+  estimated_cost: number;
+  deposit_paid: number;
+  vendor_name: string;
+  payment_due_date: string;
+  notes?: string;
+  hennessy_bottles?: number;
+}
+
+export interface WeddingSettings {
+  target_budget_cap: number;
+  target_guest_count: number;
+  target_table_count: number;
+  venue_name: string;
+  wedding_date: string;
+  wedding_city: string;
+  setup_completed: boolean;
+  notes?: string;
+  categories: {
+    venue_banquet: WeddingCategorySetup;
+    host_beverages_corkage: WeddingCategorySetup;
+    attire: WeddingCategorySetup;
+    photography_video: WeddingCategorySetup;
+    stage_av_dj: WeddingCategorySetup;
+    decor_floral: WeddingCategorySetup;
+    gifts_favors: WeddingCategorySetup;
+    misc: WeddingCategorySetup;
+  };
+}
+

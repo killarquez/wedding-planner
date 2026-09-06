@@ -10,7 +10,8 @@ import {
   VenueSourcingResult,
   DailyBriefing,
   TableHierarchy,
-  PartyRsvpSubmission
+  PartyRsvpSubmission,
+  WeddingSettings
 } from './types';
 import {
   initialGuests,
@@ -19,7 +20,8 @@ import {
   initialExpenses,
   initialMilestones,
   initialSongRequests,
-  initialSourcedVenues
+  initialSourcedVenues,
+  defaultWeddingSettings
 } from './seedData';
 import { createAdminClient } from './supabase/admin';
 import { SupabaseService } from './supabase/service';
@@ -33,6 +35,7 @@ interface DatabaseState {
   song_requests: SongRequest[];
   venues: VenueSourcingResult[];
   agent_logs: Array<{ timestamp: string; agent: string; action: string; details?: any }>;
+  settings?: WeddingSettings;
 }
 
 // Global in-memory cache to support fast hot reloads + filesystem backup
@@ -774,6 +777,7 @@ export class WeddingDB {
       }
     }
 
+    const settings = await this.getSettings();
     const expenses = this.getState().expenses;
     const totalEstimated = expenses.reduce((acc, e) => acc + Number(e.estimated_cost || 0), 0);
     const totalInvoiced = expenses.reduce((acc, e) => acc + Number(e.actual_invoiced || 0), 0);
@@ -781,6 +785,7 @@ export class WeddingDB {
     const remainingBalance = expenses.reduce((acc, e) => acc + Number(e.remaining_balance || 0), 0);
 
     return {
+      target_budget_cap: settings.target_budget_cap || 35000,
       total_budget_estimated: totalEstimated,
       total_invoiced: totalInvoiced,
       total_deposit_paid: totalDepositPaid,
@@ -789,6 +794,115 @@ export class WeddingDB {
       due_within_14_days: [],
       due_within_30_days: []
     };
+  }
+
+  // ==========================================
+  // WEDDING SETTINGS & SETUP QUESTIONNAIRE
+  // ==========================================
+
+  public static async getSettings(): Promise<WeddingSettings> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const supabase = createAdminClient();
+        if (supabase) {
+          const { data } = await supabase
+            .from('agent_logs')
+            .select('*')
+            .eq('action', 'wedding_settings')
+            .order('id', { ascending: false })
+            .limit(1);
+          if (data && data.length > 0 && data[0].details) {
+            const parsed = data[0].details as WeddingSettings;
+            this.updateState(s => { s.settings = parsed; });
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Supabase getSettings error, using local state:', e);
+      }
+    }
+
+    const state = this.getState();
+    if (state.settings) {
+      return state.settings;
+    }
+
+    return defaultWeddingSettings;
+  }
+
+  public static async saveSettings(settings: WeddingSettings): Promise<{
+    settings: WeddingSettings;
+    expenses: Expense[];
+    metrics: any;
+  }> {
+    const supabase = createAdminClient();
+
+    // 1. Persist settings to Supabase
+    if (supabase) {
+      try {
+        await supabase.from('agent_logs').insert({
+          agent: 'SetupWizard',
+          action: 'wedding_settings',
+          details: settings
+        });
+      } catch (e) {
+        console.warn('Could not save settings log to Supabase:', e);
+      }
+    }
+
+    // 2. Persist to local state
+    this.updateState(s => {
+      s.settings = settings;
+    });
+
+    // 3. Clear old expenses and sync true setup expenses
+    if (supabase) {
+      try {
+        await supabase.from('expenses').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      } catch (e) {
+        console.warn('Error clearing expenses for setup sync:', e);
+      }
+    }
+    this.updateState(s => { s.expenses = []; });
+
+    // 4. Generate real expense items for each category
+    const categoryEntries = Object.entries(settings.categories);
+    const newExpenses: Expense[] = [];
+
+    for (let i = 0; i < categoryEntries.length; i++) {
+      const [catKey, catData] = categoryEntries[i];
+      if (catData.estimated_cost > 0 || catData.deposit_paid > 0) {
+        const exp: Expense = {
+          id: `exp-setup-${i + 1}-${Date.now()}`,
+          category: catKey as any,
+          vendor_name: catData.vendor_name || 'Vendor',
+          item_description: catData.notes || `${catKey} commitment`,
+          estimated_cost: Number(catData.estimated_cost || 0),
+          actual_invoiced: Number(catData.estimated_cost || 0),
+          deposit_paid: Number(catData.deposit_paid || 0),
+          remaining_balance: Math.max(0, Number(catData.estimated_cost || 0) - Number(catData.deposit_paid || 0)),
+          payment_due_date: catData.payment_due_date || settings.wedding_date,
+          payment_status: Number(catData.deposit_paid || 0) >= Number(catData.estimated_cost || 0) ? 'paid' : 'pending',
+          notes: catData.notes,
+          created_at: new Date().toISOString()
+        };
+        newExpenses.push(exp);
+      }
+    }
+
+    if (newExpenses.length > 0) {
+      if (supabase) {
+        try {
+          await supabase.from('expenses').insert(newExpenses);
+        } catch (e) {
+          console.warn('Error inserting setup expenses into Supabase:', e);
+        }
+      }
+      this.updateState(s => { s.expenses = newExpenses; });
+    }
+
+    const metrics = await this.getBudgetMetrics();
+    return { settings, expenses: newExpenses, metrics };
   }
 
   public static async addExpense(expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> {

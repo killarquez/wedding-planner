@@ -1,4 +1,4 @@
-import { Guest, Party, Table, Expense, Milestone, SongRequest, VenueSourcingResult } from './types';
+import { Guest, Party, Table, Expense, Milestone, SongRequest, VenueSourcingResult, WeddingSettings } from './types';
 
 export const initialParties: Party[] = [
   {
@@ -846,3 +846,74 @@ export const initialSourcedVenues: VenueSourcingResult[] = [
     inquiry_email_draft_vi: `Tiêu đề: Liên Hệ Thuê Sảnh Tiệc Ngày 20/12/2026 - Trang & Alfredo\n\nKính gửi Ban Quản Lý Crown Pavilion,\n\nChúng tôi quan tâm đến sảnh tiệc cho 80-100 khách với hình thức catering món Á bên ngoài.\n\nTrân trọng,\nTrang & Alfredo`
   }
 ];
+
+export const defaultWeddingSettings: WeddingSettings = {
+  target_budget_cap: 35000,
+  target_guest_count: 100,
+  target_table_count: 10,
+  venue_name: 'Grand Harbor Restaurant',
+  wedding_date: '2026-12-20',
+  wedding_city: 'Temple City, CA',
+  setup_completed: false,
+  notes: '',
+  categories: {
+    venue_banquet: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Grand Harbor Restaurant',
+      payment_due_date: '2026-12-01',
+      notes: '8-Course Grand Asian Banquet (10 Tables + Dessert & Tea Service)'
+    },
+    host_beverages_corkage: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Wholesale Spirits & Grand Harbor Corkage',
+      payment_due_date: '2026-12-10',
+      hennessy_bottles: 10,
+      notes: 'Hennessy XO for Chào Bàn table toasts, Napa wine & restaurant corkage'
+    },
+    attire: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Custom Tailor & Bridal Boutique',
+      payment_due_date: '2026-11-15',
+      notes: 'Custom Vietnamese Áo Dài with dragon & phoenix gold embroidery, tuxedo & bridal gown'
+    },
+    photography_video: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Wedding Photography Studio',
+      payment_due_date: '2026-12-05',
+      notes: 'Full-day tea ceremony & banquet coverage, portrait session & 4K highlight reel'
+    },
+    stage_av_dj: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Bilingual MC & DJ Entertainment',
+      payment_due_date: '2026-12-01',
+      notes: 'Bilingual English/Vietnamese MC, audio engineering, wireless mics & dancefloor lighting'
+    },
+    decor_floral: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Floral & Event Design',
+      payment_due_date: '2026-12-05',
+      notes: 'Ceremonial arch, lanterns, stage backdrop, reception table styling & 10 centerpieces'
+    },
+    gifts_favors: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Custom Favors & Bao Lì Xì',
+      payment_due_date: '2026-11-20',
+      notes: 'Custom Double Happiness red envelopes, premium tea ceremony sets & guest gift boxes'
+    },
+    misc: {
+      estimated_cost: 0,
+      deposit_paid: 0,
+      vendor_name: 'Contingency & Incidentals',
+      payment_due_date: '2026-12-20',
+      notes: 'Marriage license, emergency cash buffer, rehearsal lunch & banquet vendor gratuity'
+    }
+  }
+};
+

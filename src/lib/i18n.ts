@@ -176,6 +176,7 @@ export const translations = {
     // CRM Translations
     crm_title: "Wedding Operations Hub & Couple CRM",
     crm_subtitle: "December 20, 2026 | Trang & Alfredo Wedding Celebration",
+    crm_tab_setup: "Wedding Setup",
     crm_tab_overview: "Seating & Table Math",
     crm_tab_budget: "Budget & Ledger",
     crm_tab_timeline: "Sprint Milestones",
@@ -483,6 +484,7 @@ export const translations = {
     // CRM Translations
     crm_title: "Trung Tâm Điều Hành Đám Cưới & CRM Cặp Đôi",
     crm_subtitle: "20/12/2026 | Dạ Tiệc Cưới Trang & Alfredo",
+    crm_tab_setup: "Thiết Lập Ban Đầu",
     crm_tab_overview: "Sắp Bàn & Công Thức Bàn 10 Người",
     crm_tab_budget: "Ngân Sách & Chi Tiêu",
     crm_tab_timeline: "Tiến Độ & Deadline",

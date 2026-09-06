@@ -333,11 +333,13 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
             <DollarSign className="w-4 h-4 text-stone-400" />
           </div>
           <p className="text-2xl sm:text-3xl font-bold font-serif text-stone-900">
-            {formatMoney(metrics.total_budget_estimated || 33400)}
+            {formatMoney(metrics.total_budget_estimated || 0)}
           </p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-[10px] text-stone-400">
-              {lang === 'en' ? 'Target Cap: $35,000' : 'Mục tiêu: $35,000'}
+              {metrics.target_budget_cap
+                ? `${lang === 'en' ? 'Target Cap:' : 'Mục tiêu:'} ${formatMoney(metrics.target_budget_cap)}`
+                : (lang === 'en' ? 'No cap set' : 'Chưa đặt mục tiêu')}
             </span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-600 font-medium">
               {lang === 'en' ? `${expenses.length} Contracts` : `${expenses.length} Hợp đồng`}
@@ -352,14 +354,16 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
             <CreditCard className="w-4 h-4 text-blue-500" />
           </div>
           <p className="text-2xl sm:text-3xl font-bold font-serif text-blue-900">
-            {formatMoney(metrics.total_invoiced || 33400)}
+            {formatMoney(metrics.total_invoiced || 0)}
           </p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-[10px] text-blue-600">
               {lang === 'en' ? 'Committed contracts' : 'Hợp đồng đã ký'}
             </span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">
-              100%
+              {metrics.target_budget_cap && metrics.target_budget_cap > 0
+                ? `${Math.round(((metrics.total_invoiced || 0) / metrics.target_budget_cap) * 100)}%`
+                : (expenses.length > 0 ? '100%' : '0%')}
             </span>
           </div>
         </div>
@@ -371,14 +375,16 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </div>
           <p className="text-2xl sm:text-3xl font-bold font-serif text-emerald-800">
-            {formatMoney(metrics.total_deposit_paid || 15500)}
+            {formatMoney(metrics.total_deposit_paid || 0)}
           </p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-[10px] text-emerald-600">
               {lang === 'en' ? 'Liquid cash cleared' : 'Tiền cọc đã giải ngân'}
             </span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold">
-              {metrics.total_invoiced ? Math.round((metrics.total_deposit_paid / metrics.total_invoiced) * 100) : 46}%
+              {metrics.total_invoiced && metrics.total_invoiced > 0
+                ? `${Math.round(((metrics.total_deposit_paid || 0) / metrics.total_invoiced) * 100)}%`
+                : '0%'}
             </span>
           </div>
         </div>
@@ -390,7 +396,7 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
             <AlertTriangle className="w-4 h-4 text-crimson-500" />
           </div>
           <p className="text-2xl sm:text-3xl font-bold font-serif text-crimson-800">
-            {formatMoney(metrics.remaining_balance_due || 17900)}
+            {formatMoney(metrics.remaining_balance_due || 0)}
           </p>
           <div className="flex items-center justify-between mt-2">
             <span className="text-[10px] text-crimson-600">
@@ -1377,7 +1383,7 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
                 const paidInCat = expenses
                   .filter((e) => e.category === catKey)
                   .reduce((sum, e) => sum + Number(e.deposit_paid || 0), 0);
-                const totalBudget = metrics.total_invoiced || 33400;
+                const totalBudget = metrics.total_invoiced || 0;
                 const pctOfTotal = totalBudget > 0 ? Math.round((totalInCat / totalBudget) * 100) : 0;
                 const paidPct = totalInCat > 0 ? Math.round((paidInCat / totalInCat) * 100) : 0;
                 const color = categoryColors[catKey as ExpenseCategory] || categoryColors.misc;
@@ -1576,19 +1582,19 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
         <div className="grid grid-cols-4 gap-4 text-xs">
           <div>
             <span className="font-bold block">Total Budget:</span>
-            <span>{formatMoney(metrics.total_budget_estimated || 33400)}</span>
+            <span>{formatMoney(metrics.total_budget_estimated || 0)}</span>
           </div>
           <div>
             <span className="font-bold block">Total Invoiced:</span>
-            <span>{formatMoney(metrics.total_invoiced || 33400)}</span>
+            <span>{formatMoney(metrics.total_invoiced || 0)}</span>
           </div>
           <div>
             <span className="font-bold block">Deposits Paid:</span>
-            <span>{formatMoney(metrics.total_deposit_paid || 15500)}</span>
+            <span>{formatMoney(metrics.total_deposit_paid || 0)}</span>
           </div>
           <div>
             <span className="font-bold block">Night-of Balance Due:</span>
-            <span className="font-bold text-red-800">{formatMoney(metrics.remaining_balance_due || 17900)}</span>
+            <span className="font-bold text-red-800">{formatMoney(metrics.remaining_balance_due || 0)}</span>
           </div>
         </div>
 

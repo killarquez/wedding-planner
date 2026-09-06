@@ -562,11 +562,31 @@ export class SupabaseService {
       return diff > 14 && diff <= 30;
     });
 
+    let targetBudgetCap: number | undefined;
+    try {
+      const supabase = this.getClient();
+      const { data } = await supabase
+        .from('agent_logs')
+        .select('details')
+        .eq('action', 'wedding_settings')
+        .order('id', { ascending: false })
+        .limit(1);
+      if (data && data[0]?.details?.target_budget_cap) {
+        targetBudgetCap = Number(data[0].details.target_budget_cap);
+      }
+    } catch (e) {
+      // ignore
+    }
+
     return {
+      target_budget_cap: targetBudgetCap,
       total_estimated: totalEstimated,
+      total_budget_estimated: totalEstimated,
       total_invoiced: totalInvoiced,
       total_paid: totalPaid,
+      total_deposit_paid: totalPaid,
       remaining_balance: remainingBalance,
+      remaining_balance_due: remainingBalance,
       due_within_7_days: due7,
       due_within_14_days: due14,
       due_within_30_days: due30
