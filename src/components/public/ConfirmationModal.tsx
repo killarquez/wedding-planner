@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Language, translations } from '@/lib/i18n';
-import { Calendar, CheckCircle2, Heart, Sparkles, X, Camera, Loader2, QrCode } from 'lucide-react';
+import { Calendar, CheckCircle2, Heart, Sparkles, X, Camera, Loader2, QrCode, MapPin, ExternalLink } from 'lucide-react';
 import { downloadIcsFile } from '@/lib/calendar';
 import { saveTicketToPhotos, TicketData } from '@/lib/ticketGenerator';
 import QRCode from 'qrcode';
@@ -160,17 +160,30 @@ export const ConfirmationModal: React.FC<Props> = ({ isOpen, onClose, lang, rsvp
                 </span>
               </div>
 
-              <div className="col-span-2 bg-white/70 p-2.5 rounded-xl border border-gold-200/50">
-                <span className="text-stone-400 block font-medium text-[11px]">
-                  {lang === 'en' ? 'Banquet Venue' : 'Địa Điểm Dạ Tiệc'}
-                </span>
-                <span className="font-bold text-stone-800">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="col-span-2 bg-white/70 hover:bg-white p-2.5 rounded-xl border border-gold-200/50 hover:border-gold-400 transition-all block group cursor-pointer"
+                title={lang === 'en' ? 'Open in Google Maps for Directions' : 'Mở Google Maps để xem chỉ đường'}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-400 block font-medium text-[11px]">
+                    {lang === 'en' ? 'Banquet Venue' : 'Địa Điểm Dạ Tiệc'}
+                  </span>
+                  <span className="text-[10px] text-crimson-800 font-semibold flex items-center gap-1 group-hover:underline">
+                    <MapPin className="w-3 h-3 text-crimson-700" />
+                    <span>{lang === 'en' ? 'Directions' : 'Bản Đồ'}</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </span>
+                </div>
+                <span className="font-bold text-stone-800 group-hover:text-crimson-900 transition-colors block">
                   Grand Harbor Restaurant
                 </span>
-                <span className="text-[11px] text-stone-500 block">
+                <span className="text-[11px] text-stone-500 group-hover:text-stone-700 transition-colors block underline decoration-stone-200 group-hover:decoration-crimson-300">
                   5733 Rosemead Blvd., Temple City, CA 91780
                 </span>
-              </div>
+              </a>
 
               {attendingGuestNames.length > 0 && (
                 <div className="col-span-2 pt-1">

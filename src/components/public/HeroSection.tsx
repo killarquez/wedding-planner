@@ -3,7 +3,7 @@
 import React from 'react';
 import { Language, translations } from '@/lib/i18n';
 import { CountdownTimer } from './CountdownTimer';
-import { Calendar, MapPin, Sparkles, Heart } from 'lucide-react';
+import { Calendar, MapPin, Sparkles, Heart, ExternalLink } from 'lucide-react';
 import { downloadIcsFile } from '@/lib/calendar';
 import { Party } from '@/lib/types';
 import { VietnameseCloudDivider, VietnameseCornerFlourish } from './VietnameseMotifDividers';
@@ -97,20 +97,36 @@ export const HeroSection: React.FC<Props> = ({ lang, guestParty, onRsvpClick }) 
           </div>
         </div>
 
-        {/* Banquet Location: Gilded Amber & Crimson Accent */}
-        <div className="amber-glow-card p-4 sm:p-5 rounded-2xl flex items-start gap-3.5 hover:border-amber-400 transition-all">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-600 to-crimson-800 text-white mt-0.5 shadow-xs">
+        {/* Banquet Location: Gilded Amber & Crimson Accent (Google Maps Directions Link) */}
+        <a
+          href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="amber-glow-card p-4 sm:p-5 rounded-2xl flex items-start gap-3.5 hover:border-amber-400 transition-all group block cursor-pointer"
+          title={lang === 'en' ? 'Open in Google Maps for Directions' : 'Mở Google Maps để xem chỉ đường'}
+        >
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-600 to-crimson-800 text-white mt-0.5 shadow-xs group-hover:scale-105 transition-transform">
             <MapPin className="w-5 h-5" />
           </div>
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-0.5 flex items-center gap-1.5">
-              <span>{lang === 'en' ? 'Banquet Location' : 'Địa Điểm Tổ Chức'}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            </h2>
-            <p className="text-sm font-bold text-stone-900">{t.venue_name}</p>
-            <p className="text-xs text-stone-600 mt-0.5">{t.venue_address}</p>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-amber-800 mb-0.5 flex items-center gap-1.5">
+                <span>{lang === 'en' ? 'Banquet Location' : 'Địa Điểm Tổ Chức'}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              </h2>
+              <span className="text-[10px] font-semibold text-crimson-700 bg-amber-100/80 px-2 py-0.5 rounded-full flex items-center gap-1 group-hover:bg-crimson-700 group-hover:text-white transition-colors">
+                <span>{lang === 'en' ? 'Directions' : 'Chỉ Đường'}</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </span>
+            </div>
+            <p className="text-sm font-bold text-stone-900 group-hover:text-crimson-900 transition-colors">
+              {t.venue_name}
+            </p>
+            <p className="text-xs text-stone-600 mt-0.5 underline decoration-stone-300 group-hover:decoration-crimson-500 transition-all">
+              {t.venue_address}
+            </p>
           </div>
-        </div>
+        </a>
       </div>
 
       {/* Hero CTA buttons */}

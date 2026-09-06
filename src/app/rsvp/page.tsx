@@ -14,7 +14,8 @@ import {
   MapPin,
   Heart,
   Lock,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from 'lucide-react';
 import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAtmosphereBackground';
 
@@ -79,11 +80,20 @@ function RsvpPageContent() {
       <div className="flex-1 py-8 sm:py-12 px-4 sm:px-6">
         {/* Header Branding */}
         <div className="text-center max-w-2xl mx-auto mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs font-semibold tracking-wide mb-4 shadow-xs">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs font-semibold tracking-wide mb-4 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-gold-600" />
             <span>Sunday, Dec 20, 2026</span>
             <span className="text-crimson-300">•</span>
-            <span>Grand Harbor Restaurant</span>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-crimson-700 underline decoration-crimson-300 hover:decoration-crimson-700 flex items-center gap-1 transition-colors"
+              title={lang === 'en' ? 'Open Grand Harbor Restaurant in Google Maps' : 'Mở Nhà Hàng Grand Harbor trên Google Maps'}
+            >
+              <span>Grand Harbor Restaurant</span>
+              <ExternalLink className="w-3 h-3 opacity-70" />
+            </a>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900 tracking-tight">
@@ -121,7 +131,15 @@ function RsvpPageContent() {
             Trang & Alfredo's Wedding Celebration
           </p>
           <p className="text-[11px] text-stone-500 mt-1">
-            Sunday, December 20, 2026 • Grand Harbor Restaurant, Temple City, CA
+            Sunday, December 20, 2026 •{' '}
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-crimson-800 underline decoration-stone-300 hover:decoration-crimson-800 transition-colors"
+            >
+              Grand Harbor Restaurant, Temple City, CA
+            </a>
           </p>
           <div className="pt-3 border-t border-stone-100 w-full mt-3 flex items-center justify-center gap-3">
             <Link

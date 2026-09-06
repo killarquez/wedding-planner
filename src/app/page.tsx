@@ -154,7 +154,15 @@ function WeddingPageContent() {
             Trang & Alfredo
           </p>
           <p className="text-xs text-stone-500 mt-1">
-            Sunday, December 20, 2026 • Grand Harbor Restaurant, Temple City, CA
+            Sunday, December 20, 2026 •{' '}
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-crimson-800 underline decoration-stone-300 hover:decoration-crimson-800 transition-colors"
+            >
+              Grand Harbor Restaurant, Temple City, CA
+            </a>
           </p>
           <p className="text-[11px] text-stone-400 mt-4">
             Bilingual Wedding Operations & Guest Portal • The Wedding Celebration

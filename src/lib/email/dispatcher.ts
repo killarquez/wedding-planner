@@ -124,7 +124,9 @@ export async function sendRsvpConfirmationEmail(params: SendRsvpEmailParams): Pr
                 <tr>
                   <td style="color: #666666; vertical-align: top;">Banquet Venue:</td>
                   <td style="color: #1F2937; font-weight: 600;">
-                    Grand Harbor Restaurant<br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780" target="_blank" rel="noopener noreferrer" style="color: #881328; text-decoration: underline; font-weight: bold;">
+                      Grand Harbor Restaurant ↗
+                    </a><br>
                     <span style="font-size: 12px; color: #666666; font-weight: normal;">5733 Rosemead Blvd., Temple City, CA 91780</span>
                   </td>
                 </tr>
