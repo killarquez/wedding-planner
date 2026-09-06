@@ -563,6 +563,7 @@ export class SupabaseService {
     });
 
     let targetBudgetCap: number | undefined;
+    let categoryBudgets: Record<string, any> = {};
     try {
       const supabase = this.getClient();
       const { data } = await supabase
@@ -571,22 +572,35 @@ export class SupabaseService {
         .eq('action', 'wedding_settings')
         .order('id', { ascending: false })
         .limit(1);
-      if (data && data[0]?.details?.target_budget_cap) {
-        targetBudgetCap = Number(data[0].details.target_budget_cap);
+      if (data && data[0]?.details) {
+        if (data[0].details.target_budget_cap) {
+          targetBudgetCap = Number(data[0].details.target_budget_cap);
+        }
+        if (data[0].details.categories) {
+          categoryBudgets = data[0].details.categories;
+        }
       }
     } catch (e) {
       // ignore
     }
 
+    const totalTargetAllocated = Object.values(categoryBudgets).reduce(
+      (sum: number, cat: any) => sum + Number(cat.estimated_cost || 0),
+      0
+    );
+
     return {
-      target_budget_cap: targetBudgetCap,
+      target_budget_cap: targetBudgetCap || totalTargetAllocated,
+      category_budgets: categoryBudgets,
+      total_target_allocated: totalTargetAllocated,
       total_estimated: totalEstimated,
-      total_budget_estimated: totalEstimated,
+      total_budget_estimated: totalTargetAllocated > 0 ? totalTargetAllocated : totalEstimated,
       total_invoiced: totalInvoiced,
       total_paid: totalPaid,
       total_deposit_paid: totalPaid,
       remaining_balance: remainingBalance,
       remaining_balance_due: remainingBalance,
+      uncommitted_budget: Math.max(0, (targetBudgetCap || totalTargetAllocated) - totalInvoiced),
       due_within_7_days: due7,
       due_within_14_days: due14,
       due_within_30_days: due30

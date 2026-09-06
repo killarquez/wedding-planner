@@ -80,7 +80,7 @@ export type ExpenseCategory =
   | 'gifts_favors'
   | 'misc';
 
-export type PaymentStatus = 'pending' | 'paid' | 'overdue';
+export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'partially_paid';
 
 export interface Expense {
   id: string;
@@ -93,6 +93,7 @@ export interface Expense {
   remaining_balance: number;
   payment_due_date: string; // YYYY-MM-DD
   payment_status: PaymentStatus;
+  payment_method?: string; // Zelle, Cash, Credit Card, Venmo, Check
   notes?: string;
   created_at: string;
 }

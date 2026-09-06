@@ -784,12 +784,22 @@ export class WeddingDB {
     const totalDepositPaid = expenses.reduce((acc, e) => acc + Number(e.deposit_paid || 0), 0);
     const remainingBalance = expenses.reduce((acc, e) => acc + Number(e.remaining_balance || 0), 0);
 
+    const totalTargetAllocated = Object.values(settings.categories || {}).reduce(
+      (sum: number, cat: any) => sum + Number(cat.estimated_cost || 0),
+      0
+    );
+
     return {
-      target_budget_cap: settings.target_budget_cap || 35000,
-      total_budget_estimated: totalEstimated,
+      target_budget_cap: settings.target_budget_cap || totalTargetAllocated,
+      category_budgets: settings.categories || {},
+      total_target_allocated: totalTargetAllocated,
+      total_budget_estimated: totalTargetAllocated > 0 ? totalTargetAllocated : totalEstimated,
       total_invoiced: totalInvoiced,
+      total_paid: totalDepositPaid,
       total_deposit_paid: totalDepositPaid,
+      remaining_balance: remainingBalance,
       remaining_balance_due: remainingBalance,
+      uncommitted_budget: Math.max(0, (settings.target_budget_cap || totalTargetAllocated) - totalInvoiced),
       due_within_7_days: [],
       due_within_14_days: [],
       due_within_30_days: []
@@ -855,54 +865,45 @@ export class WeddingDB {
       s.settings = settings;
     });
 
-    // 3. Clear old expenses and sync true setup expenses
-    if (supabase) {
-      try {
-        await supabase.from('expenses').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      } catch (e) {
-        console.warn('Error clearing expenses for setup sync:', e);
-      }
-    }
-    this.updateState(s => { s.expenses = []; });
-
-    // 4. Generate real expense items for each category
+    // 3. Preserve real transactions (do not overwrite real ledger with fake placeholders)
+    const currentExpenses = await this.getExpenses();
     const categoryEntries = Object.entries(settings.categories);
-    const newExpenses: Expense[] = [];
 
     for (let i = 0; i < categoryEntries.length; i++) {
       const [catKey, catData] = categoryEntries[i];
-      if (catData.estimated_cost > 0 || catData.deposit_paid > 0) {
-        const exp: Expense = {
-          id: `exp-setup-${i + 1}-${Date.now()}`,
-          category: catKey as any,
-          vendor_name: catData.vendor_name || 'Vendor',
-          item_description: catData.notes || `${catKey} commitment`,
-          estimated_cost: Number(catData.estimated_cost || 0),
-          actual_invoiced: Number(catData.estimated_cost || 0),
-          deposit_paid: Number(catData.deposit_paid || 0),
-          remaining_balance: Math.max(0, Number(catData.estimated_cost || 0) - Number(catData.deposit_paid || 0)),
-          payment_due_date: catData.payment_due_date || settings.wedding_date,
-          payment_status: Number(catData.deposit_paid || 0) >= Number(catData.estimated_cost || 0) ? 'paid' : 'pending',
-          notes: catData.notes,
-          created_at: new Date().toISOString()
-        };
-        newExpenses.push(exp);
-      }
-    }
-
-    if (newExpenses.length > 0) {
-      if (supabase) {
-        try {
-          await supabase.from('expenses').insert(newExpenses);
-        } catch (e) {
-          console.warn('Error inserting setup expenses into Supabase:', e);
+      // Only auto-record if an actual deposit was paid AND no existing expense for this category exists
+      if (Number(catData.deposit_paid || 0) > 0) {
+        const existing = currentExpenses.find(e => e.category === catKey);
+        if (!existing) {
+          const exp: Expense = {
+            id: `exp-deposit-${catKey}-${Date.now()}`,
+            category: catKey as any,
+            vendor_name: catData.vendor_name || 'Vendor',
+            item_description: catData.notes || `${catKey} deposit`,
+            estimated_cost: Number(catData.estimated_cost || 0),
+            actual_invoiced: Number(catData.estimated_cost || 0),
+            deposit_paid: Number(catData.deposit_paid || 0),
+            remaining_balance: Math.max(0, Number(catData.estimated_cost || 0) - Number(catData.deposit_paid || 0)),
+            payment_due_date: catData.payment_due_date || settings.wedding_date,
+            payment_status: Number(catData.deposit_paid || 0) >= Number(catData.estimated_cost || 0) ? 'paid' : 'partially_paid',
+            notes: catData.notes,
+            created_at: new Date().toISOString()
+          };
+          if (supabase) {
+            try {
+              await supabase.from('expenses').insert(exp);
+            } catch (e) {
+              console.warn('Error inserting setup deposit into Supabase:', e);
+            }
+          }
+          this.updateState(s => { s.expenses.push(exp); });
         }
       }
-      this.updateState(s => { s.expenses = newExpenses; });
     }
 
+    const updatedExpenses = await this.getExpenses();
     const metrics = await this.getBudgetMetrics();
-    return { settings, expenses: newExpenses, metrics };
+    return { settings, expenses: updatedExpenses, metrics };
   }
 
   public static async addExpense(expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> {
