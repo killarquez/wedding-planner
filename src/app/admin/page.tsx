@@ -29,7 +29,7 @@ import {
 export default function AdminCrmPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
-  const [activeTab, setActiveTab] = useState<'setup' | 'guests_links' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents'>('setup');
+  const [activeTab, setActiveTab] = useState<'guests_links' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents' | 'setup'>('guests_links');
 
   // Supabase Auth User State
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -169,20 +169,6 @@ export default function AdminCrmPage() {
         <div className="bg-white p-1.5 rounded-2xl border border-stone-200 shadow-2xs flex flex-wrap gap-1.5">
           <button
             type="button"
-            onClick={() => setActiveTab('setup')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-              activeTab === 'setup'
-                ? 'bg-gold-500 text-stone-950 shadow-sm ring-2 ring-gold-400/50'
-                : 'text-stone-700 hover:text-stone-900 hover:bg-gold-50/60 font-semibold'
-            }`}
-          >
-            <SlidersHorizontal className="w-4 h-4 text-stone-950" />
-            <span>{t.crm_tab_setup}</span>
-            <span className="px-1.5 py-0.5 bg-stone-900 text-gold-400 text-[10px] rounded-md font-bold uppercase tracking-wider">Start</span>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setActiveTab('guests_links')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'guests_links'
@@ -257,6 +243,19 @@ export default function AdminCrmPage() {
           >
             <Bot className="w-4 h-4 text-gold-300" />
             <span>{t.crm_tab_agents}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('setup')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'setup'
+                ? 'bg-stone-900 text-gold-300 shadow-xs ring-1 ring-gold-400/40'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4 text-gold-400" />
+            <span>{t.crm_tab_setup}</span>
           </button>
         </div>
 
