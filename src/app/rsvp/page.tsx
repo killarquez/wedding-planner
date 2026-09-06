@@ -79,7 +79,7 @@ function RsvpPageContent() {
         <div className="text-center max-w-2xl mx-auto mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs font-semibold tracking-wide mb-4 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-            <span>Saturday, Dec 12, 2026</span>
+            <span>Sunday, Dec 20, 2026</span>
             <span className="text-crimson-300">•</span>
             <a
               href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
@@ -128,7 +128,7 @@ function RsvpPageContent() {
             Trang & Alfredo's Wedding Celebration
           </p>
           <p className="text-[11px] text-stone-500 mt-1">
-            Saturday, December 12, 2026 •{' '}
+            Sunday, December 20, 2026 •{' '}
             <a
               href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
               target="_blank"

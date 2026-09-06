@@ -42,7 +42,7 @@ export const translations = {
     
     // RSVP Section
     rsvp_heading: "Celebrate With Us",
-    rsvp_subheading: "Please kindly RSVP by November 12, 2026 to ensure your table seating and banquet meal reservations.",
+    rsvp_subheading: "Please kindly RSVP by November 20, 2026 to ensure your table seating and banquet meal reservations.",
     rsvp_lead_info: "Primary Guest Information",
     first_name: "First Name",
     last_name: "Last Name",
@@ -350,7 +350,7 @@ export const translations = {
     
     // RSVP Section
     rsvp_heading: "Xác Nhận Tham Dự Cùng Chúng Mình",
-    rsvp_subheading: "Kính mong quý khách vui lòng xác nhận trước ngày 12/11/2026 để ban tổ chức sắp xếp bàn tiệc và khẩu phần chu đáo nhất.",
+    rsvp_subheading: "Kính mong quý khách vui lòng xác nhận trước ngày 20/11/2026 để ban tổ chức sắp xếp bàn tiệc và khẩu phần chu đáo nhất.",
     rsvp_lead_info: "Thông Tin Khách Mời Chính",
     first_name: "Tên",
     last_name: "Họ & Tên Đệm",

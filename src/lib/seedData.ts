@@ -668,7 +668,7 @@ export const initialMilestones: Milestone[] = [
     title_en: 'RSVP Cutoff & Automated Chaser Campaign',
     title_vi: 'Hạn Chót Xác Nhận RSVP & Kích Hoạt Hệ Thống Nhắc Hẹn',
     category: 'guest_rsvp',
-    target_date: '2026-11-12',
+    target_date: '2026-11-20',
     status: 'completed',
     priority: 'critical',
     assignee: 'Trang & Alfredo',

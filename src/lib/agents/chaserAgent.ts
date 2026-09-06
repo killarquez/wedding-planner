@@ -34,8 +34,8 @@ export class DeadlinesChaserAgent {
     const t21Nudges: ChaserNudgePayload[] = [];
     const t7Nudges: ChaserNudgePayload[] = [];
 
-    // Cutoff reference: 2026-11-12
-    const rsvpCutoffDate = 'November 12, 2026';
+    // Cutoff reference: 2026-11-20
+    const rsvpCutoffDate = 'November 20, 2026';
 
     pendingPrimaryGuests.forEach((guest, index) => {
       const party = parties.find(p => p.id === guest.party_id);

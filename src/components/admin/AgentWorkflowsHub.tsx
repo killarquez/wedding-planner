@@ -611,7 +611,7 @@ export const AgentWorkflowsHub: React.FC<Props> = ({
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                     <span>T-21 Nudges Generated ({chaserReport.t21NudgesGenerated?.length || 0})</span>
                   </h5>
-                  <span className="text-[10px] text-stone-400 font-mono">Cutoff: Nov 12, 2026</span>
+                  <span className="text-[10px] text-stone-400 font-mono">Cutoff: Nov 20, 2026</span>
                 </div>
 
                 {chaserReport.t21NudgesGenerated?.map((nudge: any) => (

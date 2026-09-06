@@ -65,7 +65,7 @@ function WeddingPageContent() {
             Trang & Alfredo
           </span>
           <span className="text-xs text-crimson-800 font-semibold uppercase tracking-wider hidden md:inline">
-            • Dec 12, 2026
+            • Dec 20, 2026
           </span>
         </div>
 
@@ -146,7 +146,7 @@ function WeddingPageContent() {
             Trang & Alfredo
           </p>
           <p className="text-xs text-stone-500 mt-1">
-            Saturday, December 12, 2026 •{' '}
+            Sunday, December 20, 2026 •{' '}
             <a
               href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
               target="_blank"
