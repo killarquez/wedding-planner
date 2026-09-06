@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Language, translations } from '@/lib/i18n';
+import { translations } from '@/lib/i18n';
+import { useLanguage } from '@/lib/LanguageContext';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
 import { HeroSection } from '@/components/public/HeroSection';
 import { EventDetails } from '@/components/public/EventDetails';
 import { WeddingIntroExperience } from '@/components/public/WeddingIntroExperience';
-import { MusicPlayerWidget } from '@/components/public/MusicPlayerWidget';
 import { Sparkles, Lock, Heart, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Party } from '@/lib/types';
@@ -16,7 +16,7 @@ import { VietnameseCornerFlourish, VietnameseCloudDivider } from '@/components/p
 
 function WeddingPageContent() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>('en');
+  const { lang, setLang } = useLanguage();
   const [guestParty, setGuestParty] = useState<Party | null>(null);
 
   const searchParams = useSearchParams();
@@ -47,11 +47,6 @@ function WeddingPageContent() {
     router.push(rsvpUrl);
   };
 
-  const handleReplayIntro = () => {
-    sessionStorage.removeItem('wedding_invite_opened');
-    window.location.reload();
-  };
-
   return (
     <main className="min-h-screen relative flex flex-col justify-between">
       {/* Dynamic Vietnamese Imperial Atmosphere & Drifting Petals */}
@@ -59,9 +54,6 @@ function WeddingPageContent() {
 
       {/* 1st Time Opening Royal Red Envelope & Music Experience */}
       <WeddingIntroExperience lang={lang} guestParty={guestParty} initialCode={initialCode} />
-
-      {/* Persistent Floating Music Controller ("Em Đồng Ý - I Do") */}
-      <MusicPlayerWidget lang={lang} onReplayIntro={handleReplayIntro} />
 
       {/* Top Floating Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-2xs">
@@ -73,7 +65,7 @@ function WeddingPageContent() {
             Trang & Alfredo
           </span>
           <span className="text-xs text-crimson-800 font-semibold uppercase tracking-wider hidden md:inline">
-            • Dec 20, 2026
+            • Dec 12, 2026
           </span>
         </div>
 
@@ -154,7 +146,7 @@ function WeddingPageContent() {
             Trang & Alfredo
           </p>
           <p className="text-xs text-stone-500 mt-1">
-            Sunday, December 20, 2026 •{' '}
+            Saturday, December 12, 2026 •{' '}
             <a
               href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
               target="_blank"

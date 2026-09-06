@@ -3,11 +3,11 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Language, translations } from '@/lib/i18n';
+import { translations } from '@/lib/i18n';
+import { useLanguage } from '@/lib/LanguageContext';
 import { LanguageToggle } from '@/components/public/LanguageToggle';
 import { RsvpForm } from '@/components/public/RsvpForm';
 import { ConfirmationModal } from '@/components/public/ConfirmationModal';
-import { MusicPlayerWidget } from '@/components/public/MusicPlayerWidget';
 import {
   ArrowLeft,
   Calendar,
@@ -21,7 +21,7 @@ import { VietnameseAtmosphereBackground } from '@/components/public/VietnameseAt
 
 function RsvpPageContent() {
   const router = useRouter();
-  const [lang, setLang] = useState<Language>('en');
+  const { lang, setLang } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
   const [rsvpData, setRsvpData] = useState<any>(null);
 
@@ -45,9 +45,6 @@ function RsvpPageContent() {
     <main className="min-h-screen relative text-stone-900 flex flex-col justify-between">
       {/* Dynamic Vietnamese Imperial Atmosphere & Drifting Petals */}
       <VietnameseAtmosphereBackground />
-
-      {/* Persistent Floating Music Controller */}
-      <MusicPlayerWidget lang={lang} />
 
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-stone-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-2xs">
@@ -82,7 +79,7 @@ function RsvpPageContent() {
         <div className="text-center max-w-2xl mx-auto mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-900 text-xs font-semibold tracking-wide mb-4 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-            <span>Sunday, Dec 20, 2026</span>
+            <span>Saturday, Dec 12, 2026</span>
             <span className="text-crimson-300">•</span>
             <a
               href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
@@ -131,7 +128,7 @@ function RsvpPageContent() {
             Trang & Alfredo's Wedding Celebration
           </p>
           <p className="text-[11px] text-stone-500 mt-1">
-            Sunday, December 20, 2026 •{' '}
+            Saturday, December 12, 2026 •{' '}
             <a
               href="https://www.google.com/maps/search/?api=1&query=Grand+Harbor+Restaurant,+5733+Rosemead+Blvd,+Temple+City,+CA+91780"
               target="_blank"
