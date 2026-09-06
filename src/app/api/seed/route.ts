@@ -22,7 +22,7 @@ export async function DELETE() {
     const result = await WeddingDB.clearAllGuestsAndParties();
     return NextResponse.json({
       success: true,
-      message: 'All temporary guests, parties, and song requests successfully purged',
+      message: 'All temporary guests, parties, song requests, expenses, and milestones successfully purged',
       ...result
     });
   } catch (error: any) {

@@ -64,8 +64,8 @@ function loadState(): DatabaseState {
     parties: [],
     guests: [],
     tables: [...initialTables],
-    expenses: [...initialExpenses],
-    milestones: [...initialMilestones],
+    expenses: [],
+    milestones: [],
     song_requests: [],
     venues: [...initialSourcedVenues],
     agent_logs: []
@@ -146,10 +146,18 @@ export class WeddingDB {
     return fresh;
   }
 
-  public static async clearAllGuestsAndParties(): Promise<{ deletedGuests: number; deletedParties: number; deletedSongs: number }> {
+  public static async clearAllGuestsAndParties(): Promise<{
+    deletedGuests: number;
+    deletedParties: number;
+    deletedSongs: number;
+    deletedExpenses: number;
+    deletedMilestones: number;
+  }> {
     let deletedGuests = 0;
     let deletedParties = 0;
     let deletedSongs = 0;
+    let deletedExpenses = 0;
+    let deletedMilestones = 0;
 
     const supabase = createAdminClient();
     if (supabase) {
@@ -157,9 +165,13 @@ export class WeddingDB {
         const { count: gCount } = await supabase.from('guests').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
         const { count: pCount } = await supabase.from('parties').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
         const { count: sCount } = await supabase.from('song_requests').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
+        const { count: eCount } = await supabase.from('expenses').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
+        const { count: mCount } = await supabase.from('milestones').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000');
         deletedGuests = gCount || 0;
         deletedParties = pCount || 0;
         deletedSongs = sCount || 0;
+        deletedExpenses = eCount || 0;
+        deletedMilestones = mCount || 0;
       } catch (e) {
         console.warn('Could not clear Supabase data:', e);
       }
@@ -169,10 +181,12 @@ export class WeddingDB {
       s.guests = [];
       s.parties = [];
       s.song_requests = [];
+      s.expenses = [];
+      s.milestones = [];
       s.agent_logs = [];
     });
 
-    return { deletedGuests, deletedParties, deletedSongs };
+    return { deletedGuests, deletedParties, deletedSongs, deletedExpenses, deletedMilestones };
   }
 
   // ==========================================
