@@ -84,13 +84,16 @@ const CATEGORY_KEYWORDS: Record<LinkCategory, string[]> = {
   ],
   drinks: [
     'hennessy', 'cognac', 'whiskey', 'whisky', 'scotch', 'macallan', 'wine', 'corkage', 'bar',
-    'bevmo', 'total wine', 'cocktail', 'liquor', 'boba', 'chào bàn', 'chao ban', 'tequila',
-    'champagne', 'prosecco', 'beer', 'bartender', 'shots', 'pour', 'alcohol', 'vsop', 'xo'
+    'bevmo', 'total wine', 'cocktail', 'cocktails', 'liquor', 'boba', 'chào bàn', 'chao ban', 'tequila',
+    'champagne', 'prosecco', 'beer', 'bartender', 'shots', 'pour', 'alcohol', 'vsop', 'xo',
+    'rum', 'ron', 'bottle', 'bottles', 'spirits', 'vodka', 'gin', 'diplomatico', 'santa teresa',
+    'open bar', 'beverage', 'drinks', 'drink', 'drinking', 'toast', 'toasting', 'mocktail'
   ],
   venue: [
     'venue', 'banquet', 'restaurant', 'hall', 'ballroom', 'catering', 'palace', 'pavilion',
-    'grand harbor', 'seafood', 'menu', 'lobster', 'peking duck', 'tasting', 'table', 'reception',
-    'course menu', 'chinese banquet', 'vietnamese banquet', 'dim sum', 'room rental'
+    'grand harbor', 'seafood', 'menu', 'lobster', 'peking duck', 'tasting', 'reception',
+    'course menu', 'chinese banquet', 'vietnamese banquet', 'dim sum', 'room rental',
+    'banquet table', 'table layout', 'floor plan', 'banquet hall'
   ],
   decor: [
     'flower', 'floral', 'decor', 'decoration', 'backdrop', 'arch', 'centerpiece', 'sweetheart table',

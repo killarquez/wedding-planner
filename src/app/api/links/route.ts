@@ -50,11 +50,13 @@ export async function POST(req: NextRequest) {
 
     // 1. Ingestion from Discord Bot WebSocket event
     if (body.message_id && body.content) {
+      const token = body.bot_token || process.env.DISCORD_BOT_TOKEN;
       const saved = await DiscordBotService.processRawMessage({
         messageId: body.message_id,
         channelId: body.channel_id,
         authorName: body.author_name || 'Alfredo',
-        content: body.content
+        content: body.content,
+        token
       });
 
       return NextResponse.json({ success: true, links: saved });

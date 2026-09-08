@@ -17,9 +17,10 @@ export const DISCORD_CONFIG = {
 const DISCORD_API_BASE = 'https://discord.com/api/v10';
 
 export class DiscordBotService {
-  private static getHeaders() {
+  private static getHeaders(tokenOverride?: string) {
+    const token = tokenOverride || DISCORD_CONFIG.token;
     return {
-      'Authorization': `Bot ${DISCORD_CONFIG.token}`,
+      'Authorization': `Bot ${token}`,
       'Content-Type': 'application/json'
     };
   }
@@ -36,6 +37,7 @@ export class DiscordBotService {
     category: CategoryMetadata;
     submittedBy: string;
     notes?: string;
+    token?: string;
   }): Promise<{ id: string; threadUrl: string } | null> {
     try {
       // Truncate title to 95 chars (Discord forum thread title limit is 100)
@@ -87,7 +89,7 @@ export class DiscordBotService {
 
       const res = await fetch(`${DISCORD_API_BASE}/channels/${DISCORD_CONFIG.vaultForumId}/threads`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: this.getHeaders(params.token),
         body: JSON.stringify(body)
       });
 
@@ -109,12 +111,12 @@ export class DiscordBotService {
   /**
    * Adds an emoji reaction to a message in Discord
    */
-  public static async reactToMessage(channelId: string, messageId: string, emoji: string = '✅'): Promise<void> {
+  public static async reactToMessage(channelId: string, messageId: string, emoji: string = '✅', token?: string): Promise<void> {
     try {
       const encodedEmoji = encodeURIComponent(emoji);
       await fetch(`${DISCORD_API_BASE}/channels/${channelId}/messages/${messageId}/reactions/${encodedEmoji}/@me`, {
         method: 'PUT',
-        headers: this.getHeaders()
+        headers: this.getHeaders(token)
       });
     } catch (e) {
       // Non-blocking
@@ -124,11 +126,11 @@ export class DiscordBotService {
   /**
    * Sends a confirmation reply in the inbox channel
    */
-  public static async replyInInbox(channelId: string, messageId: string, content: string): Promise<void> {
+  public static async replyInInbox(channelId: string, messageId: string, content: string, token?: string): Promise<void> {
     try {
       await fetch(`${DISCORD_API_BASE}/channels/${channelId}/messages`, {
         method: 'POST',
-        headers: this.getHeaders(),
+        headers: this.getHeaders(token),
         body: JSON.stringify({
           content,
           message_reference: { message_id: messageId }
@@ -148,8 +150,9 @@ export class DiscordBotService {
     authorName: string;
     authorId?: string;
     content: string;
+    token?: string;
   }): Promise<InspirationLink[]> {
-    const { messageId, channelId, authorName, content } = params;
+    const { messageId, channelId, authorName, content, token } = params;
 
     // Extract all URLs
     const urlMatches = content.match(/https?:\/\/[^\s]+/g);
@@ -184,7 +187,8 @@ export class DiscordBotService {
         siteName: 'Brainstorm Note',
         category: categoryMeta,
         submittedBy: submitter,
-        notes: trimmedText
+        notes: trimmedText,
+        token
       });
 
       // Persist into WeddingDB
@@ -206,11 +210,11 @@ export class DiscordBotService {
       savedLinks.push(linkRecord);
 
       // Discord reactions & confirmation
-      await this.reactToMessage(channelId, messageId, '💡');
-      await this.reactToMessage(channelId, messageId, '✅');
+      await this.reactToMessage(channelId, messageId, '💡', token);
+      await this.reactToMessage(channelId, messageId, '✅', token);
 
       const confirmationMsg = `💡 **Idea saved to ${categoryMeta.discordTagName}**\nNote posted in <#${DISCORD_CONFIG.vaultForumId}> and synced to Couple CRM!`;
-      await this.replyInInbox(channelId, messageId, confirmationMsg);
+      await this.replyInInbox(channelId, messageId, confirmationMsg, token);
 
       return savedLinks;
     }
@@ -238,7 +242,8 @@ export class DiscordBotService {
         siteName: meta.site_name,
         category: categoryMeta,
         submittedBy: submitter,
-        notes: userNote
+        notes: userNote,
+        token
       });
 
       // 4. Persist into WeddingDB
@@ -260,11 +265,11 @@ export class DiscordBotService {
       savedLinks.push(linkRecord);
 
       // 5. Provide feedback on Discord
-      await this.reactToMessage(channelId, messageId, '✅');
-      await this.reactToMessage(channelId, messageId, '💒');
+      await this.reactToMessage(channelId, messageId, '✅', token);
+      await this.reactToMessage(channelId, messageId, '💒', token);
 
       const confirmationMsg = `✨ **Sorted into ${categoryMeta.discordTagName}**\nCard posted in <#${DISCORD_CONFIG.vaultForumId}> and synced to Couple CRM!`;
-      await this.replyInInbox(channelId, messageId, confirmationMsg);
+      await this.replyInInbox(channelId, messageId, confirmationMsg, token);
     }
 
     return savedLinks;

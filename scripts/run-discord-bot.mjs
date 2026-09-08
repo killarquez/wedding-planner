@@ -139,7 +139,8 @@ async function handleMessageCreate(msg) {
     message_id: msg.id,
     channel_id: msg.channel_id,
     author_name: authorName,
-    content: content
+    content: content,
+    bot_token: TOKEN
   });
 
   const primaryBase = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
