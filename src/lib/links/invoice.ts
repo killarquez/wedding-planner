@@ -111,8 +111,9 @@ If this is NOT an invoice/contract/receipt/quote, return: {"is_invoice_or_contra
             }
           ],
           generationConfig: {
-            maxOutputTokens: 450,
-            temperature: 0.1
+            maxOutputTokens: 2048,
+            temperature: 0.1,
+            responseMimeType: 'application/json'
           }
         })
       });
@@ -132,28 +133,42 @@ If this is NOT an invoice/contract/receipt/quote, return: {"is_invoice_or_contra
 
       // Parse JSON from code fence or raw string
       const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, rawText];
-      const parsed: ExtractedInvoiceData = JSON.parse(jsonMatch[1].trim());
+      const parsed: any = JSON.parse(jsonMatch[1].trim());
 
-      // Validate category
-      const validCategories: LinkCategory[] = [
-        'venue',
-        'attire',
-        'drinks',
-        'decor',
-        'photo_video',
-        'music',
-        'favors_misc'
-      ];
-      if (!validCategories.includes(parsed.category)) {
-        parsed.category = 'favors_misc';
+      // Validate is_invoice_or_contract
+      const isInvOrContract =
+        parsed.is_invoice_or_contract === true ||
+        (typeof parsed.is_invoice_or_contract === 'string' &&
+          parsed.is_invoice_or_contract.toLowerCase() !== 'false');
+
+      // Fuzzy map category to 6 wedding categories
+      const rawCat = (parsed.category || '').toLowerCase();
+      let mappedCat: LinkCategory = 'favors_misc';
+      if (rawCat.includes('photo') || rawCat.includes('video') || rawCat.includes('booth')) {
+        mappedCat = 'photo_video';
+      } else if (rawCat.includes('venue') || rawCat.includes('banquet') || rawCat.includes('cater') || rawCat.includes('food')) {
+        mappedCat = 'venue';
+      } else if (rawCat.includes('drink') || rawCat.includes('bar') || rawCat.includes('wine') || rawCat.includes('cognac') || rawCat.includes('corkage')) {
+        mappedCat = 'drinks';
+      } else if (rawCat.includes('attire') || rawCat.includes('dress') || rawCat.includes('suit') || rawCat.includes('tux') || rawCat.includes('ao dai')) {
+        mappedCat = 'attire';
+      } else if (rawCat.includes('decor') || rawCat.includes('flower') || rawCat.includes('floral')) {
+        mappedCat = 'decor';
+      } else if (rawCat.includes('music') || rawCat.includes('dj') || rawCat.includes('band') || rawCat.includes('sound') || rawCat.includes('audio')) {
+        mappedCat = 'music';
       }
 
-      // Format numerical values
-      if (parsed.total_amount) parsed.total_amount = Number(parsed.total_amount);
-      if (parsed.deposit_paid) parsed.deposit_paid = Number(parsed.deposit_paid);
-      if (parsed.balance_due) parsed.balance_due = Number(parsed.balance_due);
-
-      return parsed;
+      return {
+        is_invoice_or_contract: isInvOrContract,
+        vendor_name: parsed.vendor_name || 'Vendor',
+        total_amount: parsed.total_amount !== undefined && parsed.total_amount !== null ? Number(parsed.total_amount) : null,
+        deposit_paid: parsed.deposit_paid !== undefined && parsed.deposit_paid !== null ? Number(parsed.deposit_paid) : null,
+        balance_due: parsed.balance_due !== undefined && parsed.balance_due !== null ? Number(parsed.balance_due) : null,
+        payment_due_date: parsed.payment_due_date || null,
+        category: mappedCat,
+        contract_terms: parsed.contract_terms || '',
+        summary: parsed.summary || ''
+      };
     } catch (e: any) {
       console.error('Failed to parse invoice with Gemini Flash:', e.message);
       return this.fallbackTextParser(params.messageText || params.filename || '');

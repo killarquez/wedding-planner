@@ -730,6 +730,50 @@ export class SupabaseService {
   // 6. INSPIRATION & LINK VAULT
   // ==========================================
 
+  private static hydrateLink(row: any): InspirationLink {
+    if (!row) return row;
+    let notes = row.notes || '';
+    let contractMeta: any = {};
+    const match = notes.match(/<!--CONTRACT_META:(.*?)-->/);
+    if (match) {
+      try {
+        contractMeta = JSON.parse(match[1]);
+        notes = notes.replace(/<!--CONTRACT_META:.*?-->/, '').trim();
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+
+    return {
+      id: row.id,
+      url: row.url || '',
+      title: row.title || 'Untitled Link',
+      description: row.description || '',
+      image_url: row.image_url || null,
+      site_name: row.site_name || '',
+      category: row.category || 'decor',
+      submitted_by: row.submitted_by || 'Alfredo',
+      notes,
+      status: row.status || 'saved',
+      discord_thread_id: row.discord_thread_id || null,
+      discord_message_id: row.discord_message_id || null,
+      discord_thread_url: row.discord_thread_url || null,
+      estimated_cost: row.estimated_cost !== null && row.estimated_cost !== undefined ? Number(row.estimated_cost) : null,
+      converted_to_expense_id: row.converted_to_expense_id || null,
+      is_contract: row.is_contract !== undefined ? Boolean(row.is_contract) : Boolean(contractMeta.is_contract),
+      document_url: row.document_url !== undefined ? row.document_url : (contractMeta.document_url || null),
+      document_filename: row.document_filename !== undefined ? row.document_filename : (contractMeta.document_filename || null),
+      document_type: row.document_type !== undefined ? row.document_type : (contractMeta.document_type || null),
+      vendor_name: row.vendor_name !== undefined ? row.vendor_name : (contractMeta.vendor_name || null),
+      deposit_amount: row.deposit_amount !== undefined ? row.deposit_amount : (contractMeta.deposit_amount ?? null),
+      balance_due: row.balance_due !== undefined ? row.balance_due : (contractMeta.balance_due ?? null),
+      payment_due_date: row.payment_due_date !== undefined ? row.payment_due_date : (contractMeta.payment_due_date || null),
+      contract_terms: row.contract_terms !== undefined ? row.contract_terms : (contractMeta.contract_terms || null),
+      created_at: row.created_at || new Date().toISOString(),
+      updated_at: row.updated_at || new Date().toISOString()
+    };
+  }
+
   public static async getLinks(category?: string, status?: string): Promise<InspirationLink[]> {
     const supabase = this.getClient();
     let query = supabase
@@ -746,7 +790,7 @@ export class SupabaseService {
 
     const { data, error } = await query;
     if (error) throw new Error(error.message);
-    return (data || []) as InspirationLink[];
+    return (data || []).map(r => this.hydrateLink(r));
   }
 
   public static async getLinkById(id: string): Promise<InspirationLink | null> {
@@ -758,7 +802,7 @@ export class SupabaseService {
       .single();
 
     if (error) return null;
-    return data as InspirationLink;
+    return this.hydrateLink(data);
   }
 
   public static async createLink(data: {
@@ -787,7 +831,26 @@ export class SupabaseService {
   }): Promise<InspirationLink> {
     const supabase = this.getClient();
     const now = new Date().toISOString();
-    const newLink: InspirationLink = {
+
+    const isContract = data.is_contract || data.document_type === 'pdf' || !!data.vendor_name;
+    const contractMeta = {
+      is_contract: isContract,
+      document_url: data.document_url || null,
+      document_filename: data.document_filename || null,
+      document_type: data.document_type || null,
+      vendor_name: data.vendor_name || null,
+      deposit_amount: data.deposit_amount !== undefined ? data.deposit_amount : null,
+      balance_due: data.balance_due !== undefined ? data.balance_due : null,
+      payment_due_date: data.payment_due_date || null,
+      contract_terms: data.contract_terms || null
+    };
+
+    let userNotes = (data.notes || '').trim();
+    if (isContract || data.document_url || data.vendor_name) {
+      userNotes = `${userNotes}\n\n<!--CONTRACT_META:${JSON.stringify(contractMeta)}-->`.trim();
+    }
+
+    const payload = {
       id: `link-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       url: data.url || '',
       title: data.title || 'Untitled Link',
@@ -796,33 +859,24 @@ export class SupabaseService {
       site_name: data.site_name || '',
       category: data.category || 'decor',
       submitted_by: data.submitted_by || 'Alfredo',
-      notes: data.notes || '',
+      notes: userNotes,
       status: data.status || 'saved',
       discord_thread_id: data.discord_thread_id || null,
       discord_message_id: data.discord_message_id || null,
       discord_thread_url: data.discord_thread_url || null,
       estimated_cost: data.estimated_cost || null,
-      is_contract: data.is_contract || false,
-      document_url: data.document_url || null,
-      document_filename: data.document_filename || null,
-      document_type: data.document_type || null,
-      vendor_name: data.vendor_name || null,
-      deposit_amount: data.deposit_amount || null,
-      balance_due: data.balance_due || null,
-      payment_due_date: data.payment_due_date || null,
-      contract_terms: data.contract_terms || null,
       created_at: now,
       updated_at: now
     };
 
     const { data: created, error } = await supabase
       .from('inspiration_links')
-      .insert(newLink)
+      .insert(payload)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
-    return created as InspirationLink;
+    return this.hydrateLink(created);
   }
 
   public static async updateLink(
@@ -830,18 +884,60 @@ export class SupabaseService {
     updates: Partial<InspirationLink>
   ): Promise<InspirationLink | null> {
     const supabase = this.getClient();
+
+    // Check if contract fields are being updated
+    const hasContractUpdates =
+      updates.is_contract !== undefined ||
+      updates.vendor_name !== undefined ||
+      updates.deposit_amount !== undefined ||
+      updates.balance_due !== undefined ||
+      updates.payment_due_date !== undefined ||
+      updates.contract_terms !== undefined ||
+      updates.document_url !== undefined;
+
+    let cleanUpdates: any = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+
+    if (hasContractUpdates) {
+      const existing = await this.getLinkById(id);
+      const contractMeta = {
+        is_contract: updates.is_contract !== undefined ? updates.is_contract : existing?.is_contract,
+        document_url: updates.document_url !== undefined ? updates.document_url : existing?.document_url,
+        document_filename: updates.document_filename !== undefined ? updates.document_filename : existing?.document_filename,
+        document_type: updates.document_type !== undefined ? updates.document_type : existing?.document_type,
+        vendor_name: updates.vendor_name !== undefined ? updates.vendor_name : existing?.vendor_name,
+        deposit_amount: updates.deposit_amount !== undefined ? updates.deposit_amount : existing?.deposit_amount,
+        balance_due: updates.balance_due !== undefined ? updates.balance_due : existing?.balance_due,
+        payment_due_date: updates.payment_due_date !== undefined ? updates.payment_due_date : existing?.payment_due_date,
+        contract_terms: updates.contract_terms !== undefined ? updates.contract_terms : existing?.contract_terms
+      };
+
+      const baseNotes = (updates.notes !== undefined ? updates.notes : (existing?.notes || '')).replace(/<!--CONTRACT_META:.*?-->/, '').trim();
+      cleanUpdates.notes = `${baseNotes}\n\n<!--CONTRACT_META:${JSON.stringify(contractMeta)}-->`.trim();
+    }
+
+    // Remove fields not present in Supabase table columns
+    delete cleanUpdates.is_contract;
+    delete cleanUpdates.document_url;
+    delete cleanUpdates.document_filename;
+    delete cleanUpdates.document_type;
+    delete cleanUpdates.vendor_name;
+    delete cleanUpdates.deposit_amount;
+    delete cleanUpdates.balance_due;
+    delete cleanUpdates.payment_due_date;
+    delete cleanUpdates.contract_terms;
+
     const { data, error } = await supabase
       .from('inspiration_links')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update(cleanUpdates)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
-    return data as InspirationLink;
+    return this.hydrateLink(data);
   }
 
   public static async deleteLink(id: string): Promise<boolean> {
