@@ -244,6 +244,20 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
     }
   };
 
+  // Quick Update Payment Method
+  const handleQuickUpdatePaymentMethod = async (id: string, newMethod: string) => {
+    try {
+      await fetch('/api/budget', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, payment_method: newMethod })
+      });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to update payment method:', err);
+    }
+  };
+
   // Delete Expense
   const handleDeleteExpense = async (id: string) => {
     if (!confirm(lang === 'en' ? 'Delete this transaction record?' : 'Xoá bản ghi chi tiêu này?')) return;
@@ -885,9 +899,30 @@ export const BudgetEngine: React.FC<Props> = ({ lang, expenses, metrics, onRefre
                             </button>
                           </td>
                           <td className="py-3 px-3">
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-stone-100 text-stone-700 font-medium">
-                              {exp.payment_method || 'Zelle'}
-                            </span>
+                            <select
+                              value={exp.payment_method || 'Zelle'}
+                              onChange={(e) => handleQuickUpdatePaymentMethod(exp.id, e.target.value)}
+                              className={`text-[10px] font-bold px-2 py-1 rounded-lg border focus:outline-none cursor-pointer transition-colors shadow-2xs ${
+                                (exp.payment_method || 'Zelle') === 'Credit Card'
+                                  ? 'bg-blue-50 text-blue-900 border-blue-300 hover:bg-blue-100'
+                                  : (exp.payment_method || 'Zelle') === 'Cash'
+                                  ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100'
+                                  : (exp.payment_method || 'Zelle') === 'Venmo'
+                                  ? 'bg-sky-50 text-sky-900 border-sky-300 hover:bg-sky-100'
+                                  : (exp.payment_method || 'Zelle') === 'Check' || (exp.payment_method || 'Zelle') === 'Bank Wire'
+                                  ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                                  : 'bg-purple-50 text-purple-900 border-purple-300 hover:bg-purple-100'
+                              }`}
+                              title="Click to change payment method"
+                            >
+                              <option value="Zelle">Zelle</option>
+                              <option value="Credit Card">Credit Card</option>
+                              <option value="Cash">Cash (Tiền Mặt)</option>
+                              <option value="Venmo">Venmo</option>
+                              <option value="Check">Check (Séc)</option>
+                              <option value="Bank Wire">Bank Wire</option>
+                              <option value="Other">Other</option>
+                            </select>
                           </td>
                           <td className="py-3 px-3 text-right">
                             <div className="flex items-center justify-end gap-1">

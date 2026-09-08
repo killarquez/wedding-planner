@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
       estimated_cost,
       actual_invoiced,
       deposit_paid,
+      payment_method,
       payment_due_date,
       payment_status,
       notes
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
       actual_invoiced: Number(actual_invoiced || estimated_cost || 0),
       deposit_paid: Number(deposit_paid || 0),
       remaining_balance: Number(actual_invoiced || estimated_cost || 0) - Number(deposit_paid || 0),
+      payment_method: payment_method || 'Zelle',
       payment_due_date,
       payment_status: payment_status || 'pending',
       notes

@@ -526,6 +526,22 @@ export class SupabaseService {
   // 3. BUDGET & EXPENSES
   // ==========================================
 
+  private static hydrateExpense(row: any): Expense {
+    if (!row) return row;
+    let notes = row.notes || '';
+    let paymentMethod = row.payment_method;
+    const match = notes.match(/<!--PAYMENT_METHOD:(.*?)-->/);
+    if (match) {
+      paymentMethod = match[1].trim();
+      notes = notes.replace(/<!--PAYMENT_METHOD:.*?-->/, '').trim();
+    }
+    return {
+      ...row,
+      notes,
+      payment_method: paymentMethod || 'Zelle'
+    };
+  }
+
   public static async getExpenses(): Promise<Expense[]> {
     const supabase = this.getClient();
     const { data, error } = await supabase
@@ -534,7 +550,19 @@ export class SupabaseService {
       .order('payment_due_date', { ascending: true });
 
     if (error) throw new Error(error.message);
-    return (data || []) as Expense[];
+    return (data || []).map(r => this.hydrateExpense(r));
+  }
+
+  public static async getExpenseById(id: string): Promise<Expense | null> {
+    const supabase = this.getClient();
+    const { data, error } = await supabase
+      .from('expenses')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) return null;
+    return this.hydrateExpense(data);
   }
 
   public static async getBudgetMetrics(): Promise<any> {
@@ -610,28 +638,44 @@ export class SupabaseService {
 
   public static async addExpense(expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> {
     const supabase = this.getClient();
-    const newExp: Expense = {
+    const paymentMethod = expense.payment_method || 'Zelle';
+    let userNotes = (expense.notes || '').replace(/<!--PAYMENT_METHOD:.*?-->/, '').trim();
+    userNotes = `${userNotes}\n\n<!--PAYMENT_METHOD:${paymentMethod}-->`.trim();
+
+    const payload: any = {
       ...expense,
+      notes: userNotes,
       id: `exp-${Date.now()}`,
       created_at: new Date().toISOString()
     };
+    delete payload.payment_method;
 
-    const { data, error } = await supabase.from('expenses').insert(newExp).select().single();
+    const { data, error } = await supabase.from('expenses').insert(payload).select().single();
     if (error) throw new Error(error.message);
-    return data as Expense;
+    return this.hydrateExpense(data);
   }
 
   public static async updateExpense(id: string, updates: Partial<Expense>): Promise<Expense | null> {
     const supabase = this.getClient();
+    let cleanUpdates: any = { ...updates };
+
+    if (updates.payment_method !== undefined || updates.notes !== undefined) {
+      const existing = await this.getExpenseById(id);
+      const paymentMethod = updates.payment_method !== undefined ? updates.payment_method : (existing?.payment_method || 'Zelle');
+      const baseNotes = (updates.notes !== undefined ? updates.notes : (existing?.notes || '')).replace(/<!--PAYMENT_METHOD:.*?-->/, '').trim();
+      cleanUpdates.notes = `${baseNotes}\n\n<!--PAYMENT_METHOD:${paymentMethod}-->`.trim();
+    }
+    delete cleanUpdates.payment_method;
+
     const { data, error } = await supabase
       .from('expenses')
-      .update(updates)
+      .update(cleanUpdates)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
-    return data as Expense;
+    return this.hydrateExpense(data);
   }
 
   public static async deleteExpense(id: string): Promise<boolean> {
