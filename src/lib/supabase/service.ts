@@ -7,7 +7,8 @@ import {
   Milestone,
   SongRequest,
   PartyRsvpSubmission,
-  TableHierarchy
+  TableHierarchy,
+  InspirationLink
 } from '../types';
 
 export class SupabaseService {
@@ -723,5 +724,116 @@ export class SupabaseService {
 
     if (error) throw new Error(error.message);
     return data as SongRequest;
+  }
+
+  // ==========================================
+  // 6. INSPIRATION & LINK VAULT
+  // ==========================================
+
+  public static async getLinks(category?: string, status?: string): Promise<InspirationLink[]> {
+    const supabase = this.getClient();
+    let query = supabase
+      .from('inspiration_links')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
+    }
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    return (data || []) as InspirationLink[];
+  }
+
+  public static async getLinkById(id: string): Promise<InspirationLink | null> {
+    const supabase = this.getClient();
+    const { data, error } = await supabase
+      .from('inspiration_links')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) return null;
+    return data as InspirationLink;
+  }
+
+  public static async createLink(data: {
+    url?: string;
+    title: string;
+    description?: string;
+    image_url?: string | null;
+    site_name?: string;
+    category?: any;
+    submitted_by?: string;
+    notes?: string;
+    status?: any;
+    discord_thread_id?: string | null;
+    discord_message_id?: string | null;
+    discord_thread_url?: string | null;
+    estimated_cost?: number | null;
+  }): Promise<InspirationLink> {
+    const supabase = this.getClient();
+    const now = new Date().toISOString();
+    const newLink: InspirationLink = {
+      id: `link-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      url: data.url || '',
+      title: data.title || 'Untitled Link',
+      description: data.description || '',
+      image_url: data.image_url || null,
+      site_name: data.site_name || '',
+      category: data.category || 'decor',
+      submitted_by: data.submitted_by || 'Alfredo',
+      notes: data.notes || '',
+      status: data.status || 'saved',
+      discord_thread_id: data.discord_thread_id || null,
+      discord_message_id: data.discord_message_id || null,
+      discord_thread_url: data.discord_thread_url || null,
+      estimated_cost: data.estimated_cost || null,
+      created_at: now,
+      updated_at: now
+    };
+
+    const { data: created, error } = await supabase
+      .from('inspiration_links')
+      .insert(newLink)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return created as InspirationLink;
+  }
+
+  public static async updateLink(
+    id: string,
+    updates: Partial<InspirationLink>
+  ): Promise<InspirationLink | null> {
+    const supabase = this.getClient();
+    const { data, error } = await supabase
+      .from('inspiration_links')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data as InspirationLink;
+  }
+
+  public static async deleteLink(id: string): Promise<boolean> {
+    const supabase = this.getClient();
+    const { error } = await supabase
+      .from('inspiration_links')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
+    return true;
   }
 }

@@ -212,3 +212,35 @@ export interface WeddingSettings {
   };
 }
 
+export type LinkCategory =
+  | 'attire'
+  | 'drinks'
+  | 'venue'
+  | 'decor'
+  | 'photo_video'
+  | 'music'
+  | 'favors_misc';
+
+export type LinkStatus = 'saved' | 'reviewing' | 'booked' | 'archived';
+
+export interface InspirationLink {
+  id: string;
+  url: string;
+  title: string;
+  description: string;
+  image_url?: string | null;
+  site_name?: string;
+  category: LinkCategory;
+  submitted_by: string; // e.g. "Alfredo" | "Trang"
+  notes?: string;
+  status: LinkStatus;
+  discord_thread_id?: string | null;
+  discord_message_id?: string | null;
+  discord_thread_url?: string | null;
+  estimated_cost?: number | null;
+  converted_to_expense_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+

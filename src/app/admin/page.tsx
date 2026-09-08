@@ -14,6 +14,7 @@ import { AgentWorkflowsHub } from '@/components/admin/AgentWorkflowsHub';
 import { BriefingModal } from '@/components/admin/BriefingModal';
 import { GuestListHub } from '@/components/admin/GuestListHub';
 import { WeddingSetupWizard } from '@/components/admin/WeddingSetupWizard';
+import { LinkVault } from '@/components/admin/LinkVault';
 import { Table, Guest, Party, Expense, Milestone, SongRequest, DailyBriefing } from '@/lib/types';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -23,13 +24,14 @@ import {
   UtensilsCrossed,
   Bot,
   Link2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  BookmarkCheck
 } from 'lucide-react';
 
 export default function AdminCrmPage() {
   const router = useRouter();
   const [lang, setLang] = useState<Language>('en');
-  const [activeTab, setActiveTab] = useState<'guests_links' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents' | 'setup'>('guests_links');
+  const [activeTab, setActiveTab] = useState<'guests_links' | 'link_vault' | 'seating' | 'budget' | 'timeline' | 'kitchen_dj' | 'agents' | 'setup'>('guests_links');
 
   // Supabase Auth User State
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -234,6 +236,19 @@ export default function AdminCrmPage() {
 
           <button
             type="button"
+            onClick={() => setActiveTab('link_vault')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'link_vault'
+                ? 'bg-crimson-800 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'
+            }`}
+          >
+            <BookmarkCheck className="w-4 h-4 text-gold-300" />
+            <span>{t.crm_tab_link_vault}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('seating')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               activeTab === 'seating'
@@ -325,6 +340,12 @@ export default function AdminCrmPage() {
             lang={lang}
             parties={parties}
             onRefresh={fetchAllData}
+          />
+        )}
+
+        {activeTab === 'link_vault' && (
+          <LinkVault
+            lang={lang}
           />
         )}
 

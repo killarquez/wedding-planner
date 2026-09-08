@@ -11,7 +11,8 @@ import {
   DailyBriefing,
   TableHierarchy,
   PartyRsvpSubmission,
-  WeddingSettings
+  WeddingSettings,
+  InspirationLink
 } from './types';
 import {
   initialGuests,
@@ -21,7 +22,8 @@ import {
   initialMilestones,
   initialSongRequests,
   initialSourcedVenues,
-  defaultWeddingSettings
+  defaultWeddingSettings,
+  initialLinks
 } from './seedData';
 import { createAdminClient } from './supabase/admin';
 import { SupabaseService } from './supabase/service';
@@ -36,6 +38,7 @@ interface DatabaseState {
   venues: VenueSourcingResult[];
   agent_logs: Array<{ timestamp: string; agent: string; action: string; details?: any }>;
   settings?: WeddingSettings;
+  inspiration_links: InspirationLink[];
 }
 
 // Global in-memory cache to support fast hot reloads + filesystem backup
@@ -57,7 +60,12 @@ function loadState(): DatabaseState {
     ensureDataDirExists();
     if (fs.existsSync(DATA_FILE_PATH)) {
       const raw = fs.readFileSync(DATA_FILE_PATH, 'utf-8');
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (!parsed.inspiration_links) {
+        parsed.inspiration_links = [...initialLinks];
+        saveState(parsed);
+      }
+      return parsed;
     }
   } catch (err) {
     console.warn('Could not read db.json, initializing with default seed', err);
@@ -71,7 +79,8 @@ function loadState(): DatabaseState {
     milestones: [],
     song_requests: [],
     venues: [...initialSourcedVenues],
-    agent_logs: []
+    agent_logs: [],
+    inspiration_links: [...initialLinks]
   };
 
   saveState(defaultState);
@@ -115,6 +124,7 @@ export class WeddingDB {
       milestones: JSON.parse(JSON.stringify(initialMilestones)),
       song_requests: JSON.parse(JSON.stringify(initialSongRequests)),
       venues: JSON.parse(JSON.stringify(initialSourcedVenues)),
+      inspiration_links: JSON.parse(JSON.stringify(initialLinks)),
       agent_logs: [
         {
           timestamp: new Date().toISOString(),
@@ -1173,4 +1183,210 @@ export class WeddingDB {
       }
     };
   }
+
+  // ==========================================
+  // INSPIRATION & LINK VAULT
+  // ==========================================
+
+  public static async getLinks(category?: string, status?: string): Promise<InspirationLink[]> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const links = await SupabaseService.getLinks(category, status);
+        this.updateState(s => { s.inspiration_links = links; });
+        return links;
+      } catch (e) {
+        console.warn('Supabase getLinks error, using local state:', e);
+      }
+    }
+
+    const state = this.getState();
+    let links = state.inspiration_links || [];
+
+    if (category && category !== 'all') {
+      links = links.filter(l => l.category === category);
+    }
+    if (status && status !== 'all') {
+      links = links.filter(l => l.status === status);
+    }
+
+    return [...links].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
+
+  public static async getLinkById(id: string): Promise<InspirationLink | null> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const link = await SupabaseService.getLinkById(id);
+        if (link) return link;
+      } catch (e) {
+        console.warn('Supabase getLinkById error, using local state:', e);
+      }
+    }
+
+    const state = this.getState();
+    return (state.inspiration_links || []).find(l => l.id === id) || null;
+  }
+
+  public static async createLink(data: {
+    url: string;
+    title: string;
+    description?: string;
+    image_url?: string | null;
+    site_name?: string;
+    category?: any;
+    submitted_by?: string;
+    notes?: string;
+    status?: any;
+    discord_thread_id?: string | null;
+    discord_message_id?: string | null;
+    discord_thread_url?: string | null;
+    estimated_cost?: number | null;
+  }): Promise<InspirationLink> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const created = await SupabaseService.createLink(data);
+        this.updateState(s => {
+          if (!s.inspiration_links) s.inspiration_links = [];
+          s.inspiration_links.unshift(created);
+        });
+        return created;
+      } catch (e) {
+        console.warn('Supabase createLink error, falling back to local:', e);
+      }
+    }
+
+    const now = new Date().toISOString();
+    const newLink: InspirationLink = {
+      id: `link-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      url: data.url,
+      title: data.title || 'Untitled Link',
+      description: data.description || '',
+      image_url: data.image_url || null,
+      site_name: data.site_name || '',
+      category: data.category || 'decor',
+      submitted_by: data.submitted_by || 'Alfredo',
+      notes: data.notes || '',
+      status: data.status || 'saved',
+      discord_thread_id: data.discord_thread_id || null,
+      discord_message_id: data.discord_message_id || null,
+      discord_thread_url: data.discord_thread_url || null,
+      estimated_cost: data.estimated_cost || null,
+      created_at: now,
+      updated_at: now
+    };
+
+    this.updateState(s => {
+      if (!s.inspiration_links) s.inspiration_links = [];
+      s.inspiration_links.unshift(newLink);
+      s.agent_logs.push({
+        timestamp: now,
+        agent: 'Discord Link Bot',
+        action: `Saved link "${newLink.title}" to ${newLink.category} (${newLink.submitted_by})`
+      });
+    });
+
+    return newLink;
+  }
+
+  public static async updateLink(
+    id: string,
+    updates: Partial<InspirationLink>
+  ): Promise<InspirationLink | null> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const updated = await SupabaseService.updateLink(id, updates);
+        if (updated) {
+          this.updateState(s => {
+            if (!s.inspiration_links) return;
+            const idx = s.inspiration_links.findIndex(l => l.id === id);
+            if (idx !== -1) s.inspiration_links[idx] = updated;
+          });
+          return updated;
+        }
+      } catch (e) {
+        console.warn('Supabase updateLink error, falling back to local:', e);
+      }
+    }
+
+    let updated: InspirationLink | null = null;
+    const now = new Date().toISOString();
+
+    this.updateState(s => {
+      if (!s.inspiration_links) return;
+      const idx = s.inspiration_links.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        s.inspiration_links[idx] = {
+          ...s.inspiration_links[idx],
+          ...updates,
+          updated_at: now
+        };
+        updated = s.inspiration_links[idx];
+      }
+    });
+
+    return updated;
+  }
+
+  public static async deleteLink(id: string): Promise<boolean> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        await SupabaseService.deleteLink(id);
+        this.updateState(s => {
+          if (!s.inspiration_links) return;
+          s.inspiration_links = s.inspiration_links.filter(l => l.id !== id);
+        });
+        return true;
+      } catch (e) {
+        console.warn('Supabase deleteLink error, falling back to local:', e);
+      }
+    }
+
+    let deleted = false;
+    this.updateState(s => {
+      if (!s.inspiration_links) return;
+      const initLen = s.inspiration_links.length;
+      s.inspiration_links = s.inspiration_links.filter(l => l.id !== id);
+      deleted = s.inspiration_links.length < initLen;
+    });
+    return deleted;
+  }
+
+  public static async convertLinkToExpense(
+    linkId: string,
+    expenseData: {
+      category: any;
+      actual_invoiced: number;
+      deposit_paid: number;
+      vendor_name: string;
+      item_description?: string;
+      payment_due_date?: string;
+      notes?: string;
+    }
+  ): Promise<{ link: InspirationLink; expense: Expense }> {
+    const link = await this.getLinkById(linkId);
+    if (!link) throw new Error(`Link not found with id ${linkId}`);
+
+    const newExpense = await this.addExpense({
+      category: expenseData.category,
+      vendor_name: expenseData.vendor_name || link.site_name || 'Vendor',
+      item_description:
+        expenseData.item_description || `${link.title} (Source: ${link.url})`,
+      estimated_cost: expenseData.actual_invoiced,
+      actual_invoiced: expenseData.actual_invoiced,
+      deposit_paid: expenseData.deposit_paid,
+      payment_due_date: expenseData.payment_due_date || '2026-11-15',
+      payment_status: expenseData.deposit_paid >= expenseData.actual_invoiced ? 'paid' : (expenseData.deposit_paid > 0 ? 'partially_paid' : 'pending'),
+      notes: expenseData.notes || `Converted from Inspiration Link Vault: ${link.url}`
+    });
+
+    const updatedLink = await this.updateLink(linkId, {
+      status: 'booked',
+      converted_to_expense_id: newExpense.id,
+      estimated_cost: expenseData.actual_invoiced
+    });
+
+    return { link: updatedLink || link, expense: newExpense };
+  }
 }
+

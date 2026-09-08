@@ -39,3 +39,7 @@ next-env.d.ts
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Scratch temporary directory
+/scratch/
+

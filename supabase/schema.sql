@@ -120,6 +120,27 @@ CREATE TABLE IF NOT EXISTS public.agent_logs (
     details JSONB
 );
 
+-- 9. Inspiration Links & CRM Vault
+CREATE TABLE IF NOT EXISTS public.inspiration_links (
+    id TEXT PRIMARY KEY,
+    url TEXT,
+    title TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    site_name TEXT,
+    category TEXT NOT NULL DEFAULT 'decor',
+    submitted_by TEXT NOT NULL DEFAULT 'Alfredo',
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'saved',
+    discord_thread_id TEXT,
+    discord_message_id TEXT,
+    discord_thread_url TEXT,
+    estimated_cost NUMERIC(10, 2),
+    converted_to_expense_id TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ==============================================================================
 -- Performance Indexes
 -- ==============================================================================
@@ -128,6 +149,8 @@ CREATE INDEX IF NOT EXISTS idx_guests_table_id ON public.guests(table_id);
 CREATE INDEX IF NOT EXISTS idx_guests_rsvp_status ON public.guests(rsvp_status);
 CREATE INDEX IF NOT EXISTS idx_expenses_payment_status ON public.expenses(payment_status);
 CREATE INDEX IF NOT EXISTS idx_milestones_status ON public.milestones(status);
+CREATE INDEX IF NOT EXISTS idx_inspiration_links_category ON public.inspiration_links(category);
+CREATE INDEX IF NOT EXISTS idx_inspiration_links_status ON public.inspiration_links(status);
 
 -- ==============================================================================
 -- Row Level Security (RLS)
@@ -140,6 +163,7 @@ ALTER TABLE public.milestones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.song_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.venues ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.inspiration_links ENABLE ROW LEVEL SECURITY;
 
 -- Clean existing policies if re-running
 DROP POLICY IF EXISTS "Allow public insert into parties" ON public.parties;
@@ -154,6 +178,7 @@ DROP POLICY IF EXISTS "Allow authenticated full access to milestones" ON public.
 DROP POLICY IF EXISTS "Allow authenticated full access to song_requests" ON public.song_requests;
 DROP POLICY IF EXISTS "Allow authenticated full access to venues" ON public.venues;
 DROP POLICY IF EXISTS "Allow authenticated full access to agent_logs" ON public.agent_logs;
+DROP POLICY IF EXISTS "Allow authenticated full access to inspiration_links" ON public.inspiration_links;
 
 -- Public Access Policies: Guests can submit RSVPs and song requests
 CREATE POLICY "Allow public insert into parties" ON public.parties FOR INSERT WITH CHECK (true);
@@ -169,3 +194,5 @@ CREATE POLICY "Allow authenticated full access to milestones" ON public.mileston
 CREATE POLICY "Allow authenticated full access to song_requests" ON public.song_requests FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated full access to venues" ON public.venues FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow authenticated full access to agent_logs" ON public.agent_logs FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated full access to inspiration_links" ON public.inspiration_links FOR ALL USING (auth.role() = 'authenticated');
+
