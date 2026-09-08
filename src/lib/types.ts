@@ -231,7 +231,7 @@ export interface InspirationLink {
   image_url?: string | null;
   site_name?: string;
   category: LinkCategory;
-  submitted_by: string; // e.g. "Alfredo" | "Trang"
+  submitted_by: string; // e.g. "Alfredo" | "Trang" | "Lindsie"
   notes?: string;
   status: LinkStatus;
   discord_thread_id?: string | null;
@@ -239,6 +239,16 @@ export interface InspirationLink {
   discord_thread_url?: string | null;
   estimated_cost?: number | null;
   converted_to_expense_id?: string | null;
+  // Contract & Invoice metadata
+  is_contract?: boolean;
+  document_url?: string | null;
+  document_filename?: string | null;
+  document_type?: 'pdf' | 'image' | null;
+  vendor_name?: string | null;
+  deposit_amount?: number | null;
+  balance_due?: number | null;
+  payment_due_date?: string | null;
+  contract_terms?: string | null;
   created_at: string;
   updated_at: string;
 }

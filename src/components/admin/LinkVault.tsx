@@ -24,7 +24,12 @@ import {
   X,
   Pencil,
   Eye,
-  Check
+  Check,
+  FileText,
+  ShieldCheck,
+  AlertCircle,
+  Download,
+  CheckSquare
 } from 'lucide-react';
 
 interface Props {
@@ -41,6 +46,9 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedSubmitter, setSelectedSubmitter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // View Section: All Inspiration vs Contracts & Invoices
+  const [viewSection, setViewSection] = useState<'all' | 'contracts'>('all');
 
   // Inline Price Editing State
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
@@ -60,13 +68,15 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
   const [newCategory, setNewCategory] = useState<string>('auto');
   const [addingLoading, setAddingLoading] = useState(false);
 
-  // Convert to Expense Modal
+  // 2-Step Verification Convert to Expense Modal
   const [convertingLink, setConvertingLink] = useState<InspirationLink | null>(null);
   const [expenseCost, setExpenseCost] = useState<number>(0);
   const [expenseDeposit, setExpenseDeposit] = useState<number>(0);
+  const [expenseBalance, setExpenseBalance] = useState<number>(0);
   const [expenseCategory, setExpenseCategory] = useState<ExpenseCategory>('venue_banquet');
   const [expenseVendor, setExpenseVendor] = useState('');
   const [expenseDueDate, setExpenseDueDate] = useState('2026-11-15');
+  const [expenseConfirmed, setExpenseConfirmed] = useState<boolean>(false);
   const [convertLoading, setConvertLoading] = useState(false);
 
   const fetchLinks = async () => {
@@ -89,8 +99,13 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
     fetchLinks();
   }, []);
 
+  const contractCount = links.filter(l => l.is_contract || l.document_type === 'pdf' || (l.vendor_name && l.deposit_amount !== null && l.deposit_amount !== undefined)).length;
+
   // Filter links
   const filteredLinks = links.filter(link => {
+    const isContractItem = link.is_contract || link.document_type === 'pdf' || (link.vendor_name && link.deposit_amount !== null && link.deposit_amount !== undefined);
+    if (viewSection === 'contracts' && !isContractItem) return false;
+
     const matchesCat = selectedCategory === 'all' || link.category === selectedCategory;
     const matchesStatus = selectedStatus === 'all' || link.status === selectedStatus;
     const matchesSubmitter = selectedSubmitter === 'all' || link.submitted_by.toLowerCase() === selectedSubmitter.toLowerCase();
@@ -98,6 +113,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
     const matchesSearch =
       !query ||
       link.title.toLowerCase().includes(query) ||
+      (link.vendor_name && link.vendor_name.toLowerCase().includes(query)) ||
       (link.notes && link.notes.toLowerCase().includes(query)) ||
       (link.site_name && link.site_name.toLowerCase().includes(query));
 
@@ -196,9 +212,18 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
 
   const openConvertModal = (link: InspirationLink) => {
     setConvertingLink(link);
-    setExpenseCost(link.estimated_cost || 0);
-    setExpenseDeposit(0);
-    setExpenseVendor(link.site_name || link.title.slice(0, 40));
+    const cost = link.estimated_cost || 0;
+    const deposit = link.deposit_amount || 0;
+    const balance = link.balance_due !== null && link.balance_due !== undefined
+      ? link.balance_due
+      : Math.max(0, cost - deposit);
+
+    setExpenseCost(cost);
+    setExpenseDeposit(deposit);
+    setExpenseBalance(balance);
+    setExpenseVendor(link.vendor_name || link.site_name || link.title.slice(0, 40));
+    setExpenseDueDate(link.payment_due_date || '2026-11-15');
+    setExpenseConfirmed(false);
 
     // Map LinkCategory to ExpenseCategory
     let mappedCat: ExpenseCategory = 'misc';
@@ -214,7 +239,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
 
   const handleConvertSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!convertingLink) return;
+    if (!convertingLink || !expenseConfirmed) return;
 
     setConvertLoading(true);
     try {
@@ -229,9 +254,9 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             actual_invoiced: Number(expenseCost),
             deposit_paid: Number(expenseDeposit),
             vendor_name: expenseVendor,
-            item_description: `${convertingLink.title} (${convertingLink.url})`,
+            item_description: `${convertingLink.vendor_name ? `[Contract] ` : ''}${convertingLink.title} (${convertingLink.document_url || convertingLink.url || ''})`.trim(),
             payment_due_date: expenseDueDate,
-            notes: `Converted from Link Vault. Original note: ${convertingLink.notes || 'None'}`
+            notes: `Converted from Link Vault with 2-step verification. Original note: ${convertingLink.notes || 'None'}.${convertingLink.contract_terms ? ` Terms: ${convertingLink.contract_terms}` : ''}`
           }
         })
       });
@@ -307,6 +332,53 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             <span>{lang === 'en' ? 'Add Link / Expense' : 'Thêm Link / Chi Tiêu'}</span>
           </button>
         </div>
+      </div>
+
+      {/* 1.2 View Section Switcher: All Inspiration vs Contracts & Invoices */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 rounded-2xl border border-stone-200 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setViewSection('all')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              viewSection === 'all'
+                ? 'bg-stone-900 text-gold-200 shadow-xs'
+                : 'bg-stone-50 hover:bg-stone-100 text-stone-600'
+            }`}
+          >
+            <span>🌟 {lang === 'en' ? 'All Inspiration & Ideas' : 'Tất Cả Ý Tưởng'}</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              viewSection === 'all' ? 'bg-stone-800 text-gold-300' : 'bg-stone-200 text-stone-700'
+            }`}>
+              {links.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewSection('contracts')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              viewSection === 'contracts'
+                ? 'bg-crimson-800 text-gold-200 border border-gold-400 shadow-xs'
+                : 'bg-stone-50 hover:bg-stone-100 text-stone-600 border border-transparent'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-gold-400" />
+            <span>{lang === 'en' ? 'Contracts & Invoices Vault' : 'Hồ Sơ Hợp Đồng & Hóa Đơn'}</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+              viewSection === 'contracts' ? 'bg-crimson-950 text-gold-300' : 'bg-gold-100 text-gold-800'
+            }`}>
+              {contractCount}
+            </span>
+          </button>
+        </div>
+
+        {viewSection === 'contracts' && (
+          <div className="text-[11px] text-stone-500 italic pr-2 flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{lang === 'en' ? 'AI extracts contract terms; 2-step verification required before Budget commit' : 'Trí tuệ nhân tạo quét điều khoản; cần duyệt 2 bước trước khi ghi sổ'}</span>
+          </div>
+        )}
       </div>
 
       {/* 1.5 Evening Review Queue Banner */}
@@ -455,23 +527,55 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             const catMeta = DISCORD_FORUM_TAG_MAP[link.category] || DISCORD_FORUM_TAG_MAP.decor;
             const isBooked = link.status === 'booked';
             const isReviewing = link.status === 'reviewing';
+            const isContract = link.is_contract || link.document_type === 'pdf' || (link.vendor_name && link.deposit_amount !== null && link.deposit_amount !== undefined);
+            const isPdf = link.document_type === 'pdf' || (link.document_filename && link.document_filename.toLowerCase().endsWith('.pdf')) || (link.url && link.url.toLowerCase().endsWith('.pdf'));
 
             return (
               <div
                 key={link.id}
                 className={`bg-white rounded-3xl border transition-all flex flex-col overflow-hidden group ${
-                  isReviewing
+                  isContract
+                    ? 'border-purple-300/80 hover:border-purple-500 hover:shadow-xl ring-1 ring-purple-200/50'
+                    : isReviewing
                     ? 'border-amber-400 ring-2 ring-amber-300/60 shadow-md bg-amber-50/15'
                     : 'border-stone-200 hover:border-gold-400/80 hover:shadow-lg'
                 }`}
               >
-                {/* Image Thumbnail or Written Idea Header */}
+                {/* Image / PDF Document Header */}
                 <div
-                  onClick={() => link.image_url && setPreviewImage({ url: link.image_url, title: link.title })}
-                  className={`relative aspect-[16/10] bg-stone-100 overflow-hidden ${link.image_url ? 'cursor-pointer' : ''}`}
-                  title={link.image_url ? (lang === 'en' ? 'Click to view image/receipt' : 'Bấm để phóng to ảnh') : undefined}
+                  onClick={() => {
+                    if (isPdf) {
+                      window.open(link.document_url || link.url, '_blank');
+                    } else if (link.image_url) {
+                      setPreviewImage({ url: link.image_url, title: link.title });
+                    }
+                  }}
+                  className={`relative aspect-[16/10] bg-stone-100 overflow-hidden ${(link.image_url || isPdf) ? 'cursor-pointer' : ''}`}
+                  title={isPdf ? (lang === 'en' ? 'Click to open original PDF' : 'Bấm để mở file PDF gốc') : (link.image_url ? (lang === 'en' ? 'Click to view image' : 'Bấm để xem ảnh') : undefined)}
                 >
-                  {link.image_url ? (
+                  {isPdf ? (
+                    <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-br from-purple-950 via-stone-900 to-indigo-950 text-white group-hover:scale-102 transition-transform duration-500">
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded-md bg-purple-500/30 text-purple-200 border border-purple-400/40 text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                          <FileText className="w-3 h-3 text-purple-300" />
+                          <span>PDF Document</span>
+                        </span>
+                        <ExternalLink className="w-4 h-4 text-purple-300 opacity-60 group-hover:opacity-100" />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-mono uppercase text-purple-300 tracking-wider">
+                          {link.vendor_name || 'Vendor Contract'}
+                        </span>
+                        <h4 className="font-serif font-bold text-sm text-gold-200 line-clamp-2">
+                          {link.title}
+                        </h4>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-stone-400 font-mono pt-1 border-t border-white/10">
+                        <span>{link.document_filename || 'contract.pdf'}</span>
+                        <span className="text-emerald-400 font-bold">Verified AI Parse ✓</span>
+                      </div>
+                    </div>
+                  ) : link.image_url ? (
                     <>
                       <img
                         src={link.image_url}
@@ -508,7 +612,13 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                     <span className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border shadow-xs backdrop-blur-md ${catMeta.badgeClass}`}>
                       {catMeta.emoji} {lang === 'en' ? catMeta.labelEn : catMeta.labelVi}
                     </span>
-                    {isReviewing && (
+                    {isContract && (
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-600 text-white shadow-xs border border-purple-400 flex items-center gap-1">
+                        <FileText className="w-3 h-3" />
+                        <span>{isPdf ? 'CONTRACT' : 'INVOICE'}</span>
+                      </span>
+                    )}
+                    {isReviewing && !isContract && (
                       <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500 text-stone-950 shadow-xs border border-amber-300 animate-pulse">
                         REVIEW
                       </span>
@@ -530,7 +640,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                   {/* Bottom Image Source Pill */}
                   <div className="absolute bottom-2 left-2.5 pointer-events-none">
                     <span className="px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-mono backdrop-blur-xs">
-                      {link.site_name || 'Web'}
+                      {isPdf ? 'PDF' : (link.site_name || 'Web')}
                     </span>
                   </div>
                 </div>
@@ -538,9 +648,15 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                 {/* Card Content Body */}
                 <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                   <div className="space-y-2">
+                    {link.vendor_name && (
+                      <span className="text-[11px] font-mono font-bold text-crimson-800 uppercase tracking-wider block">
+                        🏛️ {link.vendor_name}
+                      </span>
+                    )}
+
                     {link.url ? (
                       <a
-                        href={link.url}
+                        href={link.document_url || link.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm font-serif font-bold text-stone-900 hover:text-crimson-800 line-clamp-2 transition-colors flex items-start justify-between gap-1 group/title"
@@ -554,14 +670,56 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                       </h4>
                     )}
 
-                    {link.description && link.url && (
+                    {/* Financial Summary Grid for Invoices / Contracts */}
+                    {isContract && (
+                      <div className="grid grid-cols-3 gap-1.5 p-2 bg-stone-50 rounded-xl border border-stone-200 text-center my-1.5 shadow-2xs">
+                        <div>
+                          <span className="block text-[9px] uppercase font-mono text-stone-400">Total</span>
+                          <span className="font-serif font-bold text-xs text-stone-900">
+                            ${(link.estimated_cost || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div className="border-x border-stone-200">
+                          <span className="block text-[9px] uppercase font-mono text-emerald-600 font-bold">Deposit</span>
+                          <span className="font-serif font-bold text-xs text-emerald-700">
+                            ${(link.deposit_amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block text-[9px] uppercase font-mono text-amber-600 font-bold">Balance</span>
+                          <span className="font-serif font-bold text-xs text-amber-800">
+                            ${(link.balance_due !== null && link.balance_due !== undefined ? link.balance_due : Math.max(0, (link.estimated_cost || 0) - (link.deposit_amount || 0))).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Due Date Indicator */}
+                    {link.payment_due_date && (
+                      <div className="text-[11px] text-amber-900 font-mono flex items-center gap-1 font-semibold">
+                        <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span>Payment Due: {link.payment_due_date}</span>
+                      </div>
+                    )}
+
+                    {/* Contract Terms Callout Banner */}
+                    {link.contract_terms && (
+                      <div className="p-2.5 rounded-xl bg-gold-50/90 border border-gold-300/60 text-gold-950 text-[11px] flex items-start gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 text-gold-700 shrink-0 mt-0.5" />
+                        <span className="line-clamp-3 leading-relaxed">
+                          <strong>Terms:</strong> {link.contract_terms}
+                        </span>
+                      </div>
+                    )}
+
+                    {link.description && !isContract && link.url && (
                       <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed">
                         {link.description}
                       </p>
                     )}
 
                     {/* Couple User Notes */}
-                    {link.notes && (
+                    {link.notes && (!link.contract_terms || link.notes !== link.contract_terms) && (
                       <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/60 text-amber-900 text-xs italic flex items-start gap-1.5">
                         <Heart className="w-3.5 h-3.5 text-crimson-700 shrink-0 mt-0.5 fill-crimson-700/20" />
                         <span className="line-clamp-2">"{link.notes}"</span>
@@ -592,7 +750,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                         </select>
 
                         {/* Quick Approve Button for items in reviewing */}
-                        {isReviewing && (
+                        {isReviewing && !isContract && (
                           <button
                             type="button"
                             onClick={() => handleStatusChange(link.id, 'booked')}
@@ -636,7 +794,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                             className="p-0.5 text-stone-400 hover:bg-stone-100 rounded"
                             title="Cancel"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ) : (
@@ -667,21 +825,38 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-1.5 pt-1">
-                      {/* Convert to Expense Button */}
+                      {/* Convert to Expense Button (2-Step Verification) */}
                       {!link.converted_to_expense_id ? (
                         <button
                           type="button"
                           onClick={() => openConvertModal(link)}
-                          className="flex-1 py-1.5 px-2.5 rounded-xl bg-gold-50 hover:bg-gold-100 text-gold-900 border border-gold-300 text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
-                          title="Convert this vendor link directly into a budget ledger item"
+                          className={`flex-1 py-1.5 px-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+                            isContract
+                              ? 'bg-gradient-to-r from-purple-800 to-indigo-900 hover:from-purple-700 hover:to-indigo-800 text-white border border-purple-500/60'
+                              : 'bg-gold-50 hover:bg-gold-100 text-gold-900 border border-gold-300'
+                          }`}
+                          title="2-Step Verification: Review and commit to budget ledger"
                         >
-                          <DollarSign className="w-3 h-3 text-gold-700" />
-                          <span>{lang === 'en' ? 'Add to Budget' : 'Chuyển Vào Ngân Sách'}</span>
+                          <ShieldCheck className="w-3.5 h-3.5 text-gold-300" />
+                          <span>{isContract ? (lang === 'en' ? 'Review & Add to Budget' : 'Duyệt & Ghi Sổ') : (lang === 'en' ? 'Add to Budget' : 'Chuyển Vào Ngân Sách')}</span>
                         </button>
                       ) : (
                         <div className="flex-1 py-1 px-2 rounded-xl bg-emerald-50 text-emerald-800 text-[10px] font-bold text-center border border-emerald-200">
                           ✓ {lang === 'en' ? 'Tracked in Budget' : 'Đã Ghi Vào Sổ Thu Chi'}
                         </div>
+                      )}
+
+                      {/* View Original PDF Button if available */}
+                      {isPdf && (link.document_url || link.url) && (
+                        <a
+                          href={link.document_url || link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-colors"
+                          title="Open original PDF invoice in new tab"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                        </a>
                       )}
 
                       {/* Discord Thread Link if available */}
@@ -891,132 +1066,235 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
         </div>
       )}
 
-      {/* MODAL 2: CONVERT TO BUDGET EXPENSE */}
+      {/* MODAL 2: 2-STEP VERIFICATION CONVERT TO BUDGET EXPENSE */}
       {convertingLink && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border-2 border-gold-400 shadow-2xl space-y-4 animate-scale-up">
-            <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-gold-100 text-gold-900">
-                  <DollarSign className="w-5 h-5 text-gold-800" />
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full border-2 border-gold-400/80 shadow-2xl space-y-4 my-8 animate-scale-up">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-stone-100 pb-3.5">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-2xl bg-gold-100 text-gold-900 mt-0.5 shadow-xs">
+                  <ShieldCheck className="w-6 h-6 text-gold-800" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-stone-900 text-base">
-                    {lang === 'en' ? 'Convert to Budget Expense' : 'Thêm Vào Sổ Thu Chi'}
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-md bg-gold-50 border border-gold-200 text-[10px] font-bold tracking-wider uppercase text-gold-800">
+                      2-Step Verification
+                    </span>
+                    {convertingLink.is_contract && (
+                      <span className="px-2 py-0.5 rounded-md bg-stone-900 text-[10px] font-bold tracking-wider uppercase text-gold-300">
+                        {convertingLink.document_type?.toUpperCase() || 'DOCUMENT'}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-serif font-bold text-stone-900 text-lg mt-1">
+                    {lang === 'en' ? 'Review & Add to Budget' : 'Xác Minh & Ghi Sổ Thu Chi'}
                   </h3>
-                  <p className="text-[11px] text-stone-500 line-clamp-1">{convertingLink.title}</p>
+                  <p className="text-xs text-stone-500 line-clamp-1 mt-0.5">{convertingLink.title}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setConvertingLink(null)}
-                className="text-stone-400 hover:text-stone-700 p-1"
+                className="text-stone-400 hover:text-stone-700 p-1.5 rounded-xl hover:bg-stone-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleConvertSubmit} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
-                  Vendor Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={expenseVendor}
-                  onChange={(e) => setExpenseVendor(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-1 focus:ring-crimson-700"
-                />
+            {/* Original Document Quick Access */}
+            {(convertingLink.document_url || convertingLink.url) && (
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-stone-50 border border-stone-200/80 text-xs">
+                <div className="flex items-center gap-2 text-stone-700 truncate mr-2">
+                  <FileText className="w-4 h-4 text-crimson-700 shrink-0" />
+                  <span className="font-medium truncate">
+                    {convertingLink.document_filename || convertingLink.title}
+                  </span>
+                </div>
+                <a
+                  href={convertingLink.document_url || convertingLink.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-white border border-stone-300 hover:border-gold-500 text-stone-800 font-semibold text-[11px] shadow-xs flex items-center gap-1.5 shrink-0 transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
+                  <span>{lang === 'en' ? 'Open Original File' : 'Mở File Gốc'}</span>
+                </a>
               </div>
+            )}
 
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleConvertSubmit} className="space-y-4 text-xs">
+              {/* STEP 1: VERIFY EXTRACTED FIGURES */}
+              <div className="space-y-3 p-4 rounded-2xl bg-stone-50/70 border border-stone-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold tracking-wider uppercase text-crimson-800 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Step 1: Audit Extracted Figures
+                  </span>
+                  <span className="text-[10px] text-stone-500">You can adjust any values</span>
+                </div>
+
                 <div>
                   <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
-                    Total Invoiced ($)
+                    Vendor / Provider Name
                   </label>
                   <input
-                    type="number"
-                    min="0"
-                    step="1"
+                    type="text"
                     required
-                    value={expenseCost}
-                    onChange={(e) => setExpenseCost(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-1 focus:ring-crimson-700"
+                    value={expenseVendor}
+                    onChange={(e) => setExpenseVendor(e.target.value)}
+                    placeholder="e.g. Paracel Seafood, Kim Couture, etc."
+                    className="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-xs font-medium focus:ring-2 focus:ring-crimson-700 focus:outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
-                    Deposit Paid ($)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={expenseDeposit}
-                    onChange={(e) => setExpenseDeposit(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-1 focus:ring-crimson-700"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
+                      Budget Category
+                    </label>
+                    <select
+                      value={expenseCategory}
+                      onChange={(e) => setExpenseCategory(e.target.value as ExpenseCategory)}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-xs font-medium focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                    >
+                      <option value="venue_banquet">Venue Banquet</option>
+                      <option value="host_beverages_corkage">Host Beverages / Cognac</option>
+                      <option value="attire">Custom Áo Dài / Attire</option>
+                      <option value="decor_floral">Decor & Floral</option>
+                      <option value="photography_video">Photography & Video</option>
+                      <option value="stage_av_dj">Stage AV & DJ</option>
+                      <option value="gifts_favors">Gifts & Favors</option>
+                      <option value="misc">Miscellaneous</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
+                      Payment Due Date
+                    </label>
+                    <input
+                      type="date"
+                      value={expenseDueDate}
+                      onChange={(e) => setExpenseDueDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white text-xs font-medium focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                    />
+                  </div>
                 </div>
+
+                {/* Financial breakdown */}
+                <div className="grid grid-cols-3 gap-2.5 pt-1">
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1 text-[10px]">
+                      Total Invoiced ($)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-2 text-stone-400 font-bold text-xs">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        value={expenseCost}
+                        onChange={(e) => setExpenseCost(Number(e.target.value))}
+                        className="w-full pl-6 pr-2 py-2 rounded-xl border border-stone-300 bg-white text-xs font-bold text-stone-900 focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1 text-[10px]">
+                      Deposit Paid ($)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-2 text-stone-400 font-bold text-xs">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={expenseDeposit}
+                        onChange={(e) => setExpenseDeposit(Number(e.target.value))}
+                        className="w-full pl-6 pr-2 py-2 rounded-xl border border-emerald-300 bg-emerald-50/50 text-xs font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1 text-[10px]">
+                      Balance Due ($)
+                    </label>
+                    <div className="py-2 px-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 font-extrabold text-xs flex items-center">
+                      ${Math.max(0, (expenseCost || 0) - (expenseDeposit || 0)).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contract terms note if present */}
+                {convertingLink.contract_terms && (
+                  <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-950 space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-[10px] text-amber-900 uppercase tracking-wide">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-700" />
+                      Key Contract Terms & Deadlines:
+                    </div>
+                    <p className="text-[11px] leading-relaxed italic text-amber-900/90 font-medium">
+                      "{convertingLink.contract_terms}"
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
-                    Budget Category
-                  </label>
-                  <select
-                    value={expenseCategory}
-                    onChange={(e) => setExpenseCategory(e.target.value as ExpenseCategory)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white"
+              {/* STEP 2: VERIFICATION & APPROVAL CHECKBOX */}
+              <div className={`p-4 rounded-2xl border transition-all ${expenseConfirmed ? 'bg-emerald-50/80 border-emerald-300 ring-2 ring-emerald-200' : 'bg-amber-50/60 border-amber-200'}`}>
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={expenseConfirmed}
+                    onChange={(e) => setExpenseConfirmed(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded text-crimson-700 focus:ring-crimson-600 cursor-pointer accent-crimson-800"
+                  />
+                  <div className="space-y-1">
+                    <div className="font-bold text-stone-900 text-xs flex items-center gap-1.5">
+                      <ShieldCheck className={`w-4 h-4 ${expenseConfirmed ? 'text-emerald-700' : 'text-amber-700'}`} />
+                      <span>Step 2: Couple Authorization Check</span>
+                    </div>
+                    <p className="text-[11px] text-stone-600 leading-snug">
+                      I have reviewed these figures against the vendor contract / invoice and approve adding them to our Wedding Budget Ledger.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex items-center justify-between border-t border-stone-100">
+                <span className="text-[11px] text-stone-500 italic">
+                  {!expenseConfirmed ? '⚠️ Check Step 2 to enable commit' : '✓ Ready to add'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConvertingLink(null)}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer transition-colors"
                   >
-                    <option value="venue_banquet">Venue Banquet</option>
-                    <option value="host_beverages_corkage">Host Beverages / Cognac</option>
-                    <option value="attire">Custom Áo Dài / Attire</option>
-                    <option value="decor_floral">Decor & Floral</option>
-                    <option value="photography_video">Photography & Video</option>
-                    <option value="stage_av_dj">Stage AV & DJ</option>
-                    <option value="gifts_favors">Gifts & Favors</option>
-                    <option value="misc">Miscellaneous</option>
-                  </select>
+                    {lang === 'en' ? 'Cancel' : 'Hủy'}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={convertLoading || !expenseConfirmed}
+                    className="px-5 py-2.5 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white text-xs font-bold shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {convertLoading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>{lang === 'en' ? 'Adding to Ledger...' : 'Đang ghi sổ...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="w-4 h-4 text-gold-300" />
+                        <span>{lang === 'en' ? 'Confirm & Commit to Budget Ledger' : 'Xác Nhận & Ghi Vào Sổ'}</span>
+                      </>
+                    )}
+                  </button>
                 </div>
-
-                <div>
-                  <label className="block font-bold uppercase tracking-wider text-stone-600 mb-1">
-                    Payment Due Date
-                  </label>
-                  <input
-                    type="date"
-                    value={expenseDueDate}
-                    onChange={(e) => setExpenseDueDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-1 focus:ring-crimson-700"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2 border-t border-stone-100">
-                <button
-                  type="button"
-                  onClick={() => setConvertingLink(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100"
-                >
-                  {lang === 'en' ? 'Cancel' : 'Hủy'}
-                </button>
-                <button
-                  type="submit"
-                  disabled={convertLoading}
-                  className="px-5 py-2.5 rounded-xl bg-gold-600 hover:bg-gold-500 text-stone-950 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                >
-                  {convertLoading ? (
-                    <span>{lang === 'en' ? 'Adding...' : 'Đang lưu...'}</span>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-stone-950" />
-                      <span>{lang === 'en' ? 'Confirm & Track in Budget' : 'Xác Nhận & Ghi Sổ'}</span>
-                    </>
-                  )}
-                </button>
               </div>
             </form>
           </div>

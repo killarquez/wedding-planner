@@ -4,7 +4,8 @@
  */
 
 import { scrapeUrlMetadata, ScrapedMetadata } from '../links/scraper';
-import { classifyWeddingLink, CategoryMetadata, extractPriceAndIntent } from '../links/classifier';
+import { classifyWeddingLink, CategoryMetadata, extractPriceAndIntent, DISCORD_FORUM_TAG_MAP } from '../links/classifier';
+import { InvoiceAnalysisEngine } from '../links/invoice';
 import { WeddingDB } from '../db';
 import { InspirationLink } from '../types';
 
@@ -38,6 +39,14 @@ export class DiscordBotService {
     submittedBy: string;
     notes?: string;
     estimatedCost?: number | null;
+    invoiceFields?: {
+      depositPaid?: number | null;
+      balanceDue?: number | null;
+      dueDate?: string | null;
+      contractTerms?: string | null;
+      documentUrl?: string | null;
+      isContract?: boolean;
+    };
     token?: string;
   }): Promise<{ id: string; threadUrl: string } | null> {
     try {
@@ -55,9 +64,41 @@ export class DiscordBotService {
 
       if (params.estimatedCost !== undefined && params.estimatedCost !== null && params.estimatedCost > 0) {
         fields.push({
-          name: '💰 Amount / Cost',
-          value: `$${params.estimatedCost.toLocaleString()}`,
+          name: params.invoiceFields?.isContract ? '💰 Total Invoiced' : '💰 Amount / Cost',
+          value: `$${params.estimatedCost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
           inline: true
+        });
+      }
+
+      if (params.invoiceFields?.depositPaid) {
+        fields.push({
+          name: '💳 Deposit Paid',
+          value: `$${params.invoiceFields.depositPaid.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+          inline: true
+        });
+      }
+
+      if (params.invoiceFields?.balanceDue) {
+        fields.push({
+          name: '⏳ Balance Due',
+          value: `$${params.invoiceFields.balanceDue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`,
+          inline: true
+        });
+      }
+
+      if (params.invoiceFields?.dueDate) {
+        fields.push({
+          name: '📅 Payment Due',
+          value: params.invoiceFields.dueDate,
+          inline: true
+        });
+      }
+
+      if (params.invoiceFields?.contractTerms) {
+        fields.push({
+          name: '📝 Contract Notes',
+          value: params.invoiceFields.contractTerms,
+          inline: false
         });
       }
 
@@ -67,7 +108,7 @@ export class DiscordBotService {
 
       fields.push({
         name: 'Links & Actions',
-        value: `[🔗 Visit Website / Post](${params.url}) • [💒 Open Couple CRM](https://wedding.au-tomato.com/admin)`,
+        value: `[🔗 Visit Website / File](${params.url}) • [💒 Open Couple CRM](https://wedding.au-tomato.com/admin)`,
         inline: false
       });
 
@@ -192,6 +233,111 @@ export class DiscordBotService {
     // Extract price and intent from message text
     const priceIntent = extractPriceAndIntent(content);
     const savedLinks: InspirationLink[] = [];
+
+    // CASE 0: File Attachment is a Document or Invoice/Contract/Quote (PDF or Image scan)
+    const pdfAttachment = attachments?.find(a =>
+      a.content_type === 'application/pdf' || (a.filename && a.filename.toLowerCase().endsWith('.pdf'))
+    );
+    const imgAttachment = attachments?.find(a =>
+      a.content_type?.startsWith('image/') ||
+      /\.(png|jpe?g|webp|gif|heic|bmp)$/i.test(a.url || a.filename || '')
+    );
+    const candidateDoc = pdfAttachment || imgAttachment;
+    const isDocCandidate = candidateDoc && (
+      pdfAttachment !== undefined ||
+      InvoiceAnalysisEngine.isInvoiceOrContract(candidateDoc.filename, candidateDoc.content_type, content)
+    );
+
+    if (isDocCandidate && candidateDoc) {
+      try {
+        await this.reactToMessage(channelId, messageId, '🔍', token);
+        const docRes = await fetch(candidateDoc.url);
+        if (docRes.ok) {
+          const arrayBuf = await docRes.arrayBuffer();
+          const docBuffer = Buffer.from(arrayBuf);
+          const invoiceData = await InvoiceAnalysisEngine.analyzeDocument({
+            buffer: docBuffer,
+            contentType: candidateDoc.content_type || (pdfAttachment ? 'application/pdf' : 'image/jpeg'),
+            filename: candidateDoc.filename,
+            messageText: content
+          });
+
+          if (invoiceData && invoiceData.is_invoice_or_contract) {
+            const categoryMeta = DISCORD_FORUM_TAG_MAP[invoiceData.category] || DISCORD_FORUM_TAG_MAP.decor;
+            const isPdf = !!pdfAttachment;
+            const title = `${invoiceData.vendor_name} — ${isPdf ? 'Contract / Invoice' : 'Receipt'}`;
+            const displayUrl = candidateDoc.url;
+
+            const forumResult = await this.createForumPost({
+              title: `📄 ${title}`,
+              url: displayUrl,
+              description: invoiceData.summary || `Contract / Invoice from ${invoiceData.vendor_name}`,
+              imageUrl: imgAttachment ? imgAttachment.url : null,
+              siteName: isPdf ? 'PDF Contract' : 'Receipt Document',
+              category: categoryMeta,
+              submittedBy: submitter,
+              notes: content || invoiceData.contract_terms || '',
+              estimatedCost: invoiceData.total_amount,
+              invoiceFields: {
+                depositPaid: invoiceData.deposit_paid,
+                balanceDue: invoiceData.balance_due,
+                dueDate: invoiceData.payment_due_date,
+                contractTerms: invoiceData.contract_terms,
+                documentUrl: displayUrl,
+                isContract: true
+              },
+              token
+            });
+
+            const linkRecord = await WeddingDB.createLink({
+              url: displayUrl,
+              title,
+              description: invoiceData.summary || `Contract / Invoice from ${invoiceData.vendor_name}`,
+              image_url: imgAttachment ? imgAttachment.url : null,
+              site_name: isPdf ? 'PDF Contract' : 'Receipt Document',
+              category: invoiceData.category,
+              submitted_by: submitter,
+              notes: content || invoiceData.contract_terms || '',
+              status: 'reviewing',
+              estimated_cost: invoiceData.total_amount,
+              is_contract: true,
+              document_url: displayUrl,
+              document_filename: candidateDoc.filename || (isPdf ? 'invoice.pdf' : 'receipt.jpg'),
+              document_type: isPdf ? 'pdf' : 'image',
+              vendor_name: invoiceData.vendor_name,
+              deposit_amount: invoiceData.deposit_paid,
+              balance_due: invoiceData.balance_due,
+              payment_due_date: invoiceData.payment_due_date,
+              contract_terms: invoiceData.contract_terms,
+              discord_thread_id: forumResult?.id || null,
+              discord_message_id: messageId,
+              discord_thread_url: forumResult?.threadUrl || null
+            });
+
+            savedLinks.push(linkRecord);
+
+            await this.reactToMessage(channelId, messageId, '📄', token);
+            await this.reactToMessage(channelId, messageId, '💰', token);
+            await this.reactToMessage(channelId, messageId, '✅', token);
+
+            let confirmMsg = `📄 **Contract / Invoice Analyzed: ${invoiceData.vendor_name}**\n`;
+            confirmMsg += `💰 **Total Invoiced**: $${invoiceData.total_amount?.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) || 'N/A'}`;
+            if (invoiceData.deposit_paid) confirmMsg += ` | **Deposit Paid**: $${invoiceData.deposit_paid.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+            if (invoiceData.balance_due) confirmMsg += ` | **Balance Due**: $${invoiceData.balance_due.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+            confirmMsg += '\n';
+            if (invoiceData.payment_due_date) confirmMsg += `📅 **Payment Due**: ${invoiceData.payment_due_date}\n`;
+            if (invoiceData.contract_terms) confirmMsg += `📝 **Terms**: ${invoiceData.contract_terms}\n`;
+            confirmMsg += `🏷️ Tagged under **${categoryMeta.discordTagName}**\n`;
+            confirmMsg += `🔒 *Sent to Couple CRM **Contracts & Invoices** vault. Requires 2-step verification before adding to Budget!*`;
+
+            await this.replyInInbox(channelId, messageId, confirmMsg, token);
+            return savedLinks;
+          }
+        }
+      } catch (docErr) {
+        console.error('Failed to download or analyze invoice document:', docErr);
+      }
+    }
 
     // CASE 1: Written Idea / Brainstorm Note / Expense Receipt (No URL in message)
     if (!urlMatches || urlMatches.length === 0) {

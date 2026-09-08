@@ -1229,7 +1229,7 @@ export class WeddingDB {
   }
 
   public static async createLink(data: {
-    url: string;
+    url?: string;
     title: string;
     description?: string;
     image_url?: string | null;
@@ -1242,6 +1242,15 @@ export class WeddingDB {
     discord_message_id?: string | null;
     discord_thread_url?: string | null;
     estimated_cost?: number | null;
+    is_contract?: boolean;
+    document_url?: string | null;
+    document_filename?: string | null;
+    document_type?: 'pdf' | 'image' | null;
+    vendor_name?: string | null;
+    deposit_amount?: number | null;
+    balance_due?: number | null;
+    payment_due_date?: string | null;
+    contract_terms?: string | null;
   }): Promise<InspirationLink> {
     if (this.isSupabaseConfigured()) {
       try {
@@ -1259,7 +1268,7 @@ export class WeddingDB {
     const now = new Date().toISOString();
     const newLink: InspirationLink = {
       id: `link-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      url: data.url,
+      url: data.url || '',
       title: data.title || 'Untitled Link',
       description: data.description || '',
       image_url: data.image_url || null,
@@ -1272,6 +1281,15 @@ export class WeddingDB {
       discord_message_id: data.discord_message_id || null,
       discord_thread_url: data.discord_thread_url || null,
       estimated_cost: data.estimated_cost || null,
+      is_contract: data.is_contract || false,
+      document_url: data.document_url || null,
+      document_filename: data.document_filename || null,
+      document_type: data.document_type || null,
+      vendor_name: data.vendor_name || null,
+      deposit_amount: data.deposit_amount || null,
+      balance_due: data.balance_due || null,
+      payment_due_date: data.payment_due_date || null,
+      contract_terms: data.contract_terms || null,
       created_at: now,
       updated_at: now
     };
