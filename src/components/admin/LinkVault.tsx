@@ -101,6 +101,13 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
 
   const contractCount = links.filter(l => l.is_contract || l.document_type === 'pdf' || (l.vendor_name && l.deposit_amount !== null && l.deposit_amount !== undefined)).length;
 
+  const normalizeSubmitter = (name: string) => {
+    const lower = (name || '').toLowerCase();
+    if (lower.includes('trang') || lower.includes('lindsie')) return 'Trang';
+    if (lower.includes('alfredo') || lower.includes('killarquez')) return 'Alfredo';
+    return name;
+  };
+
   // Filter links
   const filteredLinks = links.filter(link => {
     const isContractItem = link.is_contract || link.document_type === 'pdf' || (link.vendor_name && link.deposit_amount !== null && link.deposit_amount !== undefined);
@@ -108,7 +115,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
 
     const matchesCat = selectedCategory === 'all' || link.category === selectedCategory;
     const matchesStatus = selectedStatus === 'all' || link.status === selectedStatus;
-    const matchesSubmitter = selectedSubmitter === 'all' || link.submitted_by.toLowerCase() === selectedSubmitter.toLowerCase();
+    const matchesSubmitter = selectedSubmitter === 'all' || normalizeSubmitter(link.submitted_by).toLowerCase() === selectedSubmitter.toLowerCase();
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       !query ||
@@ -283,7 +290,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
     { id: 'favors_misc', label: lang === 'en' ? 'Favors & Details' : 'Quà Tặng & Khác', emoji: '🎁' },
   ];
 
-  const submitters = Array.from(new Set(['Alfredo', 'Trang', ...links.map(l => l.submitted_by).filter(Boolean)]));
+  const submitters = Array.from(new Set(['Alfredo', 'Trang', ...links.map(l => normalizeSubmitter(l.submitted_by)).filter(s => s && s !== 'Alfredo' && s !== 'Trang')]));
   const reviewingCount = links.filter(l => l.status === 'reviewing').length;
 
   return (
@@ -627,13 +634,13 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
 
                   <div className="absolute top-2.5 right-2.5 pointer-events-none">
                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold shadow-xs ${
-                      link.submitted_by.toLowerCase() === 'trang'
+                      normalizeSubmitter(link.submitted_by).toLowerCase() === 'trang'
                         ? 'bg-rose-500 text-white'
-                        : link.submitted_by.toLowerCase() === 'alfredo'
+                        : normalizeSubmitter(link.submitted_by).toLowerCase() === 'alfredo'
                         ? 'bg-stone-900 text-gold-300'
                         : 'bg-indigo-600 text-white'
                     }`}>
-                      {link.submitted_by}
+                      {normalizeSubmitter(link.submitted_by)}
                     </span>
                   </div>
 
@@ -996,7 +1003,6 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                   >
                     <option value="Alfredo">Alfredo</option>
                     <option value="Trang">Trang</option>
-                    <option value="Lindsie">Lindsie</option>
                     <option value="Wedding Party">Wedding Party</option>
                   </select>
                 </div>

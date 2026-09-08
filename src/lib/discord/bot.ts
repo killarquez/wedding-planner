@@ -218,10 +218,10 @@ export class DiscordBotService {
       if (img) attachmentImageUrl = img.url;
     }
 
-    // Determine submitter: recognizes Trang, Alfredo, or wedding party helpers (e.g. "Lindsie")
+    // Determine submitter: recognizes Trang (Discord username: lindsie/lindsie1527), Alfredo (killarquez), or wedding party helpers
     const lowerAuthor = authorName.toLowerCase();
     let submitter = 'Alfredo';
-    if (lowerAuthor.includes('trang')) {
+    if (lowerAuthor.includes('trang') || lowerAuthor.includes('lindsie')) {
       submitter = 'Trang';
     } else if (lowerAuthor.includes('alfredo') || lowerAuthor.includes('killarquez')) {
       submitter = 'Alfredo';

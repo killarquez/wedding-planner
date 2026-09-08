@@ -136,7 +136,15 @@ async function handleMessageCreate(msg) {
 
   if (!content && attachments.length === 0) return;
 
-  const authorName = msg.member?.nick || msg.author?.global_name || msg.author?.username || 'Alfredo';
+  let rawAuthor = msg.member?.nick || msg.author?.global_name || msg.author?.username || 'Alfredo';
+  let authorName = rawAuthor;
+  const lowerAuthor = rawAuthor.toLowerCase();
+  if (lowerAuthor.includes('lindsie') || lowerAuthor.includes('trang')) {
+    authorName = 'Trang';
+  } else if (lowerAuthor.includes('alfredo') || lowerAuthor.includes('killarquez')) {
+    authorName = 'Alfredo';
+  }
+
   const hasUrl = /https?:\/\/[^\s]+/g.test(content);
   const hasImage = attachments.some(a => a.content_type?.startsWith('image/') || /\.(png|jpe?g|webp|gif|heic)$/i.test(a.url || ''));
   console.log(`\n📨 ${hasUrl ? 'Link' : (hasImage ? 'Receipt/Photo Upload' : 'Written Note')} received from ${authorName}: "${(content || '[Photo Attachment]').slice(0, 100)}"`);
