@@ -4,7 +4,7 @@
  */
 
 import { scrapeUrlMetadata, ScrapedMetadata } from '../links/scraper';
-import { classifyWeddingLink, CategoryMetadata } from '../links/classifier';
+import { classifyWeddingLink, CategoryMetadata, extractPriceAndIntent } from '../links/classifier';
 import { WeddingDB } from '../db';
 import { InspirationLink } from '../types';
 
@@ -37,6 +37,7 @@ export class DiscordBotService {
     category: CategoryMetadata;
     submittedBy: string;
     notes?: string;
+    estimatedCost?: number | null;
     token?: string;
   }): Promise<{ id: string; threadUrl: string } | null> {
     try {
@@ -51,6 +52,14 @@ export class DiscordBotService {
         { name: 'Category', value: params.category.discordTagName, inline: true },
         { name: 'Saved By', value: params.submittedBy, inline: true }
       ];
+
+      if (params.estimatedCost !== undefined && params.estimatedCost !== null && params.estimatedCost > 0) {
+        fields.push({
+          name: '💰 Amount / Cost',
+          value: `$${params.estimatedCost.toLocaleString()}`,
+          inline: true
+        });
+      }
 
       if (params.notes && params.notes.trim()) {
         fields.push({ name: 'Couple Notes', value: params.notes.trim(), inline: false });
@@ -142,7 +151,7 @@ export class DiscordBotService {
   }
 
   /**
-   * Fully processes a text message containing link(s) from Alfredo or Trang
+   * Fully processes a text message containing link(s) or written ideas/receipts from Alfredo, Trang, or wedding helpers
    */
   public static async processRawMessage(params: {
     messageId: string;
@@ -150,58 +159,89 @@ export class DiscordBotService {
     authorName: string;
     authorId?: string;
     content: string;
+    attachments?: Array<{ url: string; content_type?: string; filename?: string }>;
     token?: string;
   }): Promise<InspirationLink[]> {
-    const { messageId, channelId, authorName, content, token } = params;
+    const { messageId, channelId, authorName, content, attachments, token } = params;
 
     // Extract all URLs
     const urlMatches = content.match(/https?:\/\/[^\s]+/g);
 
-    // Determine submitter: Check if author name/display name indicates Trang, otherwise Alfredo
-    const lowerAuthor = authorName.toLowerCase();
-    const submitter = lowerAuthor.includes('trang') ? 'Trang' : 'Alfredo';
+    // Extract any photo/screenshot attachment (e.g. receipt photo from phone)
+    let attachmentImageUrl: string | null = null;
+    if (attachments && attachments.length > 0) {
+      const img = attachments.find(a =>
+        a.content_type?.startsWith('image/') ||
+        /\.(png|jpe?g|webp|gif|heic|bmp)$/i.test(a.url || a.filename || '')
+      );
+      if (img) attachmentImageUrl = img.url;
+    }
 
+    // Determine submitter: recognizes Trang, Alfredo, or wedding party helpers (e.g. "Lindsie")
+    const lowerAuthor = authorName.toLowerCase();
+    let submitter = 'Alfredo';
+    if (lowerAuthor.includes('trang')) {
+      submitter = 'Trang';
+    } else if (lowerAuthor.includes('alfredo') || lowerAuthor.includes('killarquez')) {
+      submitter = 'Alfredo';
+    } else if (authorName.trim()) {
+      // Capitalize first letter of helper's name
+      submitter = authorName.trim().charAt(0).toUpperCase() + authorName.trim().slice(1);
+    }
+
+    // Extract price and intent from message text
+    const priceIntent = extractPriceAndIntent(content);
     const savedLinks: InspirationLink[] = [];
 
-    // CASE 1: Written Idea / Brainstorm Note (No URL in message)
+    // CASE 1: Written Idea / Brainstorm Note / Expense Receipt (No URL in message)
     if (!urlMatches || urlMatches.length === 0) {
       const trimmedText = content.trim();
-      if (!trimmedText) return [];
+      if (!trimmedText && !attachmentImageUrl) return [];
 
-      // Extract a punchy title from the first sentence or first 70 characters
-      const firstLine = trimmedText.split('\n')[0].trim();
+      const isReceipt = priceIntent.isExpenseReceipt || !!attachmentImageUrl;
+      const initialStatus = (priceIntent.isExpenseReceipt || priceIntent.detectedPrice) ? 'reviewing' : 'saved';
+
+      // Title determination
+      const firstLine = (trimmedText || 'Receipt Photo').split('\n')[0].trim();
       const firstSentence = firstLine.split(/[.!?]/)[0].trim();
-      const ideaTitle = firstSentence.length > 70
+      const defaultIdeaTitle = firstSentence.length > 70
         ? `${firstSentence.slice(0, 67)}...`
-        : (firstSentence || trimmedText.slice(0, 70));
+        : (firstSentence || trimmedText.slice(0, 70) || 'Wedding Receipt');
 
-      // Auto-classify the category based on the text content
-      const categoryMeta = classifyWeddingLink('', ideaTitle, trimmedText, trimmedText);
+      const finalTitle = priceIntent.suggestedTitle || (isReceipt ? `Receipt: ${defaultIdeaTitle}` : defaultIdeaTitle);
+
+      // Auto-classify category based on text and item description
+      const textToClassify = `${priceIntent.itemDescription || ''} ${trimmedText}`.trim();
+      const categoryMeta = classifyWeddingLink('', finalTitle, textToClassify, textToClassify);
+
+      const siteName = attachmentImageUrl ? 'Receipt Upload' : (priceIntent.isExpenseReceipt ? 'Expense Log' : 'Brainstorm Note');
 
       // Create Forum Thread Card in #wedding-vault
       const forumResult = await this.createForumPost({
-        title: `💡 Idea: ${ideaTitle}`,
+        title: `${isReceipt ? '🧾' : '💡'} ${finalTitle}`,
         url: 'https://wedding.au-tomato.com/admin',
-        description: `📝 "${trimmedText}"`,
-        imageUrl: null,
-        siteName: 'Brainstorm Note',
+        description: `📝 "${trimmedText || 'Receipt photo attached'}"`,
+        imageUrl: attachmentImageUrl,
+        siteName,
         category: categoryMeta,
         submittedBy: submitter,
         notes: trimmedText,
+        estimatedCost: priceIntent.detectedPrice,
         token
       });
 
-      // Persist into WeddingDB
+      // Persist into WeddingDB & Supabase
       const linkRecord = await WeddingDB.createLink({
         url: '',
-        title: ideaTitle,
+        title: finalTitle,
         description: trimmedText,
-        image_url: null,
-        site_name: 'Written Idea',
+        image_url: attachmentImageUrl,
+        site_name: siteName,
         category: categoryMeta.category,
         submitted_by: submitter,
         notes: trimmedText,
-        status: 'saved',
+        status: initialStatus,
+        estimated_cost: priceIntent.detectedPrice,
         discord_thread_id: forumResult?.id || null,
         discord_message_id: messageId,
         discord_thread_url: forumResult?.threadUrl || null
@@ -209,11 +249,21 @@ export class DiscordBotService {
 
       savedLinks.push(linkRecord);
 
-      // Discord reactions & confirmation
-      await this.reactToMessage(channelId, messageId, '💡', token);
+      // Discord reactions
+      if (isReceipt) {
+        await this.reactToMessage(channelId, messageId, '🧾', token);
+      } else {
+        await this.reactToMessage(channelId, messageId, '💡', token);
+      }
       await this.reactToMessage(channelId, messageId, '✅', token);
 
-      const confirmationMsg = `💡 **Idea saved to ${categoryMeta.discordTagName}**\nNote posted in <#${DISCORD_CONFIG.vaultForumId}> and synced to Couple CRM!`;
+      // Confirmation response
+      let confirmationMsg = '';
+      if (priceIntent.detectedPrice) {
+        confirmationMsg = `🧾 **Receipt & Expense Noted: $${priceIntent.detectedPrice.toLocaleString()}**\nSaved to **${categoryMeta.discordTagName}** by **${submitter}** and placed in **Reviewing Queue** for tonight's CRM review!`;
+      } else {
+        confirmationMsg = `💡 **Idea saved to ${categoryMeta.discordTagName}** by **${submitter}**\nNote posted in <#${DISCORD_CONFIG.vaultForumId}> and synced to Couple CRM!`;
+      }
       await this.replyInInbox(channelId, messageId, confirmationMsg, token);
 
       return savedLinks;
@@ -227,10 +277,15 @@ export class DiscordBotService {
     userNote = userNote.trim();
 
     for (const rawUrl of urlMatches) {
-      // 1. Scrape metadata
+      // 1. Scrape metadata (including price)
       const meta: ScrapedMetadata = await scrapeUrlMetadata(rawUrl);
 
-      // 2. Classify into one of the 7 wedding categories & match to Discord Forum tag ID
+      // Price: Priority to user-typed price, then page e-commerce scraped price
+      const detectedCost = priceIntent.detectedPrice || meta.price || null;
+      const initialStatus = (priceIntent.isExpenseReceipt || detectedCost) ? 'reviewing' : 'saved';
+      const displayImage = meta.image_url || attachmentImageUrl || null;
+
+      // 2. Classify into wedding category
       const categoryMeta = classifyWeddingLink(rawUrl, meta.title, meta.description, userNote);
 
       // 3. Create Forum Card in #wedding-vault
@@ -238,11 +293,12 @@ export class DiscordBotService {
         title: meta.title,
         url: meta.url,
         description: meta.description,
-        imageUrl: meta.image_url,
+        imageUrl: displayImage,
         siteName: meta.site_name,
         category: categoryMeta,
         submittedBy: submitter,
         notes: userNote,
+        estimatedCost: detectedCost,
         token
       });
 
@@ -251,12 +307,13 @@ export class DiscordBotService {
         url: meta.url,
         title: meta.title,
         description: meta.description,
-        image_url: meta.image_url,
+        image_url: displayImage,
         site_name: meta.site_name,
         category: categoryMeta.category,
         submitted_by: submitter,
         notes: userNote,
-        status: 'saved',
+        status: initialStatus,
+        estimated_cost: detectedCost,
         discord_thread_id: forumResult?.id || null,
         discord_message_id: messageId,
         discord_thread_url: forumResult?.threadUrl || null
@@ -266,9 +323,14 @@ export class DiscordBotService {
 
       // 5. Provide feedback on Discord
       await this.reactToMessage(channelId, messageId, '✅', token);
-      await this.reactToMessage(channelId, messageId, '💒', token);
+      if (detectedCost) {
+        await this.reactToMessage(channelId, messageId, '💰', token);
+      } else {
+        await this.reactToMessage(channelId, messageId, '💒', token);
+      }
 
-      const confirmationMsg = `✨ **Sorted into ${categoryMeta.discordTagName}**\nCard posted in <#${DISCORD_CONFIG.vaultForumId}> and synced to Couple CRM!`;
+      const priceTag = detectedCost ? ` (Auto-detected: **$${detectedCost.toLocaleString()}**)` : '';
+      const confirmationMsg = `✨ **Sorted into ${categoryMeta.discordTagName}**${priceTag}\nCard posted in <#${DISCORD_CONFIG.vaultForumId}> and synced to Couple CRM!`;
       await this.replyInInbox(channelId, messageId, confirmationMsg, token);
     }
 

@@ -112,10 +112,117 @@ const CATEGORY_KEYWORDS: Record<LinkCategory, string[]> = {
   ],
   favors_misc: [
     'favor', 'gift', 'bao lì xì', 'li xi', 'red envelope', 'tea ceremony', 'chopsticks',
-    'invitation', 'stationery', 'signage', 'invites', 'place card', 'program', 'guestbook',
-    'fan', 'treats', 'cookie', 'box', 'ribbon'
+    'invitation', 'invitations', 'invites', 'invite', 'stationery', 'signage', 'place card', 'program',
+    'guestbook', 'fan', 'treats', 'cookie', 'box', 'ribbon', 'stamps', 'postage', 'envelope', 'envelopes',
+    'wax seal', 'paper', 'calligraphy', 'printing', 'print', 'menu card', 'thank you card', 'welcome bag'
   ]
 };
+
+export interface PriceIntentResult {
+  detectedPrice: number | null;
+  isExpenseReceipt: boolean;
+  itemDescription: string | null;
+  suggestedTitle: string | null;
+}
+
+export function extractPriceAndIntent(text: string): PriceIntentResult {
+  if (!text || !text.trim()) {
+    return { detectedPrice: null, isExpenseReceipt: false, itemDescription: null, suggestedTitle: null };
+  }
+
+  const trimmed = text.trim();
+
+  // Check for expense action keywords: spent, paid, bought, receipt, invoice, deposit, cost
+  const expenseActionRegex = /(?:spent|paid|bought|cost|charged|total|deposit|receipt|invoice)\b/i;
+  const isExpenseReceipt = expenseActionRegex.test(trimmed);
+
+  // Pattern A: "bought (item) for $?400"
+  const boughtForMatch = trimmed.match(/bought\s+(.*?)\s+for\s+\$?(\d+[\d,]*(?:\.\d{1,2})?)/i);
+  if (boughtForMatch) {
+    const item = boughtForMatch[1]?.trim();
+    const priceNum = parseFloat(boughtForMatch[2].replace(/,/g, ''));
+    if (!isNaN(priceNum) && priceNum > 0) {
+      const capItem = item ? item.charAt(0).toUpperCase() + item.slice(1) : 'Wedding Item';
+      return {
+        detectedPrice: priceNum,
+        isExpenseReceipt: true,
+        itemDescription: item,
+        suggestedTitle: `Receipt: ${capItem} ($${priceNum.toLocaleString()})`
+      };
+    }
+  }
+
+  // Pattern B: "spent/paid/cost/deposit $?300 on/for (item)"
+  const actionWithItemMatch = trimmed.match(
+    /(?:spent|paid|cost|charged|deposit)\s*(?:of\s*)?\$?\s*(\d+[\d,]*(?:\.\d{1,2})?)\s*(?:on|for|in)?\s*(.*)/i
+  );
+
+  if (actionWithItemMatch && actionWithItemMatch[1]) {
+    const priceNum = parseFloat(actionWithItemMatch[1].replace(/,/g, ''));
+    if (!isNaN(priceNum) && priceNum > 0) {
+      let item = actionWithItemMatch[2]?.trim() || '';
+      item = item.replace(/^(?:the|some|our|a|an)\s+/i, '');
+      const capItem = item ? item.charAt(0).toUpperCase() + item.slice(1) : 'Wedding Expense';
+      return {
+        detectedPrice: priceNum,
+        isExpenseReceipt: true,
+        itemDescription: item || null,
+        suggestedTitle: `Receipt: ${capItem} ($${priceNum.toLocaleString()})`
+      };
+    }
+  }
+
+  // Pattern C: "receipt/invoice (from/for) (item) $?300"
+  const receiptDollarMatch = trimmed.match(/(?:receipt|invoice)\s+(?:from|for)?\s*(.*?)\s*\$?\s*(\d+[\d,]*(?:\.\d{1,2})?)/i);
+  if (receiptDollarMatch) {
+    const item = receiptDollarMatch[1]?.trim();
+    const priceNum = parseFloat(receiptDollarMatch[2].replace(/,/g, ''));
+    if (!isNaN(priceNum) && priceNum > 0) {
+      const capItem = item ? item.charAt(0).toUpperCase() + item.slice(1) : 'Receipt';
+      return {
+        detectedPrice: priceNum,
+        isExpenseReceipt: true,
+        itemDescription: item,
+        suggestedTitle: `Receipt: ${capItem} ($${priceNum.toLocaleString()})`
+      };
+    }
+  }
+
+  // Pattern D: Explicit dollar match e.g. "$211" or "$300.50"
+  const dollarMatch = trimmed.match(/\$\s*(\d+[\d,]*(?:\.\d{1,2})?)/);
+  if (dollarMatch && dollarMatch[1]) {
+    const priceNum = parseFloat(dollarMatch[1].replace(/,/g, ''));
+    if (!isNaN(priceNum) && priceNum > 0) {
+      return {
+        detectedPrice: priceNum,
+        isExpenseReceipt,
+        itemDescription: null,
+        suggestedTitle: null
+      };
+    }
+  }
+
+  // Pattern E: "300 dollars", "250 bucks"
+  const wordDollarMatch = trimmed.match(/(\d+[\d,]*(?:\.\d{1,2})?)\s*(?:dollars|bucks)/i);
+  if (wordDollarMatch && wordDollarMatch[1]) {
+    const priceNum = parseFloat(wordDollarMatch[1].replace(/,/g, ''));
+    if (!isNaN(priceNum) && priceNum > 0) {
+      return {
+        detectedPrice: priceNum,
+        isExpenseReceipt,
+        itemDescription: null,
+        suggestedTitle: null
+      };
+    }
+  }
+
+  return {
+    detectedPrice: null,
+    isExpenseReceipt,
+    itemDescription: null,
+    suggestedTitle: null
+  };
+}
 
 export function classifyWeddingLink(
   url: string,

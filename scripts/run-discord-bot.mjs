@@ -128,11 +128,18 @@ async function handleMessageCreate(msg) {
   if (msg.author && msg.author.bot) return;
 
   const content = (msg.content || '').trim();
-  if (!content) return;
+  const attachments = (msg.attachments || []).map(a => ({
+    url: a.url,
+    content_type: a.content_type,
+    filename: a.filename
+  }));
+
+  if (!content && attachments.length === 0) return;
 
   const authorName = msg.member?.nick || msg.author?.global_name || msg.author?.username || 'Alfredo';
   const hasUrl = /https?:\/\/[^\s]+/g.test(content);
-  console.log(`\n📨 ${hasUrl ? 'Link' : 'Written Idea'} received from ${authorName}: "${content.slice(0, 100)}"`);
+  const hasImage = attachments.some(a => a.content_type?.startsWith('image/') || /\.(png|jpe?g|webp|gif|heic)$/i.test(a.url || ''));
+  console.log(`\n📨 ${hasUrl ? 'Link' : (hasImage ? 'Receipt/Photo Upload' : 'Written Note')} received from ${authorName}: "${(content || '[Photo Attachment]').slice(0, 100)}"`);
 
   // Forward to API endpoint (prioritizing production site if set, with localhost fallback)
   const bodyPayload = JSON.stringify({
@@ -140,6 +147,7 @@ async function handleMessageCreate(msg) {
     channel_id: msg.channel_id,
     author_name: authorName,
     content: content,
+    attachments: attachments,
     bot_token: TOKEN
   });
 

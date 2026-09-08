@@ -9,6 +9,8 @@ export interface ScrapedMetadata {
   description: string;
   image_url: string | null;
   site_name: string;
+  price?: number | null;
+  currency?: string | null;
 }
 
 export async function scrapeUrlMetadata(targetUrl: string): Promise<ScrapedMetadata> {
@@ -29,7 +31,9 @@ export async function scrapeUrlMetadata(targetUrl: string): Promise<ScrapedMetad
     title: `${hostname} idea`,
     description: '',
     image_url: null,
-    site_name: hostname
+    site_name: hostname,
+    price: null,
+    currency: null
   };
 
   try {
@@ -59,7 +63,9 @@ export async function scrapeUrlMetadata(targetUrl: string): Promise<ScrapedMetad
         title: `Image from ${hostname}`,
         description: 'Direct image link',
         image_url: normalizedUrl,
-        site_name: hostname
+        site_name: hostname,
+        price: null,
+        currency: null
       };
     }
 
@@ -110,17 +116,88 @@ export async function scrapeUrlMetadata(targetUrl: string): Promise<ScrapedMetad
       return hostname.charAt(0).toUpperCase() + hostname.slice(1);
     };
 
+    const extractPrice = (): { price: number | null; currency: string | null } => {
+      // 1. Check e-commerce meta tags
+      const metaPriceStr = extractMeta([
+        'product:price:amount',
+        'og:price:amount',
+        'product:pretax_price:amount',
+        'price',
+        'twitter:data1'
+      ]);
+      const currency = extractMeta(['product:price:currency', 'og:price:currency']) || 'USD';
+
+      if (metaPriceStr) {
+        const cleaned = parseFloat(metaPriceStr.replace(/[^0-9.]/g, ''));
+        if (!isNaN(cleaned) && cleaned > 0) {
+          return { price: cleaned, currency };
+        }
+      }
+
+      // 2. Check JSON-LD structured schemas
+      const jsonLdMatches = html.match(/<script type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+      if (jsonLdMatches) {
+        for (const block of jsonLdMatches) {
+          try {
+            const rawContent = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '').trim();
+            const parsed = JSON.parse(rawContent);
+            const checkItem = (item: any): number | null => {
+              if (!item) return null;
+              if (item.offers) {
+                if (Array.isArray(item.offers) && item.offers[0]?.price) {
+                  const val = parseFloat(String(item.offers[0].price).replace(/[^0-9.]/g, ''));
+                  if (!isNaN(val) && val > 0) return val;
+                } else if (item.offers.price) {
+                  const val = parseFloat(String(item.offers.price).replace(/[^0-9.]/g, ''));
+                  if (!isNaN(val) && val > 0) return val;
+                } else if (item.offers.lowPrice) {
+                  const val = parseFloat(String(item.offers.lowPrice).replace(/[^0-9.]/g, ''));
+                  if (!isNaN(val) && val > 0) return val;
+                }
+              }
+              return null;
+            };
+
+            let foundVal = checkItem(parsed);
+            if (foundVal) return { price: foundVal, currency };
+
+            if (parsed['@graph'] && Array.isArray(parsed['@graph'])) {
+              for (const node of parsed['@graph']) {
+                foundVal = checkItem(node);
+                if (foundVal) return { price: foundVal, currency };
+              }
+            }
+          } catch (e) {
+            // Ignore invalid JSON-LD blocks
+          }
+        }
+      }
+
+      // 3. Fallback: Microdata itemprop="price"
+      const itempropMatch = html.match(/itemprop=["']price["'][^>]*content=["']([^"']+)["']/i) ||
+                            html.match(/content=["']([^"']+)["'][^>]*itemprop=["']price["']/i);
+      if (itempropMatch && itempropMatch[1]) {
+        const val = parseFloat(itempropMatch[1].replace(/[^0-9.]/g, ''));
+        if (!isNaN(val) && val > 0) return { price: val, currency };
+      }
+
+      return { price: null, currency: null };
+    };
+
     const title = extractTitle();
     const description = extractDescription();
     const imageUrl = extractImage();
     const siteName = extractSiteName();
+    const { price, currency } = extractPrice();
 
     return {
       url: normalizedUrl,
       title: title || `${siteName} idea`,
       description: description || '',
       image_url: imageUrl,
-      site_name: siteName
+      site_name: siteName,
+      price: price || null,
+      currency: currency || null
     };
   } catch (error) {
     return defaultResult;

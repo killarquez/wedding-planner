@@ -21,7 +21,10 @@ import {
   ArrowRight,
   Heart,
   Share2,
-  X
+  X,
+  Pencil,
+  Eye,
+  Check
 } from 'lucide-react';
 
 interface Props {
@@ -39,13 +42,21 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
   const [selectedSubmitter, setSelectedSubmitter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Inline Price Editing State
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [tempPrice, setTempPrice] = useState<string>('');
+
+  // Receipt / Image Lightbox State
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+
   // Add Link / Idea Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addMode, setAddMode] = useState<'link' | 'idea'>('link');
   const [newTitle, setNewTitle] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newNotes, setNewNotes] = useState('');
-  const [newSubmitter, setNewSubmitter] = useState<'Alfredo' | 'Trang'>('Alfredo');
+  const [newPrice, setNewPrice] = useState('');
+  const [newSubmitter, setNewSubmitter] = useState<string>('Alfredo');
   const [newCategory, setNewCategory] = useState<string>('auto');
   const [addingLoading, setAddingLoading] = useState(false);
 
@@ -106,6 +117,28 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
     }
   };
 
+  const handleSavePrice = async (id: string, costStr: string) => {
+    const trimmed = costStr.trim();
+    const cost = trimmed === '' ? null : parseFloat(trimmed);
+    if (trimmed !== '' && isNaN(cost!)) {
+      setEditingPriceId(null);
+      return;
+    }
+
+    try {
+      await fetch('/api/links', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, estimated_cost: cost })
+      });
+      setLinks(prev => prev.map(l => (l.id === id ? { ...l, estimated_cost: cost } : l)));
+    } catch (e) {
+      console.error('Failed to update price:', e);
+    } finally {
+      setEditingPriceId(null);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm(lang === 'en' ? 'Delete this link?' : 'Xoá liên kết này?')) return;
     try {
@@ -133,6 +166,12 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
       if (newCategory !== 'auto') {
         payload.category = newCategory;
       }
+      if (newPrice.trim()) {
+        const parsedPrice = parseFloat(newPrice.trim());
+        if (!isNaN(parsedPrice)) {
+          payload.estimated_cost = parsedPrice;
+        }
+      }
 
       const res = await fetch('/api/links', {
         method: 'POST',
@@ -144,6 +183,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
         setNewUrl('');
         setNewTitle('');
         setNewNotes('');
+        setNewPrice('');
         setIsAddModalOpen(false);
         await fetchLinks();
       }
@@ -218,6 +258,9 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
     { id: 'favors_misc', label: lang === 'en' ? 'Favors & Details' : 'Quà Tặng & Khác', emoji: '🎁' },
   ];
 
+  const submitters = Array.from(new Set(['Alfredo', 'Trang', ...links.map(l => l.submitted_by).filter(Boolean)]));
+  const reviewingCount = links.filter(l => l.status === 'reviewing').length;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 1. Discord Live Integration Banner */}
@@ -238,8 +281,8 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             </h2>
             <p className="text-xs text-stone-300 max-w-xl">
               {lang === 'en'
-                ? 'Drop any link into Discord #link-inbox on your phones. Our bot automatically scrapes photos, tags the category in #wedding-vault, and syncs it here!'
-                : 'Chỉ cần dán bất kỳ link nào vào #link-inbox trên điện thoại. Bot sẽ tự động lấy ảnh mẫu, gán nhãn vào #wedding-vault và đồng bộ ngay về đây!'}
+                ? 'Drop any link, receipt photo, or expense note into Discord #link-inbox. Our bot automatically classifies it, tags the category in #wedding-vault, and syncs it here!'
+                : 'Chỉ cần dán bất kỳ link, ảnh hóa đơn, hoặc tin nhắn chi tiêu vào #link-inbox. Bot sẽ tự động lấy ảnh, nhận diện giá tiền và đồng bộ về đây!'}
             </p>
           </div>
         </div>
@@ -258,13 +301,55 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4 text-stone-950" />
-            <span>{lang === 'en' ? 'Add Link Manually' : 'Thêm Link Mới'}</span>
+            <span>{lang === 'en' ? 'Add Link / Expense' : 'Thêm Link / Chi Tiêu'}</span>
           </button>
         </div>
       </div>
+
+      {/* 1.5 Evening Review Queue Banner */}
+      {reviewingCount > 0 && (
+        <div className="bg-gradient-to-r from-amber-950/90 via-[#2a1d0d] to-stone-900 border-2 border-amber-400/90 text-white p-4 sm:p-5 rounded-3xl shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/30 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-amber-500/40">
+                  {lang === 'en' ? 'Evening Review Queue' : 'Hàng Đợi Duyệt Cuối Ngày'}
+                </span>
+                <span className="text-xs font-bold text-amber-200">
+                  {lang === 'en' ? `${reviewingCount} pending item${reviewingCount > 1 ? 's' : ''}` : `${reviewingCount} mục chờ duyệt`}
+                </span>
+              </div>
+              <p className="text-xs text-stone-300 mt-1">
+                {lang === 'en'
+                  ? 'Expenses and receipts detected from Discord or web links awaiting confirmation together tonight. Click Approve or Add to Budget!'
+                  : 'Chi phí và hóa đơn từ Discord hoặc đường link đang chờ hai bạn kiểm tra tối nay. Bấm Duyệt hoặc Chuyển vào ngân sách!'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-stretch sm:self-auto justify-end">
+            <button
+              type="button"
+              onClick={() => setSelectedStatus(selectedStatus === 'reviewing' ? 'all' : 'reviewing')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                selectedStatus === 'reviewing'
+                  ? 'bg-amber-400 text-stone-950 shadow-md font-bold'
+                  : 'bg-white/10 hover:bg-white/20 text-amber-200 border border-amber-400/40'
+              }`}
+            >
+              {selectedStatus === 'reviewing'
+                ? (lang === 'en' ? 'Showing Review Queue ✓' : 'Đang Lọc Cần Duyệt ✓')
+                : (lang === 'en' ? 'Filter Review Queue' : 'Lọc Danh Sách Chờ Duyệt')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. Category Filter Pills Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
@@ -304,7 +389,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={lang === 'en' ? 'Search links, vendors, notes...' : 'Tìm kiếm link, nhà cung cấp, ghi chú...'}
+            placeholder={lang === 'en' ? 'Search links, vendors, receipts, notes...' : 'Tìm kiếm link, nhà cung cấp, hóa đơn, ghi chú...'}
             className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-crimson-700"
           />
         </div>
@@ -317,11 +402,12 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             <select
               value={selectedSubmitter}
               onChange={(e) => setSelectedSubmitter(e.target.value)}
-              className="px-2.5 py-1.5 rounded-xl border border-stone-200 text-xs bg-white text-stone-800 focus:outline-none focus:ring-1 focus:ring-crimson-700 font-medium"
+              className="px-2.5 py-1.5 rounded-xl border border-stone-200 text-xs bg-white text-stone-800 focus:outline-none focus:ring-1 focus:ring-crimson-700 font-medium cursor-pointer"
             >
-              <option value="all">{lang === 'en' ? 'Trang & Alfredo' : 'Cả Hai'}</option>
-              <option value="Alfredo">Alfredo</option>
-              <option value="Trang">Trang</option>
+              <option value="all">{lang === 'en' ? 'All People' : 'Tất Cả Người Gửi'}</option>
+              {submitters.map(name => (
+                <option key={name} value={name}>{name}</option>
+              ))}
             </select>
           </div>
 
@@ -373,16 +459,32 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
             return (
               <div
                 key={link.id}
-                className="bg-white rounded-3xl border border-stone-200 hover:border-gold-400/80 hover:shadow-lg transition-all flex flex-col overflow-hidden group"
+                className={`bg-white rounded-3xl border transition-all flex flex-col overflow-hidden group ${
+                  isReviewing
+                    ? 'border-amber-400 ring-2 ring-amber-300/60 shadow-md bg-amber-50/15'
+                    : 'border-stone-200 hover:border-gold-400/80 hover:shadow-lg'
+                }`}
               >
                 {/* Image Thumbnail or Written Idea Header */}
-                <div className="relative aspect-[16/10] bg-stone-100 overflow-hidden">
+                <div
+                  onClick={() => link.image_url && setPreviewImage({ url: link.image_url, title: link.title })}
+                  className={`relative aspect-[16/10] bg-stone-100 overflow-hidden ${link.image_url ? 'cursor-pointer' : ''}`}
+                  title={link.image_url ? (lang === 'en' ? 'Click to view image/receipt' : 'Bấm để phóng to ảnh') : undefined}
+                >
                   {link.image_url ? (
-                    <img
-                      src={link.image_url}
-                      alt={link.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <>
+                      <img
+                        src={link.image_url}
+                        alt={link.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                        <span className="px-2.5 py-1 rounded-xl bg-black/75 text-white text-xs font-semibold backdrop-blur-xs flex items-center gap-1.5 shadow-lg">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{lang === 'en' ? 'View Photo' : 'Xem Ảnh'}</span>
+                        </span>
+                      </div>
+                    </>
                   ) : !link.url || link.site_name === 'Written Idea' ? (
                     <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-br from-amber-50 via-rose-50/50 to-gold-100/60 border-b border-gold-300/40">
                       <div className="flex items-center gap-1.5 text-gold-800 text-xs font-bold uppercase tracking-wider">
@@ -402,24 +504,31 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                   )}
 
                   {/* Top Floating Badges */}
-                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 pointer-events-none">
                     <span className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border shadow-xs backdrop-blur-md ${catMeta.badgeClass}`}>
                       {catMeta.emoji} {lang === 'en' ? catMeta.labelEn : catMeta.labelVi}
                     </span>
+                    {isReviewing && (
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500 text-stone-950 shadow-xs border border-amber-300 animate-pulse">
+                        REVIEW
+                      </span>
+                    )}
                   </div>
 
-                  <div className="absolute top-2.5 right-2.5">
+                  <div className="absolute top-2.5 right-2.5 pointer-events-none">
                     <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold shadow-xs ${
                       link.submitted_by.toLowerCase() === 'trang'
                         ? 'bg-rose-500 text-white'
-                        : 'bg-stone-900 text-gold-300'
+                        : link.submitted_by.toLowerCase() === 'alfredo'
+                        ? 'bg-stone-900 text-gold-300'
+                        : 'bg-indigo-600 text-white'
                     }`}>
                       {link.submitted_by}
                     </span>
                   </div>
 
                   {/* Bottom Image Source Pill */}
-                  <div className="absolute bottom-2 left-2.5">
+                  <div className="absolute bottom-2 left-2.5 pointer-events-none">
                     <span className="px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-mono backdrop-blur-xs">
                       {link.site_name || 'Web'}
                     </span>
@@ -463,32 +572,96 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                   {/* Card Actions & Footer */}
                   <div className="pt-3 border-t border-stone-100 space-y-2.5">
                     {/* Status & Estimated Cost Bar */}
-                    <div className="flex items-center justify-between text-xs">
-                      <select
-                        value={link.status}
-                        onChange={(e) => handleStatusChange(link.id, e.target.value as LinkStatus)}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-bold border focus:outline-none cursor-pointer ${
-                          isBooked
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                            : isReviewing
-                            ? 'bg-amber-50 text-amber-800 border-amber-300'
-                            : 'bg-stone-50 text-stone-700 border-stone-200'
-                        }`}
-                      >
-                        <option value="saved">{lang === 'en' ? '💡 Idea / Saved' : '💡 Đã Lưu'}</option>
-                        <option value="reviewing">{lang === 'en' ? '⏳ Reviewing' : '⏳ Cân Nhắc'}</option>
-                        <option value="booked">{lang === 'en' ? '✅ Booked / Done' : '✅ Đã Chốt'}</option>
-                        <option value="archived">{lang === 'en' ? '📦 Archive' : '📦 Lưu Trữ'}</option>
-                      </select>
+                    <div className="flex items-center justify-between text-xs gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={link.status}
+                          onChange={(e) => handleStatusChange(link.id, e.target.value as LinkStatus)}
+                          className={`px-2 py-1 rounded-lg text-[11px] font-bold border focus:outline-none cursor-pointer ${
+                            isBooked
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                              : isReviewing
+                              ? 'bg-amber-50 text-amber-800 border-amber-300'
+                              : 'bg-stone-50 text-stone-700 border-stone-200'
+                          }`}
+                        >
+                          <option value="saved">{lang === 'en' ? '💡 Idea / Saved' : '💡 Đã Lưu'}</option>
+                          <option value="reviewing">{lang === 'en' ? '⏳ Reviewing' : '⏳ Cân Nhắc'}</option>
+                          <option value="booked">{lang === 'en' ? '✅ Booked / Done' : '✅ Đã Chốt'}</option>
+                          <option value="archived">{lang === 'en' ? '📦 Archive' : '📦 Lưu Trữ'}</option>
+                        </select>
 
-                      {link.estimated_cost ? (
-                        <span className="font-serif font-bold text-stone-800 text-xs">
-                          ${link.estimated_cost.toLocaleString()}
-                        </span>
+                        {/* Quick Approve Button for items in reviewing */}
+                        {isReviewing && (
+                          <button
+                            type="button"
+                            onClick={() => handleStatusChange(link.id, 'booked')}
+                            className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer"
+                            title={lang === 'en' ? 'Confirm and mark Booked' : 'Xác nhận và đánh dấu đã chốt'}
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-emerald-200" />
+                            <span>{lang === 'en' ? 'Approve' : 'Duyệt'}</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Price Display and Inline Edit */}
+                      {editingPriceId === link.id ? (
+                        <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded-lg border border-gold-400 shadow-2xs">
+                          <span className="text-[11px] text-stone-500 font-bold">$</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            autoFocus
+                            value={tempPrice}
+                            onChange={(e) => setTempPrice(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSavePrice(link.id, tempPrice);
+                              if (e.key === 'Escape') setEditingPriceId(null);
+                            }}
+                            placeholder="0.00"
+                            className="w-16 px-1 py-0.5 text-xs font-serif font-bold text-stone-900 border-b border-stone-300 focus:outline-none focus:border-gold-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSavePrice(link.id, tempPrice)}
+                            className="p-0.5 text-emerald-700 hover:bg-emerald-50 rounded"
+                            title="Save"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingPriceId(null)}
+                            className="p-0.5 text-stone-400 hover:bg-stone-100 rounded"
+                            title="Cancel"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
                       ) : (
-                        <span className="text-[11px] text-stone-400 font-mono">
-                          {new Date(link.created_at).toLocaleDateString()}
-                        </span>
+                        <div className="flex items-center gap-1 group/price">
+                          {link.estimated_cost !== null && link.estimated_cost !== undefined ? (
+                            <span className="font-serif font-bold text-stone-900 text-xs bg-gold-50/90 px-2 py-0.5 rounded-md border border-gold-300/60 shadow-2xs">
+                              ${link.estimated_cost.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-stone-400 font-mono">
+                              {new Date(link.created_at).toLocaleDateString()}
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPriceId(link.id);
+                              setTempPrice(link.estimated_cost !== null && link.estimated_cost !== undefined ? String(link.estimated_cost) : '');
+                            }}
+                            className="p-1 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded transition-colors"
+                            title={link.estimated_cost !== null && link.estimated_cost !== undefined ? (lang === 'en' ? 'Edit price' : 'Sửa giá') : (lang === 'en' ? 'Add price' : 'Thêm giá')}
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        </div>
                       )}
                     </div>
 
@@ -624,7 +797,7 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none"
                   >
                     <option value="auto">⚡ Auto-Detect (AI)</option>
                     <option value="attire">👗 Attire & Áo Dài</option>
@@ -643,12 +816,33 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                   </label>
                   <select
                     value={newSubmitter}
-                    onChange={(e) => setNewSubmitter(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white"
+                    onChange={(e) => setNewSubmitter(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none"
                   >
                     <option value="Alfredo">Alfredo</option>
                     <option value="Trang">Trang</option>
+                    <option value="Lindsie">Lindsie</option>
+                    <option value="Wedding Party">Wedding Party</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Price / Estimated Cost Field */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
+                  {lang === 'en' ? 'Estimated Price / Amount ($) (Optional)' : 'Giá / Chi Phí Dự Kiến ($) (Không Bắt Buộc)'}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-xs font-bold text-stone-400">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newPrice}
+                    onChange={(e) => setNewPrice(e.target.value)}
+                    placeholder={lang === 'en' ? 'e.g. 300 or leave empty' : 'Ví dụ: 300 hoặc để trống'}
+                    className="w-full pl-7 pr-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                  />
                 </div>
               </div>
 
@@ -670,13 +864,13 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 cursor-pointer"
                 >
                   {lang === 'en' ? 'Cancel' : 'Hủy'}
                 </button>
                 <button
                   type="submit"
-                  disabled={addingLoading || !newUrl.trim()}
+                  disabled={addingLoading || (addMode === 'link' ? !newUrl.trim() : (!newTitle.trim() && !newNotes.trim()))}
                   className="px-5 py-2.5 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white text-xs font-bold shadow-sm transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                 >
                   {addingLoading ? (
@@ -825,6 +1019,63 @@ export const LinkVault: React.FC<Props> = ({ lang }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: IMAGE / RECEIPT FULL LIGHTBOX */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[92vh] w-full bg-stone-900 rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex flex-col animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-3.5 bg-stone-950/90 flex items-center justify-between border-b border-stone-800 text-white">
+              <div className="flex items-center gap-2 truncate pr-4">
+                <span className="text-xs font-bold text-gold-300 uppercase tracking-wider">
+                  {lang === 'en' ? 'Photo / Receipt Preview' : 'Xem Ảnh / Hóa Đơn'}
+                </span>
+                <span className="text-xs text-stone-400 truncate max-w-md">
+                  — {previewImage.title}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="p-1 rounded-xl text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Image display */}
+            <div className="flex-1 overflow-auto flex items-center justify-center p-3 sm:p-4 bg-stone-950/70 min-h-[300px]">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-xl shadow-2xl"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="p-3 bg-stone-950/90 flex items-center justify-between border-t border-stone-800 text-xs">
+              <span className="text-stone-400 text-[11px] truncate max-w-sm">
+                {lang === 'en' ? 'Click outside to close' : 'Bấm ra ngoài để đóng'}
+              </span>
+              <a
+                href={previewImage.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium flex items-center gap-1.5 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-stone-300" />
+                <span>{lang === 'en' ? 'Open Original Image' : 'Mở Ảnh Gốc'}</span>
+              </a>
+            </div>
           </div>
         </div>
       )}

@@ -49,13 +49,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // 1. Ingestion from Discord Bot WebSocket event
-    if (body.message_id && body.content) {
+    if (body.message_id && (body.content !== undefined || body.attachments)) {
       const token = body.bot_token || process.env.DISCORD_BOT_TOKEN;
       const saved = await DiscordBotService.processRawMessage({
         messageId: body.message_id,
         channelId: body.channel_id,
         authorName: body.author_name || 'Alfredo',
-        content: body.content,
+        content: body.content || '',
+        attachments: body.attachments,
         token
       });
 
@@ -63,13 +64,17 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Direct creation from Couple CRM UI
-    const { url, title, notes, submitted_by, category } = body;
+    const { url, title, notes, submitted_by, category, estimated_cost } = body;
     const hasUrl = url && url.trim().length > 0;
     const contentText = (notes || title || url || '').trim();
 
     if (!hasUrl && !contentText) {
       return NextResponse.json({ error: 'Please provide either a URL or a written idea note.' }, { status: 400 });
     }
+
+    const explicitCost = estimated_cost !== undefined && estimated_cost !== null && !isNaN(Number(estimated_cost))
+      ? Number(estimated_cost)
+      : null;
 
     if (!hasUrl) {
       // Written Idea from CRM
@@ -86,7 +91,8 @@ export async function POST(req: NextRequest) {
         siteName: 'Brainstorm Note',
         category: categoryMeta,
         submittedBy: submitted_by || 'Alfredo',
-        notes: contentText
+        notes: contentText,
+        estimatedCost: explicitCost
       });
 
       const newLink = await WeddingDB.createLink({
@@ -98,15 +104,17 @@ export async function POST(req: NextRequest) {
         category: categoryMeta.category,
         submitted_by: submitted_by || 'Alfredo',
         notes: contentText,
-        status: 'saved',
+        status: explicitCost ? 'reviewing' : 'saved',
         discord_thread_id: forumResult?.id || null,
-        discord_thread_url: forumResult?.threadUrl || null
+        discord_thread_url: forumResult?.threadUrl || null,
+        estimated_cost: explicitCost
       });
 
       return NextResponse.json({ success: true, link: newLink });
     }
 
     const meta = await scrapeUrlMetadata(url.trim());
+    const detectedCost = explicitCost !== null ? explicitCost : (meta.price ? Number(meta.price) : null);
     const categoryMeta = category && DISCORD_FORUM_TAG_MAP[category as LinkCategory]
       ? DISCORD_FORUM_TAG_MAP[category as LinkCategory]
       : classifyWeddingLink(url.trim(), meta.title, meta.description, notes || '');
@@ -120,7 +128,8 @@ export async function POST(req: NextRequest) {
       siteName: meta.site_name,
       category: categoryMeta,
       submittedBy: submitted_by || 'Alfredo',
-      notes: notes || ''
+      notes: notes || '',
+      estimatedCost: detectedCost
     });
 
     const newLink = await WeddingDB.createLink({
@@ -132,9 +141,10 @@ export async function POST(req: NextRequest) {
       category: categoryMeta.category,
       submitted_by: submitted_by || 'Alfredo',
       notes: notes || '',
-      status: 'saved',
+      status: detectedCost ? 'reviewing' : 'saved',
       discord_thread_id: forumResult?.id || null,
-      discord_thread_url: forumResult?.threadUrl || null
+      discord_thread_url: forumResult?.threadUrl || null,
+      estimated_cost: detectedCost
     });
 
     return NextResponse.json({ success: true, link: newLink });
