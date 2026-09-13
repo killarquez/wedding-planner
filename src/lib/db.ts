@@ -448,7 +448,8 @@ export class WeddingDB {
           return updated;
         }
       } catch (e) {
-        console.warn('Supabase updateGuest error, using local state:', e);
+        console.error('Supabase updateGuest error:', e);
+        throw e;
       }
     }
 
@@ -576,7 +577,8 @@ export class WeddingDB {
         });
         return updated;
       } catch (e) {
-        console.warn('Supabase updateParty error, falling back to local:', e);
+        console.error('Supabase updateParty error:', e);
+        throw e;
       }
     }
 

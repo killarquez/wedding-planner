@@ -55,8 +55,10 @@ export class SupabaseService {
     // Attach guest summaries to parties if needed
     return parties.map(party => {
       const partyGuests = guests.filter(g => g.party_id === party.id);
+      const primaryGuest = partyGuests.find(g => g.is_primary_contact) || partyGuests[0];
       return {
         ...party,
+        relationship_tag: party.relationship_tag || primaryGuest?.relationship_tag || 'general',
         guests: partyGuests
       };
     });
@@ -238,12 +240,35 @@ export class SupabaseService {
 
   public static async updateGuest(id: string, updates: Partial<Guest>): Promise<Guest | null> {
     const supabase = this.getClient();
+    const allowedFields = [
+      'first_name',
+      'last_name',
+      'email',
+      'phone',
+      'rsvp_status',
+      'headcount',
+      'dietary_restrictions',
+      'dietary_notes',
+      'song_request',
+      'notes',
+      'table_id',
+      'table_seat_number',
+      'is_primary_contact',
+      'relationship_tag',
+      'plus_one_names'
+    ];
+    const filteredUpdate: Record<string, any> = {
+      updated_at: new Date().toISOString()
+    };
+    for (const key of allowedFields) {
+      if (key in updates && (updates as any)[key] !== undefined) {
+        filteredUpdate[key] = (updates as any)[key];
+      }
+    }
+
     const { data, error } = await supabase
       .from('guests')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update(filteredUpdate)
       .eq('id', id)
       .select()
       .single();
@@ -354,15 +379,44 @@ export class SupabaseService {
     updates: Partial<Omit<Party, 'id' | 'created_at'>>
   ): Promise<Party> {
     const supabase = this.getClient();
+    const { relationship_tag, ...partyFields } = updates as any;
+
+    // Propagate relationship_tag to all member guests in the party
+    if (relationship_tag) {
+      await supabase
+        .from('guests')
+        .update({
+          relationship_tag,
+          updated_at: new Date().toISOString()
+        })
+        .eq('party_id', partyId);
+    }
+
+    // Filter to only legitimate columns present in Supabase parties table
+    const allowedFields = [
+      'primary_guest_name',
+      'invitation_code',
+      'total_invited',
+      'contact_email',
+      'contact_phone',
+      'notes'
+    ];
+    const filteredUpdate: Record<string, any> = {};
+    for (const key of allowedFields) {
+      if (key in partyFields && partyFields[key] !== undefined) {
+        filteredUpdate[key] = partyFields[key];
+      }
+    }
+
     const { data, error } = await supabase
       .from('parties')
-      .update(updates)
+      .update(filteredUpdate)
       .eq('id', partyId)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
-    return data as Party;
+    return { ...(data as Party), relationship_tag };
   }
 
   public static async bulkImportParties(rows: Array<{
