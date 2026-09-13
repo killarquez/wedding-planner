@@ -64,7 +64,7 @@ export const EventDetails: React.FC<Props> = ({ lang }) => {
           </div>
         </div>
 
-        {/* Pillar 2: Banquet & Open Bar (Gilded Amber & Cognac) */}
+        {/* Pillar 2: Grand Banquet & Celebratory Drinks (Gilded Amber & Cognac) */}
         <div className="amber-glow-card rounded-2xl p-6 transition-all hover:scale-[1.01] flex flex-col justify-between">
           <div>
             <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-gold-700 text-white flex items-center justify-center mb-4 shadow-sm border border-amber-300/40">
@@ -83,7 +83,7 @@ export const EventDetails: React.FC<Props> = ({ lang }) => {
           </div>
         </div>
 
-        {/* Pillar 3: Music, Dancing & La Hora Loca (Imperial Jade & Royal Indigo) */}
+        {/* Pillar 3: Music, Dancing & Celebration (Imperial Jade & Royal Indigo) */}
         <div className="jade-glow-card rounded-2xl p-6 transition-all hover:scale-[1.01] flex flex-col justify-between">
           <div>
             <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-jade-600 via-emerald-700 to-teal-900 text-white flex items-center justify-center mb-4 shadow-sm border border-jade-300/40">

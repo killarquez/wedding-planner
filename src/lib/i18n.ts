@@ -27,16 +27,16 @@ export const translations = {
     
     // Details Grid
     dress_code_title: "Dress Code & Attire",
-    dress_code_desc: "Traditional Vietnamese Áo Dài, cultural attire, or cocktail / semi-formal wear. Festive colors and jewel tones are warmly encouraged!",
-    dress_code_tag: "Áo Dài & Festive Attire",
+    dress_code_desc: "We warmly encourage guests to wear traditional Vietnamese Áo Dài if possible! Alternatively, cocktail or semi-formal attire is welcome. Festive colors and jewel tones are especially celebrated!",
+    dress_code_tag: "Áo Dài Encouraged & Semi-Formal",
 
-    drinks_title: "Banquet & Open Bar",
-    drinks_desc: "Dinner and drinks are on us all night! Look forward to a delicious multi-course banquet feast, an open bar, and raising a glass together during traditional Chào Bàn table visits.",
-    drinks_tag: "Open Bar & Chào Bàn",
+    drinks_title: "Grand Banquet & Hosted Drinks",
+    drinks_desc: "Dinner and drinks are on us all evening! Look forward to an exquisite multi-course banquet feast, with plenty of beer, wine, and spirits provided for everyone to celebrate and raise a glass during traditional Chào Bàn table toasts.",
+    drinks_tag: "Banquet Feast & Chào Bàn Toasts",
 
-    music_title: "Music, Dancing & La Hora Loca",
-    music_desc: "An evening guided by our bilingual MC, featuring heartfelt toasts, plenty of dancing to Vietnamese favorites, American classics, and Latin beats—capped off with a high-energy Hora Loca to ignite the dance floor!",
-    music_tag: "Live MC & Hora Loca",
+    music_title: "Music, Dancing & Celebration",
+    music_desc: "An unforgettable evening guided by our bilingual MC, featuring heartfelt toasts, fun moments, and plenty of dancing to Vietnamese favorites, American classics, and Latin beats to keep the dance floor alive all night long!",
+    music_tag: "Bilingual MC & Live Dancing",
     banquet_title: "8-Course Grand Feast",
     banquet_desc: "Featuring four-seasons cold appetizer platter, honey walnut shrimp, seafood bird's nest soup, Peking roast duck, lobster with ginger & scallions, and steamed whole sea bass.",
     
@@ -336,16 +336,16 @@ export const translations = {
     
     // Details Grid
     dress_code_title: "Trang Phục Dự Tiệc",
-    dress_code_desc: "Áo Dài truyền thống Việt Nam, trang phục văn hóa lễ hội hoặc dạ tiệc cocktail / semi-formal. Tông màu lễ hội rực rỡ và sắc màu đá quý luôn được nồng nhiệt hoan nghênh!",
-    dress_code_tag: "Áo Dài & Trang Phục Lễ Hội",
+    dress_code_desc: "Chúng mình rất khuyến khích quý khách diện Áo Dài truyền thống Việt Nam nếu có thể! Ngoài ra, trang phục dạ tiệc cocktail hoặc semi-formal lịch sự đều rất phù hợp. Các gam màu tươi sáng, rực rỡ và sắc màu lễ hội luôn được nồng nhiệt chào đón!",
+    dress_code_tag: "Khuyến Khích Diện Áo Dài & Semi-Formal",
 
-    drinks_title: "Đại Tiệc Yến & Open Bar",
-    drinks_desc: "Toàn bộ tiệc tối và đồ uống do hai bạn chiêu đãi trọn vẹn suốt đêm tiệc! Hãy sẵn sàng thưởng thức thực đơn yến tiệc nhiều món thơm ngon, quầy bar mở và cùng nâng ly chúc mừng trong nghi thức Chào Bàn truyền thống.",
-    drinks_tag: "Quầy Bar Mở & Chào Bàn",
+    drinks_title: "Đại Yến Tiệc & Thức Uống Chiêu Đãi",
+    drinks_desc: "Toàn bộ tiệc tối thịnh soạn và đồ uống do cô dâu chú rể nồng nhiệt chiêu đãi! Quý khách sẽ cùng thưởng thức đại tiệc yến Á Đông nhiều món đặc sắc, với bia, rượu vang và các loại rượu thượng hạng được chuẩn bị chu đáo để chúng ta cùng nâng ly trong nghi thức Chào Bàn truyền thống.",
+    drinks_tag: "Đại Yến & Chào Bàn Nâng Ly",
 
-    music_title: "Âm Nhạc, Khiêu Vũ & La Hora Loca",
-    music_desc: "Dạ tiệc dẫn dắt bởi MC song ngữ, tràn ngập những lời chúc mừng chân thành, các giai điệu V-Pop yêu thích, nhạc bất hủ Âu Mỹ và vũ điệu Latin sôi động—đặc biệt bùng nổ cùng màn Hora Loca cuồng nhiệt thắp sáng sàn khiêu vũ!",
-    music_tag: "MC Song Ngữ & Hora Loca",
+    music_title: "Âm Nhạc & Khiêu Vũ",
+    music_desc: "Dạ tiệc được dẫn dắt bởi MC song ngữ truyền cảm, tràn ngập những lời chúc mừng chân thành, các tiết mục vui nhộn cùng giai điệu V-Pop yêu thích, nhạc bất hủ Âu Mỹ và vũ điệu Latin sôi động khuấy động sàn khiêu vũ suốt đêm tiệc!",
+    music_tag: "MC Song Ngữ & Sàn Khiêu Vũ",
     banquet_title: "Dạ Yến Á Đông Thượng Hạng",
     banquet_desc: "Thực đơn yến tiệc bàn tròn phong phú gồm Khai vị tứ quý, Tôm chiên sốt quả óc chó, Súp tổ yến hải vị, Vịt quay Bắc Kinh, Tôm hùm xào gừng hành, và Cá chẽm hấp Hồng Kông truyền thống.",
     

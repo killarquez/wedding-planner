@@ -89,7 +89,7 @@ We are thrilled to invite you to celebrate our special wedding evening with us!
 📅 Date: Sunday, December 20, 2026
 ⏰ Schedule: 5:30 PM Welcome Reception | 6:30 PM Grand Banquet & Program
 📍 Venue: Grand Harbor Restaurant (5733 Rosemead Blvd., Temple City, CA 91780)
-🍽️ 8-Course Feast, Open Bar, Traditional Chào Bàn & Dancing!
+🍽️ 8-Course Feast, Hosted Beer & Spirits, Traditional Chào Bàn & Dancing!
 ⏳ Please RSVP by November 20, 2026 (${seats} ${seats > 1 ? 'seats' : 'seat'} reserved for your party${guestListStr ? `: ${guestListStr}` : ''}).
 
 ${linkType === 'rsvp' ? `Direct RSVP Pass:\n${link}` : `Open your interactive invitation & red envelope:\n${link}`}
@@ -105,7 +105,7 @@ Chúng con / chúng mình rất vinh hạnh được đón tiếp quý gia đìn
 📅 Thời Gian: Chủ Nhật, Ngày 20 Tháng 12 Năm 2026 (20/12/2026)
 ⏰ Lịch Trình: 17:30 Đón Khách & Chụp Ảnh | 18:30 Khai Tiệc & Nghi Lễ
 📍 Địa Điểm: Nhà Hàng Grand Harbor (5733 Rosemead Blvd., Temple City, CA 91780)
-🍽️ Đại tiệc 8 món Á Đông, quầy bar mở, nghi thức Chào Bàn truyền thống & khiêu vũ!
+🍽️ Đại tiệc 8 món Á Đông, bia & rượu chiêu đãi chu đáo, nghi thức Chào Bàn truyền thống & khiêu vũ!
 ⏳ Kính mong quý vị xác nhận trước ngày 20/11/2026 (Dành riêng ${seats} chỗ ngồi cho gia đình${guestListStr ? `: ${guestListStr}` : ''}).
 
 ${linkType === 'rsvp' ? `Xác nhận tham dự trực tiếp (RSVP):\n${link}` : `Mở thiệp cưới & phong bao đỏ online dành riêng cho quý vị tại:\n${link}`}

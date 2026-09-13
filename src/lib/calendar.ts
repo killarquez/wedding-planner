@@ -3,7 +3,7 @@
  */
 export function generateWeddingIcsFile(guestName?: string): string {
   const title = "Trang & Alfredo's Wedding Celebration";
-  const description = `We said 'I do,' now let's celebrate!\nWe're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.\nGuest: ${guestName || 'Valued Guest'}\nDress Code: Traditional Áo Dài, Festive Glam, or Semi-Formal.\nDrinks & Bar are hosted by the couple!`;
+  const description = `We said 'I do,' now let's celebrate!\nWe're so excited to welcome you to our wedding celebration! Join us for an intimate, joy-filled evening with family and friends, featuring a delicious multi-course banquet, heartfelt toasts, music, and lasting memories.\nGuest: ${guestName || 'Valued Guest'}\nDress Code: Traditional Áo Dài encouraged, or Semi-Formal / Cocktail.\nDinner & celebratory drinks are hosted by the couple!`;
   const location = "Grand Harbor Restaurant, 5733 Rosemead Blvd., Temple City, CA 91780";
   
   // Dec 20, 2026 17:30:00 PST (UTC-8) -> 20261221T013000Z
