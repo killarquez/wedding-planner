@@ -24,7 +24,9 @@ import {
   XCircle,
   Phone,
   Mail,
-  Pencil
+  Pencil,
+  Scissors,
+  UserMinus
 } from 'lucide-react';
 
 interface Props {
@@ -232,7 +234,17 @@ Trang & Alfredo`;
   const [editTag, setEditTag] = useState<TableHierarchy>('general');
   const [editNotes, setEditNotes] = useState('');
   const [editGuestList, setEditGuestList] = useState<Array<{ id: string; first_name: string; last_name: string }>>([]);
+  const [pendingDeleteGuestIds, setPendingDeleteGuestIds] = useState<string[]>([]);
   const [editError, setEditError] = useState('');
+
+  // Split Party Sub-flow State
+  const [selectedGuestIdsForSplit, setSelectedGuestIdsForSplit] = useState<string[]>([]);
+  const [splitNewPartyName, setSplitNewPartyName] = useState('');
+  const [splitNewCode, setSplitNewCode] = useState('');
+  const [splitNewTotal, setSplitNewTotal] = useState<number>(1);
+  const [splitRemainingName, setSplitRemainingName] = useState('');
+  const [splitRemainingTotal, setSplitRemainingTotal] = useState<number>(1);
+  const [showSplitPanel, setShowSplitPanel] = useState(false);
 
   const openEditModal = (party: Party & { guests: Guest[]; confirmed_count: number }) => {
     setEditingParty(party);
@@ -250,7 +262,140 @@ Trang & Alfredo`;
         last_name: g.last_name
       }))
     );
+    setPendingDeleteGuestIds([]);
+    setSelectedGuestIdsForSplit([]);
+    setShowSplitPanel(false);
     setEditError('');
+  };
+
+  const handleRemoveGuestFromParty = (index: number) => {
+    const target = editGuestList[index];
+    if (target.id && !target.id.startsWith('temp-')) {
+      setPendingDeleteGuestIds(prev => [...prev, target.id]);
+    }
+    const updated = editGuestList.filter((_, idx) => idx !== index);
+    setEditGuestList(updated);
+    setSelectedGuestIdsForSplit(prev => prev.filter(id => id !== target.id));
+    if (editTotalInvited > updated.length && editTotalInvited > 1) {
+      setEditTotalInvited(Math.max(1, editTotalInvited - 1));
+    }
+  };
+
+  const handleAddGuestSlot = () => {
+    const newGuest = {
+      id: `temp-${Date.now()}`,
+      first_name: '',
+      last_name: ''
+    };
+    setEditGuestList(prev => [...prev, newGuest]);
+    if (editTotalInvited < editGuestList.length + 1) {
+      setEditTotalInvited(editGuestList.length + 1);
+    }
+  };
+
+  const handleToggleSelectGuestForSplit = (guestId: string) => {
+    let nextSelected: string[];
+    if (selectedGuestIdsForSplit.includes(guestId)) {
+      nextSelected = selectedGuestIdsForSplit.filter(id => id !== guestId);
+    } else {
+      nextSelected = [...selectedGuestIdsForSplit, guestId];
+    }
+    setSelectedGuestIdsForSplit(nextSelected);
+
+    if (nextSelected.length > 0) {
+      const selectedGuests = editGuestList.filter(g => nextSelected.includes(g.id));
+      const remainingGuests = editGuestList.filter(g => !nextSelected.includes(g.id));
+
+      const selectedNames = selectedGuests
+        .map(g => `${g.first_name || ''} ${g.last_name || ''}`.trim())
+        .filter(Boolean)
+        .join(' & ');
+      setSplitNewPartyName(selectedNames || 'New Split Party');
+
+      let suggestedCode = '';
+      if (editCode.includes('-')) {
+        const parts = editCode.split('-');
+        const lastNum = parseInt(parts[parts.length - 1], 10);
+        if (!isNaN(lastNum)) {
+          parts[parts.length - 1] = String(lastNum + 1).padStart(parts[parts.length - 1].length, '0');
+          suggestedCode = parts.join('-');
+        }
+      }
+      if (!suggestedCode) {
+        const firstSurname = (selectedGuests[0]?.last_name || selectedGuests[0]?.first_name || 'GUEST')
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '');
+        suggestedCode = `${firstSurname}-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+      setSplitNewCode(suggestedCode);
+      setSplitNewTotal(selectedGuests.length);
+
+      const remNames = remainingGuests
+        .map(g => `${g.first_name || ''} ${g.last_name || ''}`.trim())
+        .filter(Boolean)
+        .join(' & ');
+      setSplitRemainingName(remNames || editPartyName);
+      setSplitRemainingTotal(Math.max(1, (editTotalInvited || editGuestList.length) - selectedGuests.length));
+      setShowSplitPanel(true);
+    } else {
+      setShowSplitPanel(false);
+    }
+  };
+
+  const handleExecuteSplit = async () => {
+    if (!editingParty || selectedGuestIdsForSplit.length === 0) return;
+    if (!splitNewPartyName.trim() || !splitNewCode.trim()) {
+      setEditError('Please provide a name and invitation code for the new split party.');
+      return;
+    }
+
+    setLoadingAction(true);
+    setEditError('');
+
+    try {
+      // 1. First persist any name edits made to the guests before splitting
+      for (const g of editGuestList) {
+        if (g.id && !g.id.startsWith('temp-') && (g.first_name.trim() || g.last_name.trim())) {
+          await fetch('/api/guests', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: g.id,
+              first_name: g.first_name.trim(),
+              last_name: g.last_name.trim()
+            })
+          });
+        }
+      }
+
+      // 2. Call split action
+      const res = await fetch('/api/parties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'split',
+          source_party_id: editingParty.id,
+          guest_ids: selectedGuestIdsForSplit,
+          new_party_name: splitNewPartyName.trim(),
+          new_invitation_code: splitNewCode.trim().toUpperCase(),
+          new_total_invited: Number(splitNewTotal) || selectedGuestIdsForSplit.length,
+          updated_source_name: splitRemainingName.trim() || undefined,
+          updated_source_invited: Number(splitRemainingTotal) || Math.max(1, editGuestList.length - selectedGuestIdsForSplit.length)
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to split party');
+      }
+
+      setEditingParty(null);
+      onRefresh();
+    } catch (err: any) {
+      setEditError(err.message || 'Error splitting party');
+    } finally {
+      setLoadingAction(false);
+    }
   };
 
   const handleSavePartyEdit = async (e: React.FormEvent) => {
@@ -261,7 +406,27 @@ Trang & Alfredo`;
     setEditError('');
 
     try {
-      // 1. Update party record
+      // 1. Process explicit pending deletes + empty guest rows
+      const guestsToDelete = [...pendingDeleteGuestIds];
+      const validGuestsToSave: typeof editGuestList = [];
+
+      for (const g of editGuestList) {
+        const isBlank = !g.first_name.trim() && !g.last_name.trim();
+        if (isBlank) {
+          if (g.id && !g.id.startsWith('temp-')) {
+            guestsToDelete.push(g.id);
+          }
+        } else {
+          validGuestsToSave.push(g);
+        }
+      }
+
+      // Delete removed or empty guest rows
+      for (const gid of Array.from(new Set(guestsToDelete))) {
+        await fetch(`/api/guests?id=${gid}`, { method: 'DELETE' });
+      }
+
+      // 2. Update party record
       const res = await fetch('/api/parties', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -271,7 +436,7 @@ Trang & Alfredo`;
           invitation_code: editCode.trim().toUpperCase(),
           contact_phone: editPhone.trim() || undefined,
           contact_email: editEmail.trim() || undefined,
-          total_invited: Number(editTotalInvited),
+          total_invited: Math.max(1, Number(editTotalInvited)),
           relationship_tag: editTag,
           notes: editNotes.trim() || undefined
         })
@@ -282,17 +447,19 @@ Trang & Alfredo`;
         throw new Error(data.error || 'Failed to update party');
       }
 
-      // 2. Update individual guest names
-      for (const g of editGuestList) {
-        await fetch('/api/guests', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: g.id,
-            first_name: g.first_name.trim(),
-            last_name: g.last_name.trim()
-          })
-        });
+      // 3. Update individual guest names
+      for (const g of validGuestsToSave) {
+        if (g.id && !g.id.startsWith('temp-')) {
+          await fetch('/api/guests', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: g.id,
+              first_name: g.first_name.trim(),
+              last_name: g.last_name.trim()
+            })
+          });
+        }
       }
 
       setEditingParty(null);
@@ -1349,7 +1516,7 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
                   </label>
                   <input
                     type="number"
-                    min={editGuestList.length || 1}
+                    min={1}
                     max={20}
                     required
                     value={editTotalInvited}
@@ -1357,7 +1524,7 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
                     className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-crimson-700"
                   />
                   <span className="text-[10px] text-stone-400">
-                    {lang === 'en' ? 'Guests can use "+ Add Guest" up to this limit' : 'Khách có thể thêm người đến giới hạn này'}
+                    {lang === 'en' ? 'Max capacity allocated to this party (can be 1 or more)' : 'Số chỗ tối đa cho bàn này'}
                   </span>
                 </div>
               </div>
@@ -1420,16 +1587,47 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
                 </div>
               </div>
 
-              {/* Individual Guest Names Editor */}
-              {editGuestList.length > 0 && (
-                <div className="pt-2 border-t border-stone-200">
-                  <label className="block text-xs font-semibold text-stone-700 mb-2">
+              {/* Individual Guest Names Editor & Split Selector */}
+              <div className="pt-2 border-t border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-stone-700">
                     {lang === 'en' ? 'Individual Guests in Party:' : 'Danh Sách Từng Thành Viên:'}
+                    {editGuestList.length >= 2 && (
+                      <span className="text-[10px] text-stone-400 font-normal ml-2">
+                        (Check boxes to split into separate party)
+                      </span>
+                    )}
                   </label>
-                  <div className="space-y-2">
-                    {editGuestList.map((g, idx) => (
-                      <div key={g.id} className="flex items-center gap-2">
-                        <span className="w-5 text-[11px] text-stone-400 font-mono">
+                  <button
+                    type="button"
+                    onClick={handleAddGuestSlot}
+                    className="text-[11px] text-crimson-800 hover:text-crimson-900 font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>{lang === 'en' ? '+ Add Guest' : '+ Thêm người'}</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {editGuestList.map((g, idx) => {
+                    const isSelectedForSplit = selectedGuestIdsForSplit.includes(g.id);
+                    return (
+                      <div
+                        key={g.id || idx}
+                        className={`flex items-center gap-2 p-1.5 rounded-xl transition-colors ${
+                          isSelectedForSplit ? 'bg-amber-50 border border-amber-200' : ''
+                        }`}
+                      >
+                        {editGuestList.length >= 2 && (
+                          <input
+                            type="checkbox"
+                            checked={isSelectedForSplit}
+                            onChange={() => handleToggleSelectGuestForSplit(g.id)}
+                            title="Select to split into separate party"
+                            className="w-4 h-4 rounded text-crimson-700 focus:ring-crimson-700 cursor-pointer"
+                          />
+                        )}
+                        <span className="w-5 text-[11px] text-stone-400 font-mono text-center">
                           #{idx + 1}
                         </span>
                         <input
@@ -1441,7 +1639,7 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
                             updated[idx].first_name = e.target.value;
                             setEditGuestList(updated);
                           }}
-                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-300 text-xs focus:outline-none focus:ring-1 focus:ring-crimson-700"
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-300 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-crimson-700"
                         />
                         <input
                           type="text"
@@ -1452,10 +1650,116 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
                             updated[idx].last_name = e.target.value;
                             setEditGuestList(updated);
                           }}
-                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-300 text-xs focus:outline-none focus:ring-1 focus:ring-crimson-700"
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-300 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-crimson-700"
                         />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGuestFromParty(idx)}
+                          title="Remove guest from party"
+                          className="text-stone-300 hover:text-red-600 p-1.5 transition-colors cursor-pointer rounded-lg hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
-                    ))}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Split Party Dedicated Banner / Action Box */}
+              {showSplitPanel && selectedGuestIdsForSplit.length > 0 && selectedGuestIdsForSplit.length < editGuestList.length && (
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-300 shadow-xs space-y-3">
+                  <div className="flex items-center gap-2 text-amber-900 font-serif font-bold text-xs">
+                    <Scissors className="w-4 h-4 text-amber-700" />
+                    <span>
+                      {lang === 'en'
+                        ? `Split ${selectedGuestIdsForSplit.length} Selected Guest(s) into Separate Party`
+                        : `Tách ${selectedGuestIdsForSplit.length} khách đã chọn thành bàn riêng`}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-amber-800 leading-snug">
+                    {lang === 'en'
+                      ? 'Selected guests will be moved into a newly created party with their own invitation code. Their table seats are preserved automatically!'
+                      : 'Các khách đã chọn sẽ được chuyển sang một nhóm/bàn tiệc mới với mã thiệp riêng. Vị trí ngồi vẫn được giữ nguyên!'}
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        New Party Display Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={splitNewPartyName}
+                        onChange={(e) => setSplitNewPartyName(e.target.value)}
+                        placeholder="e.g. Jorge & Vanessa"
+                        className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        New Invitation Code (RSVP Passcode)
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={splitNewCode}
+                        onChange={(e) => setSplitNewCode(e.target.value.toUpperCase())}
+                        placeholder="e.g. FAM-ROSSI-03"
+                        className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-mono font-bold bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        New Party Seat Cap
+                      </label>
+                      <input
+                        type="number"
+                        min={selectedGuestIdsForSplit.length}
+                        max={20}
+                        value={splitNewTotal}
+                        onChange={(e) => setSplitNewTotal(parseInt(e.target.value, 10) || selectedGuestIdsForSplit.length)}
+                        className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-bold bg-white focus:outline-none focus:ring-2 focus:ring-amber-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-700 mb-1">
+                        Remaining Party Name (Original)
+                      </label>
+                      <input
+                        type="text"
+                        value={splitRemainingName}
+                        onChange={(e) => setSplitRemainingName(e.target.value)}
+                        placeholder="e.g. Joel & Cathy"
+                        className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-stone-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-200">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedGuestIdsForSplit([])}
+                      className="px-3 py-1.5 text-xs text-amber-900 hover:bg-amber-100 rounded-lg cursor-pointer"
+                    >
+                      Cancel Split
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleExecuteSplit}
+                      disabled={loadingAction || !splitNewPartyName.trim() || !splitNewCode.trim()}
+                      className="px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Scissors className="w-3.5 h-3.5" />
+                      <span>{loadingAction ? 'Splitting...' : 'Confirm & Split into 2 Parties'}</span>
+                    </button>
                   </div>
                 </div>
               )}

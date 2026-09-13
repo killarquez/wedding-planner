@@ -595,6 +595,69 @@ export class WeddingDB {
     return updated;
   }
 
+  public static async splitParty(params: {
+    sourcePartyId: string;
+    guestIdsToMove: string[];
+    newPartyName: string;
+    newInvitationCode: string;
+    newTotalInvited?: number;
+    updatedSourceName?: string;
+    updatedSourceInvited?: number;
+  }): Promise<{ newParty: Party; updatedSourceParty: Party }> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const result = await SupabaseService.splitParty(params);
+        this.updateState(s => {
+          s.parties.push(result.newParty);
+          const sIdx = s.parties.findIndex(p => p.id === params.sourcePartyId);
+          if (sIdx !== -1) s.parties[sIdx] = result.updatedSourceParty;
+          for (const gId of params.guestIdsToMove) {
+            const g = s.guests.find(x => x.id === gId);
+            if (g) g.party_id = result.newParty.id;
+          }
+        });
+        return result;
+      } catch (e) {
+        console.error('Supabase splitParty error:', e);
+        throw e;
+      }
+    }
+
+    const state = this.getState();
+    const source = state.parties.find(p => p.id === params.sourcePartyId);
+    if (!source) throw new Error(`Party with id "${params.sourcePartyId}" not found`);
+
+    const newPartyId = `party-split-${Date.now()}`;
+    const newParty: Party = {
+      id: newPartyId,
+      primary_guest_name: params.newPartyName,
+      invitation_code: params.newInvitationCode.toUpperCase(),
+      total_invited: params.newTotalInvited || params.guestIdsToMove.length,
+      contact_phone: undefined,
+      contact_email: undefined,
+      notes: `Split from ${source.primary_guest_name}`,
+      created_at: new Date().toISOString()
+    };
+
+    let updatedSource: Party = {
+      ...source,
+      total_invited: params.updatedSourceInvited || Math.max(1, source.total_invited - params.guestIdsToMove.length),
+      primary_guest_name: params.updatedSourceName || source.primary_guest_name
+    };
+
+    this.updateState(s => {
+      s.parties.push(newParty);
+      const idx = s.parties.findIndex(p => p.id === params.sourcePartyId);
+      if (idx !== -1) s.parties[idx] = updatedSource;
+      for (const gId of params.guestIdsToMove) {
+        const g = s.guests.find(x => x.id === gId);
+        if (g) g.party_id = newPartyId;
+      }
+    });
+
+    return { newParty, updatedSourceParty: updatedSource };
+  }
+
   public static async bulkImportParties(rows: any[]): Promise<any> {
     if (this.isSupabaseConfigured()) {
       try {

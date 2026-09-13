@@ -419,6 +419,99 @@ export class SupabaseService {
     return { ...(data as Party), relationship_tag };
   }
 
+  public static async splitParty(params: {
+    sourcePartyId: string;
+    guestIdsToMove: string[];
+    newPartyName: string;
+    newInvitationCode: string;
+    newTotalInvited?: number;
+    updatedSourceName?: string;
+    updatedSourceInvited?: number;
+  }): Promise<{ newParty: Party; updatedSourceParty: Party }> {
+    const supabase = this.getClient();
+
+    // 1. Fetch source party
+    const { data: sourceParty, error: spFetchError } = await supabase
+      .from('parties')
+      .select('*')
+      .eq('id', params.sourcePartyId)
+      .single();
+
+    if (spFetchError || !sourceParty) {
+      throw new Error(`Source party "${params.sourcePartyId}" not found`);
+    }
+
+    // 2. Determine unique ID and sanitized code for new party
+    const newPartyId = `party-split-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const newCode = (params.newInvitationCode || `SPLIT-${Math.floor(1000 + Math.random() * 9000)}`).trim().toUpperCase();
+
+    // 3. Create new party
+    const newPartyTotal = params.newTotalInvited !== undefined ? params.newTotalInvited : params.guestIdsToMove.length;
+    const { data: newParty, error: npCreateError } = await supabase
+      .from('parties')
+      .insert({
+        id: newPartyId,
+        primary_guest_name: params.newPartyName.trim(),
+        invitation_code: newCode,
+        total_invited: Math.max(1, newPartyTotal),
+        contact_phone: null,
+        contact_email: null,
+        notes: sourceParty.notes ? `Split from ${sourceParty.primary_guest_name} | ${sourceParty.notes}` : `Split from ${sourceParty.primary_guest_name}`,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (npCreateError || !newParty) {
+      throw new Error(npCreateError?.message || 'Failed to create split party');
+    }
+
+    // 4. Move selected guests into the new party while preserving table seating
+    for (let i = 0; i < params.guestIdsToMove.length; i++) {
+      const gId = params.guestIdsToMove[i];
+      const { error: gUpdateError } = await supabase
+        .from('guests')
+        .update({
+          party_id: newPartyId,
+          is_primary_contact: i === 0,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', gId);
+
+      if (gUpdateError) {
+        console.warn(`Could not move guest ${gId}:`, gUpdateError);
+      }
+    }
+
+    // 5. Update source party name and total_invited
+    const sourceRemainingCap = params.updatedSourceInvited !== undefined
+      ? params.updatedSourceInvited
+      : Math.max(1, (sourceParty.total_invited || 0) - params.guestIdsToMove.length);
+
+    const sourceUpdates: Record<string, any> = {
+      total_invited: sourceRemainingCap
+    };
+    if (params.updatedSourceName && params.updatedSourceName.trim()) {
+      sourceUpdates.primary_guest_name = params.updatedSourceName.trim();
+    }
+
+    const { data: updatedSourceParty, error: spUpdateError } = await supabase
+      .from('parties')
+      .update(sourceUpdates)
+      .eq('id', params.sourcePartyId)
+      .select()
+      .single();
+
+    if (spUpdateError || !updatedSourceParty) {
+      throw new Error(spUpdateError?.message || 'Failed to update original party');
+    }
+
+    return {
+      newParty: newParty as Party,
+      updatedSourceParty: updatedSourceParty as Party
+    };
+  }
+
   public static async bulkImportParties(rows: Array<{
     name: string;
     code?: string;

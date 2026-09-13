@@ -34,6 +34,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, ...result });
     }
 
+    if (body.action === 'split') {
+      const {
+        source_party_id,
+        guest_ids,
+        new_party_name,
+        new_invitation_code,
+        new_total_invited,
+        updated_source_name,
+        updated_source_invited
+      } = body;
+
+      if (!source_party_id || !Array.isArray(guest_ids) || guest_ids.length === 0) {
+        return NextResponse.json(
+          { error: 'Source party ID and at least 1 guest to move are required' },
+          { status: 400 }
+        );
+      }
+
+      if (!new_party_name || !new_invitation_code) {
+        return NextResponse.json(
+          { error: 'New party name and invitation code are required' },
+          { status: 400 }
+        );
+      }
+
+      const result = await WeddingDB.splitParty({
+        sourcePartyId: source_party_id,
+        guestIdsToMove: guest_ids,
+        newPartyName: new_party_name,
+        newInvitationCode: new_invitation_code,
+        newTotalInvited: new_total_invited !== undefined ? Number(new_total_invited) : undefined,
+        updatedSourceName: updated_source_name,
+        updatedSourceInvited: updated_source_invited !== undefined ? Number(updated_source_invited) : undefined
+      });
+
+      return NextResponse.json({ success: true, ...result });
+    }
+
     if (!body.primary_guest_name || !body.primary_guest_name.trim()) {
       return NextResponse.json({ error: 'Primary guest or party name is required' }, { status: 400 });
     }
