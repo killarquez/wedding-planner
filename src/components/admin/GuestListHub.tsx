@@ -23,7 +23,8 @@ import {
   Clock,
   XCircle,
   Phone,
-  Mail
+  Mail,
+  Pencil
 } from 'lucide-react';
 
 interface Props {
@@ -216,6 +217,88 @@ Trang & Alfredo`;
       onRefresh();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  // Edit Party / Invite Modal State
+  const [editingParty, setEditingParty] = useState<(Party & { guests: Guest[]; confirmed_count: number }) | null>(null);
+  const [editPartyName, setEditPartyName] = useState('');
+  const [editCode, setEditCode] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editTotalInvited, setEditTotalInvited] = useState<number>(1);
+  const [editTag, setEditTag] = useState<TableHierarchy>('general');
+  const [editNotes, setEditNotes] = useState('');
+  const [editGuestList, setEditGuestList] = useState<Array<{ id: string; first_name: string; last_name: string }>>([]);
+  const [editError, setEditError] = useState('');
+
+  const openEditModal = (party: Party & { guests: Guest[]; confirmed_count: number }) => {
+    setEditingParty(party);
+    setEditPartyName(party.primary_guest_name);
+    setEditCode(party.invitation_code);
+    setEditPhone(party.contact_phone || '');
+    setEditEmail(party.contact_email || '');
+    setEditTotalInvited(party.total_invited || party.guests?.length || 1);
+    setEditTag(party.relationship_tag || 'general');
+    setEditNotes(party.notes || '');
+    setEditGuestList(
+      (party.guests || []).map(g => ({
+        id: g.id,
+        first_name: g.first_name,
+        last_name: g.last_name
+      }))
+    );
+    setEditError('');
+  };
+
+  const handleSavePartyEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingParty || !editPartyName.trim() || !editCode.trim()) return;
+
+    setLoadingAction(true);
+    setEditError('');
+
+    try {
+      // 1. Update party record
+      const res = await fetch('/api/parties', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingParty.id,
+          primary_guest_name: editPartyName.trim(),
+          invitation_code: editCode.trim().toUpperCase(),
+          contact_phone: editPhone.trim() || undefined,
+          contact_email: editEmail.trim() || undefined,
+          total_invited: Number(editTotalInvited),
+          relationship_tag: editTag,
+          notes: editNotes.trim() || undefined
+        })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update party');
+      }
+
+      // 2. Update individual guest names
+      for (const g of editGuestList) {
+        await fetch('/api/guests', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: g.id,
+            first_name: g.first_name.trim(),
+            last_name: g.last_name.trim()
+          })
+        });
+      }
+
+      setEditingParty(null);
+      onRefresh();
+    } catch (err: any) {
+      setEditError(err.message || 'Error updating party');
     } finally {
       setLoadingAction(false);
     }
@@ -610,8 +693,17 @@ Trang & Alfredo`;
 
                       <button
                         type="button"
+                        onClick={() => openEditModal(party)}
+                        className="text-stone-400 hover:text-gold-600 p-1.5 transition-colors cursor-pointer"
+                        title={lang === 'en' ? 'Edit Party & Invite Details' : 'Chỉnh sửa thông tin thiệp & khách'}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => handleDeleteParty(party.id, party.primary_guest_name)}
-                        className="text-stone-300 hover:text-red-500 p-1.5 transition-colors"
+                        className="text-stone-300 hover:text-red-500 p-1.5 transition-colors cursor-pointer"
                         title="Delete Party"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -680,6 +772,17 @@ Trang & Alfredo`;
                     </div>
 
                     <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                      {/* Edit Party Details */}
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(party)}
+                        title={lang === 'en' ? 'Edit party details, code, and guest names' : 'Chỉnh sửa thông tin thiệp và khách'}
+                        className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-300 hover:border-gold-500 text-stone-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-stone-500" />
+                        <span>{lang === 'en' ? 'Edit' : 'Sửa'}</span>
+                      </button>
+
                       {/* Share & Customize Modal Trigger */}
                       <button
                         type="button"
@@ -1170,6 +1273,212 @@ David Miller | (714) 555-0105 | David Miller, Plus One | friends_bar`}
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Party & Invite Details Modal */}
+      {editingParty && (
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gold-100 text-gold-800 flex items-center justify-center">
+                  <Pencil className="w-4 h-4 text-gold-700" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-stone-900 text-base">
+                    {lang === 'en' ? 'Edit Party & Invite Details' : 'Chỉnh Sửa Bàn Tiệc & Thiệp Mời'}
+                  </h3>
+                  <p className="text-[11px] text-stone-500">
+                    ID: {editingParty.id}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingParty(null)}
+                className="text-stone-400 hover:text-stone-600 text-sm font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {editError && (
+              <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs border border-red-200">
+                {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleSavePartyEdit} className="space-y-4 text-xs">
+              {/* Primary / Party Name */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  {lang === 'en' ? 'Party / Display Name' : 'Tên Bàn / Người Đại Diện'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editPartyName}
+                  onChange={(e) => setEditPartyName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                />
+              </div>
+
+              {/* Code & Total Invited */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    {lang === 'en' ? 'Invitation Code (Passcode)' : 'Mã Thiệp / Mật Khẩu RSVP'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editCode}
+                    onChange={(e) => setEditCode(e.target.value.toUpperCase())}
+                    className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                  />
+                  <span className="text-[10px] text-stone-400">
+                    Used for /rsvp?invite={editCode || 'CODE'}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    {lang === 'en' ? 'Allocated Seats / Max Cap' : 'Số Chỗ Tối Đa Cho Phép'}
+                  </label>
+                  <input
+                    type="number"
+                    min={editGuestList.length || 1}
+                    max={20}
+                    required
+                    value={editTotalInvited}
+                    onChange={(e) => setEditTotalInvited(parseInt(e.target.value, 10) || 1)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                  />
+                  <span className="text-[10px] text-stone-400">
+                    {lang === 'en' ? 'Guests can use "+ Add Guest" up to this limit' : 'Khách có thể thêm người đến giới hạn này'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Phone & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    {lang === 'en' ? 'Contact Phone (SMS)' : 'Số Điện Thoại'}
+                  </label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Contact Email
+                  </label>
+                  <input
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                  />
+                </div>
+              </div>
+
+              {/* Tag & Notes */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Category Tag
+                  </label>
+                  <select
+                    value={editTag}
+                    onChange={(e) => setEditTag(e.target.value as TableHierarchy)}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                  >
+                    <option value="vip_family">{t.table_vip_tag}</option>
+                    <option value="extended_relatives">{t.table_relatives_tag}</option>
+                    <option value="friends_bar">{t.table_friends_tag}</option>
+                    <option value="general">General Banquet</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Notes
+                  </label>
+                  <input
+                    type="text"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-crimson-700"
+                  />
+                </div>
+              </div>
+
+              {/* Individual Guest Names Editor */}
+              {editGuestList.length > 0 && (
+                <div className="pt-2 border-t border-stone-200">
+                  <label className="block text-xs font-semibold text-stone-700 mb-2">
+                    {lang === 'en' ? 'Individual Guests in Party:' : 'Danh Sách Từng Thành Viên:'}
+                  </label>
+                  <div className="space-y-2">
+                    {editGuestList.map((g, idx) => (
+                      <div key={g.id} className="flex items-center gap-2">
+                        <span className="w-5 text-[11px] text-stone-400 font-mono">
+                          #{idx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={g.first_name}
+                          placeholder="First Name / Tên"
+                          onChange={(e) => {
+                            const updated = [...editGuestList];
+                            updated[idx].first_name = e.target.value;
+                            setEditGuestList(updated);
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-300 text-xs focus:outline-none focus:ring-1 focus:ring-crimson-700"
+                        />
+                        <input
+                          type="text"
+                          value={g.last_name}
+                          placeholder="Last Name / Họ"
+                          onChange={(e) => {
+                            const updated = [...editGuestList];
+                            updated[idx].last_name = e.target.value;
+                            setEditGuestList(updated);
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-stone-300 text-xs focus:outline-none focus:ring-1 focus:ring-crimson-700"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Form Buttons */}
+              <div className="flex justify-end gap-2 pt-3 border-t border-stone-200">
+                <button
+                  type="button"
+                  onClick={() => setEditingParty(null)}
+                  className="px-4 py-2 text-xs text-stone-600 hover:bg-stone-100 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loadingAction}
+                  className="px-5 py-2 rounded-xl bg-crimson-800 hover:bg-crimson-900 text-white font-bold text-xs shadow-xs cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{loadingAction ? 'Saving...' : (lang === 'en' ? 'Save Changes' : 'Lưu Thay Đổi')}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
