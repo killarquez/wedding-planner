@@ -658,6 +658,132 @@ export class WeddingDB {
     return { newParty, updatedSourceParty: updatedSource };
   }
 
+  public static async registerPaperParty(payload: {
+    primary_first_name: string;
+    primary_last_name: string;
+    contact_phone: string;
+    contact_email?: string;
+    relationship_side: 'bride' | 'groom' | 'friend';
+    guests: Array<{
+      first_name: string;
+      last_name: string;
+      rsvp_status: 'attending' | 'declined';
+      dietary_restrictions?: string[];
+      dietary_notes?: string;
+    }>;
+    special_message?: string;
+    song_request?: {
+      song_title?: string;
+      artist_name?: string;
+    };
+  }): Promise<{
+    party: Party;
+    guests: Guest[];
+    primaryGuest: Guest;
+    attendingCount: number;
+    declinedCount: number;
+  }> {
+    if (this.isSupabaseConfigured()) {
+      try {
+        const result = await SupabaseService.registerPaperParty(payload);
+        this.updateState(s => {
+          s.parties.push(result.party);
+          s.guests.push(...result.guests);
+        });
+        return result;
+      } catch (e) {
+        console.error('Supabase registerPaperParty error:', e);
+        throw e;
+      }
+    }
+
+    // Local in-memory fallback
+    const now = new Date().toISOString();
+    const attendees = (payload.guests && payload.guests.length > 0)
+      ? payload.guests.slice(0, 2)
+      : [{
+          first_name: payload.primary_first_name,
+          last_name: payload.primary_last_name,
+          rsvp_status: 'attending' as const
+        }];
+
+    const cleanSurname = (payload.primary_last_name || payload.primary_first_name || 'GUEST')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 8);
+    const code = `PAPER-${cleanSurname || 'VIP'}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    let sideLabel = "Friends & Colleagues (Bạn Bè)";
+    let hierarchyTag: TableHierarchy = 'friends_bar';
+    if (payload.relationship_side === 'bride') {
+      sideLabel = "Bride's Family & Friends (Nhà Gái)";
+      hierarchyTag = 'extended_relatives';
+    } else if (payload.relationship_side === 'groom') {
+      sideLabel = "Groom's Family & Friends (Nhà Trai)";
+      hierarchyTag = 'extended_relatives';
+    }
+
+    const partyId = `party-paper-${Date.now()}`;
+    const primaryDisplayName = attendees.length > 1
+      ? `${attendees[0].first_name} & ${attendees[1].first_name} ${attendees[1].last_name || attendees[0].last_name}`.trim()
+      : `${payload.primary_first_name} ${payload.primary_last_name}`.trim();
+
+    const formattedNotes = `[Source: Paper Invite | Side: ${sideLabel} | Status: Pending Review]${
+      payload.special_message ? ' | Note: ' + payload.special_message : ''
+    }`;
+
+    const newParty: Party = {
+      id: partyId,
+      primary_guest_name: primaryDisplayName,
+      invitation_code: code,
+      total_invited: attendees.length,
+      contact_email: payload.contact_email?.trim() || undefined,
+      contact_phone: payload.contact_phone?.trim() || undefined,
+      notes: formattedNotes,
+      created_at: now
+    };
+
+    let attendingCount = 0;
+    let declinedCount = 0;
+    const newGuests: Guest[] = attendees.map((att, idx) => {
+      const isAttending = att.rsvp_status === 'attending';
+      if (isAttending) attendingCount++;
+      else declinedCount++;
+
+      return {
+        id: `guest-paper-${Date.now()}-${idx}`,
+        party_id: partyId,
+        first_name: att.first_name.trim(),
+        last_name: att.last_name.trim(),
+        email: idx === 0 ? payload.contact_email?.trim() || undefined : undefined,
+        phone: idx === 0 ? payload.contact_phone?.trim() || undefined : undefined,
+        rsvp_status: att.rsvp_status || 'attending',
+        headcount: 1,
+        dietary_restrictions: att.dietary_restrictions || [],
+        dietary_notes: att.dietary_notes?.trim() || undefined,
+        table_id: null,
+        table_seat_number: null,
+        is_primary_contact: idx === 0,
+        relationship_tag: hierarchyTag,
+        created_at: now,
+        updated_at: now
+      };
+    });
+
+    this.updateState(s => {
+      s.parties.push(newParty);
+      s.guests.push(...newGuests);
+    });
+
+    return {
+      party: newParty,
+      guests: newGuests,
+      primaryGuest: newGuests[0],
+      attendingCount,
+      declinedCount
+    };
+  }
+
   public static async bulkImportParties(rows: any[]): Promise<any> {
     if (this.isSupabaseConfigured()) {
       try {

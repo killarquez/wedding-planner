@@ -15,11 +15,15 @@ export async function GET(req: NextRequest) {
 
     const result = await WeddingDB.getPartyByCodeOrPhone(query);
     if (!result) {
-      return NextResponse.json({ error: 'Invitation not found. Please verify your code or phone number.' }, { status: 404 });
+      return NextResponse.json({
+        found: false,
+        error: 'Invitation not found. Please verify your code or phone number.'
+      }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
+      found: true,
       party: result.party,
       guests: result.guests
     });
@@ -31,6 +35,86 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // 0. Paper Invitation Self-Registration Intake
+    if (body.action === 'register_paper') {
+      const {
+        primary_first_name,
+        primary_last_name,
+        contact_phone,
+        contact_email,
+        relationship_side,
+        guests,
+        special_message,
+        song_request
+      } = body;
+
+      if (!primary_first_name?.trim() || !contact_phone?.trim()) {
+        return NextResponse.json(
+          { error: 'Primary attendee name and contact phone number are required.' },
+          { status: 400 }
+        );
+      }
+
+      const result = await WeddingDB.registerPaperParty({
+        primary_first_name: primary_first_name.trim(),
+        primary_last_name: (primary_last_name || '').trim(),
+        contact_phone: contact_phone.trim(),
+        contact_email: contact_email?.trim() || undefined,
+        relationship_side: relationship_side || 'friend',
+        guests: Array.isArray(guests) && guests.length > 0 ? guests : [
+          {
+            first_name: primary_first_name.trim(),
+            last_name: (primary_last_name || '').trim(),
+            rsvp_status: 'attending'
+          }
+        ],
+        special_message: special_message?.trim() || undefined,
+        song_request
+      });
+
+      // Dispatch Discord Alert
+      try {
+        await sendDiscordRsvpAlert({
+          party: result.party,
+          primaryGuest: result.primaryGuest,
+          allGuests: result.guests,
+          attendingCount: result.attendingCount,
+          declinedCount: result.declinedCount,
+          specialMessage,
+          songRequest: song_request?.song_title,
+          isPaperInvite: true
+        });
+      } catch (err) {
+        console.warn('Discord alert push warning:', err);
+      }
+
+      // Dispatch Transactional Confirmation Email via Resend if email provided
+      let emailResult = null;
+      if (contact_email && result.primaryGuest) {
+        try {
+          emailResult = await sendRsvpConfirmationEmail({
+            party: result.party,
+            primaryGuest: result.primaryGuest,
+            allGuests: result.guests,
+            attendingCount: result.attendingCount,
+            recipientEmail: contact_email.trim()
+          });
+        } catch (err) {
+          console.warn('Resend email dispatch warning:', err);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        party: result.party,
+        primaryGuest: result.primaryGuest,
+        guests: result.guests,
+        attendingCount: result.attendingCount,
+        declinedCount: result.declinedCount,
+        emailSent: emailResult?.success || false
+      });
+    }
 
     // 1. Personalized Party RSVP Mode
     if (body.party_id || (body.guests && Array.isArray(body.guests))) {

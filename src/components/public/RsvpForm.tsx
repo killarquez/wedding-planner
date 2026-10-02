@@ -19,7 +19,12 @@ import {
   UserPlus,
   UserCheck,
   Trash2,
-  Heart
+  Heart,
+  Plus,
+  Phone,
+  Mail,
+  FileText,
+  CheckCircle2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { VietnameseCornerFlourish, VietnameseCloudDivider } from './VietnameseMotifDividers';
@@ -47,6 +52,29 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
   const [lookupQuery, setLookupQuery] = useState(initialCode || '');
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState('');
+
+  // Paper Invite Sub-flow State
+  const [showPaperPrompt, setShowPaperPrompt] = useState(false);
+  const [showPaperForm, setShowPaperForm] = useState(false);
+  const [paperFirstName, setPaperFirstName] = useState('');
+  const [paperLastName, setPaperLastName] = useState('');
+  const [paperPhone, setPaperPhone] = useState('');
+  const [paperEmail, setPaperEmail] = useState('');
+  const [paperSide, setPaperSide] = useState<'bride' | 'groom' | 'friend'>('bride');
+  const [paperLeadAttending, setPaperLeadAttending] = useState(true);
+  const [paperLeadDietary, setPaperLeadDietary] = useState<string[]>([]);
+  const [paperLeadDietaryNotes, setPaperLeadDietaryNotes] = useState('');
+  const [paperHasPlusOne, setPaperHasPlusOne] = useState(false);
+  const [paperPlusOneFirstName, setPaperPlusOneFirstName] = useState('');
+  const [paperPlusOneLastName, setPaperPlusOneLastName] = useState('');
+  const [paperPlusOneAttending, setPaperPlusOneAttending] = useState(true);
+  const [paperPlusOneDietary, setPaperPlusOneDietary] = useState<string[]>([]);
+  const [paperPlusOneDietaryNotes, setPaperPlusOneDietaryNotes] = useState('');
+  const [paperSpecialMessage, setPaperSpecialMessage] = useState('');
+  const [paperSongTitle, setPaperSongTitle] = useState('');
+  const [paperSongArtist, setPaperSongArtist] = useState('');
+  const [paperSubmitting, setPaperSubmitting] = useState(false);
+  const [paperSubmitError, setPaperSubmitError] = useState('');
 
   // Party & Guests Data
   const [party, setParty] = useState<Party | null>(null);
@@ -81,16 +109,21 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
 
     setLookupLoading(true);
     setLookupError('');
+    setShowPaperPrompt(false);
 
     try {
       const res = await fetch(`/api/rsvp?lookup=${encodeURIComponent(queryToSearch.trim())}`);
       const data = await res.json();
 
       if (!res.ok || !data.party) {
+        setShowPaperPrompt(true);
+        setPaperPhone(queryToSearch.trim());
         throw new Error(data.error || t.lookup_not_found);
       }
 
       setParty(data.party);
+      setShowPaperForm(false);
+      setShowPaperPrompt(false);
       setContactEmail(data.party.contact_email || '');
       setContactPhone(data.party.contact_phone || '');
       setSpecialMessage(data.party.special_message || '');
@@ -109,6 +142,97 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
       setLookupError(err.message || t.lookup_not_found);
     } finally {
       setLookupLoading(false);
+    }
+  };
+
+  const togglePaperDietary = (target: 'lead' | 'plusone', optionId: string) => {
+    if (target === 'lead') {
+      setPaperLeadDietary(prev =>
+        prev.includes(optionId) ? prev.filter(x => x !== optionId) : [...prev, optionId]
+      );
+    } else {
+      setPaperPlusOneDietary(prev =>
+        prev.includes(optionId) ? prev.filter(x => x !== optionId) : [...prev, optionId]
+      );
+    }
+  };
+
+  const handlePaperSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paperFirstName.trim() || !paperPhone.trim()) {
+      setPaperSubmitError(lang === 'en' ? 'Please provide your name and phone number.' : 'Vui lòng nhập họ tên và số điện thoại.');
+      return;
+    }
+
+    if (paperHasPlusOne && !paperPlusOneFirstName.trim()) {
+      setPaperSubmitError(lang === 'en' ? "Please provide your plus-one's name." : 'Vui lòng nhập tên người đi cùng.');
+      return;
+    }
+
+    setPaperSubmitting(true);
+    setPaperSubmitError('');
+
+    try {
+      const attendees = [
+        {
+          first_name: paperFirstName.trim(),
+          last_name: paperLastName.trim(),
+          rsvp_status: (paperLeadAttending ? 'attending' : 'declined') as RsvpStatus,
+          dietary_restrictions: paperLeadDietary,
+          dietary_notes: paperLeadDietaryNotes.trim() || undefined
+        }
+      ];
+
+      if (paperHasPlusOne && paperPlusOneFirstName.trim()) {
+        attendees.push({
+          first_name: paperPlusOneFirstName.trim(),
+          last_name: paperPlusOneLastName.trim(),
+          rsvp_status: (paperPlusOneAttending ? 'attending' : 'declined') as RsvpStatus,
+          dietary_restrictions: paperPlusOneDietary,
+          dietary_notes: paperPlusOneDietaryNotes.trim() || undefined
+        });
+      }
+
+      const payload = {
+        action: 'register_paper',
+        primary_first_name: paperFirstName.trim(),
+        primary_last_name: paperLastName.trim(),
+        contact_phone: paperPhone.trim(),
+        contact_email: paperEmail.trim() || undefined,
+        relationship_side: paperSide,
+        guests: attendees,
+        special_message: paperSpecialMessage.trim() || undefined,
+        song_request: paperSongTitle.trim() ? {
+          song_title: paperSongTitle.trim(),
+          artist_name: paperSongArtist.trim() || undefined
+        } : undefined
+      };
+
+      const res = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit paper RSVP');
+      }
+
+      try {
+        confetti({
+          particleCount: 90,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#c41e3a', '#d4af37', '#ffd700', '#ffffff']
+        });
+      } catch (e) {}
+
+      onSuccess(data);
+    } catch (err: any) {
+      setPaperSubmitError(err.message || 'Error submitting RSVP');
+    } finally {
+      setPaperSubmitting(false);
     }
   };
 
@@ -295,77 +419,573 @@ export const RsvpForm: React.FC<Props> = ({ lang, initialCode, onSuccess }) => {
 
   return (
     <section id="rsvp-section" className="py-12 sm:py-16 px-4 sm:px-6 max-w-4xl mx-auto">
-      {/* 1. LOOKUP STATE (When no party loaded) */}
+      {/* 1. LOOKUP OR PAPER REGISTRATION STATE (When no party loaded) */}
       {!party ? (
-        <div className="relative bg-gradient-to-br from-white/95 via-amber-50/40 to-rose-50/30 backdrop-blur-md rounded-3xl p-6 sm:p-10 border-2 border-gold-400/80 shadow-xl text-center max-w-xl mx-auto animate-fade-in">
-          <VietnameseCornerFlourish position="top-left" className="absolute top-3 left-3 w-7 h-7 text-gold-500/70" />
-          <VietnameseCornerFlourish position="top-right" className="absolute top-3 right-3 w-7 h-7 text-gold-500/70" />
-          <VietnameseCornerFlourish position="bottom-left" className="absolute bottom-3 left-3 w-7 h-7 text-gold-500/70" />
-          <VietnameseCornerFlourish position="bottom-right" className="absolute bottom-3 right-3 w-7 h-7 text-gold-500/70" />
-
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-5 shadow-md border border-gold-400/60">
-            囍
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 mb-2">
-            {t.lookup_heading}
-          </h2>
-
-          <p className="text-stone-600 text-xs sm:text-sm max-w-md mx-auto mb-8 leading-relaxed">
-            {t.lookup_subtitle}
-          </p>
-
+        showPaperForm ? (
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleLookup(lookupQuery);
-            }}
-            className="space-y-4"
+            onSubmit={handlePaperSubmit}
+            className="relative bg-gradient-to-br from-white/95 via-amber-50/40 to-rose-50/30 backdrop-blur-md rounded-3xl p-6 sm:p-10 border-2 border-gold-400/80 shadow-xl space-y-8 animate-fade-in max-w-2xl mx-auto"
           >
-            <div className="relative max-w-md mx-auto">
-              <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
-              <input
-                type="text"
-                value={lookupQuery}
-                onChange={(e) => setLookupQuery(e.target.value)}
-                placeholder={t.lookup_placeholder}
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-300 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-crimson-700 bg-stone-50/50"
-              />
+            <VietnameseCornerFlourish position="top-left" className="absolute top-3 left-3 w-7 h-7 text-gold-500/70" />
+            <VietnameseCornerFlourish position="top-right" className="absolute top-3 right-3 w-7 h-7 text-gold-500/70" />
+            <VietnameseCornerFlourish position="bottom-left" className="absolute bottom-3 left-3 w-7 h-7 text-gold-500/70" />
+            <VietnameseCornerFlourish position="bottom-right" className="absolute bottom-3 right-3 w-7 h-7 text-gold-500/70" />
+
+            {/* Header Banner */}
+            <div className="border-b border-stone-200/80 pb-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-4 shadow-md border border-gold-400/60">
+                囍
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-amber-900 text-xs font-bold mb-3">
+                <span>📩</span>
+                <span>{t.paper_success_badge || (lang === 'en' ? 'Paper Invitation Registration' : 'Đăng Ký Thiệp Giấy')}</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 mb-2">
+                {t.paper_form_title}
+              </h2>
+              <p className="text-stone-600 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
+                {t.paper_form_subtitle}
+              </p>
             </div>
 
-            {lookupError && (
-              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2 text-left max-w-md mx-auto">
+            {/* Section 1: Relationship Hierarchy / Side */}
+            <div className="space-y-3 bg-stone-50/70 p-4 sm:p-5 rounded-2xl border border-stone-200">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                {t.paper_side_label} <span className="text-crimson-700">*</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {[
+                  { id: 'bride', label: t.paper_side_bride, icon: '🌸' },
+                  { id: 'groom', label: t.paper_side_groom, icon: '👔' },
+                  { id: 'friend', label: t.paper_side_friend, icon: '🥂' }
+                ].map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setPaperSide(s.id as any)}
+                    className={`p-3 rounded-xl border text-xs font-medium text-left transition-all flex items-center gap-2 cursor-pointer ${
+                      paperSide === s.id
+                        ? 'border-crimson-700 bg-crimson-50 text-crimson-900 font-bold shadow-2xs'
+                        : 'border-stone-300 bg-white text-stone-700 hover:border-stone-400'
+                    }`}
+                  >
+                    <span className="text-base">{s.icon}</span>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 2: Primary Attendee Information */}
+            <div className="space-y-4 bg-white p-5 rounded-2xl border border-stone-200/90 shadow-2xs">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-crimson-100 text-crimson-800 font-bold text-xs flex items-center justify-center">
+                    1
+                  </div>
+                  <h3 className="text-sm font-bold text-stone-900">
+                    {t.paper_lead_guest}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaperLeadAttending(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      paperLeadAttending
+                        ? 'bg-emerald-600 text-white shadow-2xs'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span>{t.guest_attending}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaperLeadAttending(false)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      !paperLeadAttending
+                        ? 'bg-red-600 text-white shadow-2xs'
+                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }`}
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>{t.guest_declining}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    {t.guest_first_name_label} <span className="text-crimson-700">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={paperFirstName}
+                    onChange={(e) => setPaperFirstName(e.target.value)}
+                    placeholder={lang === 'en' ? 'e.g. John' : 'Ví dụ: Tuấn'}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    {t.guest_last_name_label}
+                  </label>
+                  <input
+                    type="text"
+                    value={paperLastName}
+                    onChange={(e) => setPaperLastName(e.target.value)}
+                    placeholder={lang === 'en' ? 'e.g. Smith' : 'Ví dụ: Nguyễn'}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Lead Attendee Dietary Preferences if attending */}
+              {paperLeadAttending && (
+                <div className="pt-3 border-t border-stone-100 space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-stone-700">
+                    <Utensils className="w-3.5 h-3.5 text-stone-400" />
+                    <span>{t.allergies_dietary_title}</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {dietaryOptions.map((opt) => {
+                      const isChecked = paperLeadDietary.includes(opt.id);
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => togglePaperDietary('lead', opt.id)}
+                          className={`p-2 rounded-lg border text-[11px] text-left transition-all flex items-center gap-1.5 cursor-pointer ${
+                            isChecked
+                              ? 'border-crimson-700 bg-crimson-50 text-crimson-900 font-semibold'
+                              : 'border-stone-200 bg-stone-50/50 text-stone-600 hover:border-stone-300'
+                          }`}
+                        >
+                          <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${
+                            isChecked ? 'bg-crimson-700 border-crimson-700 text-white' : 'border-stone-300'
+                          }`}>
+                            {isChecked && <CheckCircle2 className="w-3 h-3" />}
+                          </div>
+                          <span className="truncate">{opt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <input
+                    type="text"
+                    value={paperLeadDietaryNotes}
+                    onChange={(e) => setPaperLeadDietaryNotes(e.target.value)}
+                    placeholder={lang === 'en' ? 'Other allergy details / notes for the kitchen...' : 'Ghi chú dị ứng khác cho đầu bếp...'}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Section 3: Contact Information */}
+            <div className="space-y-4 bg-stone-50/70 p-5 rounded-2xl border border-stone-200">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-stone-500" />
+                <span>{t.contact_info_title}</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    {lang === 'en' ? 'Phone Number' : 'Số Điện Thoại'} <span className="text-crimson-700">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={paperPhone}
+                    onChange={(e) => setPaperPhone(e.target.value)}
+                    placeholder="(714) 555-0199"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none bg-white"
+                  />
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    {lang === 'en' ? 'Used to verify and access your RSVP in the future.' : 'Dùng để quản lý và tra cứu thiệp của bạn sau này.'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                    {lang === 'en' ? 'Email Address (Optional)' : 'Địa Chỉ Email (Tuỳ chọn)'}
+                  </label>
+                  <input
+                    type="email"
+                    value={paperEmail}
+                    onChange={(e) => setPaperEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none bg-white"
+                  />
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    {lang === 'en' ? 'Receive an instant confirmation receipt and calendar pass.' : 'Nhận xác nhận qua email và lịch đám cưới.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Plus-One / Second Attendee (Capped at 2 total) */}
+            <div className="space-y-3">
+              {!paperHasPlusOne ? (
+                <button
+                  type="button"
+                  onClick={() => setPaperHasPlusOne(true)}
+                  className="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-stone-300 hover:border-gold-500 bg-stone-50/50 hover:bg-amber-50/30 text-stone-700 font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4 text-gold-600" />
+                  <span>{t.paper_add_plus_one}</span>
+                </button>
+              ) : (
+                <div className="space-y-4 bg-white p-5 rounded-2xl border border-stone-200/90 shadow-2xs animate-fade-in">
+                  <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 font-bold text-xs flex items-center justify-center">
+                        2
+                      </div>
+                      <h3 className="text-sm font-bold text-stone-900">
+                        {t.paper_plus_one_label}
+                      </h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-500">
+                        {lang === 'en' ? 'Plus-One' : 'Người đi cùng'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setPaperPlusOneAttending(true)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                            paperPlusOneAttending
+                              ? 'bg-emerald-600 text-white shadow-2xs'
+                              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          }`}
+                        >
+                          <CheckCircle className="w-3 h-3" />
+                          <span>{t.guest_attending}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPaperPlusOneAttending(false)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                            !paperPlusOneAttending
+                              ? 'bg-red-600 text-white shadow-2xs'
+                              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          }`}
+                        >
+                          <XCircle className="w-3 h-3" />
+                          <span>{t.guest_declining}</span>
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaperHasPlusOne(false);
+                          setPaperPlusOneFirstName('');
+                          setPaperPlusOneLastName('');
+                          setPaperPlusOneDietary([]);
+                          setPaperPlusOneDietaryNotes('');
+                        }}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        title={t.paper_remove_plus_one}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-stone-600 mb-1">
+                        {t.guest_first_name_label} <span className="text-crimson-700">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required={paperHasPlusOne}
+                        value={paperPlusOneFirstName}
+                        onChange={(e) => setPaperPlusOneFirstName(e.target.value)}
+                        placeholder={lang === 'en' ? 'e.g. Jane' : 'Ví dụ: Lan'}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-stone-600 mb-1">
+                        {t.guest_last_name_label}
+                      </label>
+                      <input
+                        type="text"
+                        value={paperPlusOneLastName}
+                        onChange={(e) => setPaperPlusOneLastName(e.target.value)}
+                        placeholder={lang === 'en' ? 'e.g. Smith' : 'Ví dụ: Trần'}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Plus-One Dietary if attending */}
+                  {paperPlusOneAttending && (
+                    <div className="pt-3 border-t border-stone-100 space-y-3">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-stone-700">
+                        <Utensils className="w-3.5 h-3.5 text-stone-400" />
+                        <span>{t.allergies_dietary_title}</span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {dietaryOptions.map((opt) => {
+                          const isChecked = paperPlusOneDietary.includes(opt.id);
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => togglePaperDietary('plusone', opt.id)}
+                              className={`p-2 rounded-lg border text-[11px] text-left transition-all flex items-center gap-1.5 cursor-pointer ${
+                                isChecked
+                                  ? 'border-crimson-700 bg-crimson-50 text-crimson-900 font-semibold'
+                                  : 'border-stone-200 bg-stone-50/50 text-stone-600 hover:border-stone-300'
+                              }`}
+                            >
+                              <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${
+                                isChecked ? 'bg-crimson-700 border-crimson-700 text-white' : 'border-stone-300'
+                              }`}>
+                                {isChecked && <CheckCircle2 className="w-3 h-3" />}
+                              </div>
+                              <span className="truncate">{opt.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <input
+                        type="text"
+                        value={paperPlusOneDietaryNotes}
+                        onChange={(e) => setPaperPlusOneDietaryNotes(e.target.value)}
+                        placeholder={lang === 'en' ? 'Other allergy details / notes for the kitchen...' : 'Ghi chú dị ứng khác cho đầu bếp...'}
+                        className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Section 5: Heartfelt Message & DJ Song Request */}
+            <div className="space-y-4 bg-white p-5 rounded-2xl border border-stone-200/90 shadow-2xs">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 text-crimson-600 fill-crimson-600" />
+                  <span>{t.message_to_couple}</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={paperSpecialMessage}
+                  onChange={(e) => setPaperSpecialMessage(e.target.value)}
+                  placeholder={t.message_placeholder}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-stone-100">
+                <label className="block text-xs font-bold text-stone-800 mb-2 flex items-center gap-1.5">
+                  <Music className="w-3.5 h-3.5 text-gold-600" />
+                  <span>{lang === 'en' ? 'DJ Dance Song Request' : 'Yêu Cầu Bài Hát Khiêu Vũ Cho DJ'}</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={paperSongTitle}
+                    onChange={(e) => setPaperSongTitle(e.target.value)}
+                    placeholder={lang === 'en' ? "Song Title (e.g. Can't Take My Eyes Off You)" : 'Tên bài hát...'}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={paperSongArtist}
+                    onChange={(e) => setPaperSongArtist(e.target.value)}
+                    placeholder={lang === 'en' ? 'Artist (e.g. Frankie Valli)' : 'Ca sĩ / Nghệ sĩ...'}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:ring-2 focus:ring-crimson-700 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {paperSubmitError && (
+              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{lookupError}</span>
+                <span>{paperSubmitError}</span>
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={lookupLoading || !lookupQuery.trim()}
-              className="w-full max-w-md mx-auto py-3.5 px-6 rounded-xl bg-gradient-to-r from-crimson-700 via-crimson-800 to-crimson-900 text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-            >
-              {lookupLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>{t.lookup_searching}</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 text-gold-300" />
-                  <span>{t.lookup_btn}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
+            {/* Actions: Submit & Back */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={paperSubmitting}
+                className="w-full sm:flex-1 py-3.5 px-6 rounded-xl bg-gradient-to-r from-crimson-700 via-crimson-800 to-crimson-900 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {paperSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{t.lookup_searching}</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-gold-300" />
+                    <span>{t.paper_submit_btn}</span>
+                  </>
+                )}
+              </button>
 
-          <p className="text-[11px] text-stone-400 mt-6">
-            {lang === 'en'
-              ? 'Have an invite link? Click it directly to open your party without searching!'
-              : 'Bạn nhận được đường link thiệp riêng? Nhấp trực tiếp vào link để mở thiệp ngay nhé!'}
-          </p>
-        </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPaperForm(false);
+                  setPaperSubmitError('');
+                }}
+                className="w-full sm:w-auto px-5 py-3.5 rounded-xl border border-stone-300 hover:bg-stone-100 text-stone-700 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                {lang === 'en' ? 'Back to Search' : 'Quay lại tra cứu'}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="relative bg-gradient-to-br from-white/95 via-amber-50/40 to-rose-50/30 backdrop-blur-md rounded-3xl p-6 sm:p-10 border-2 border-gold-400/80 shadow-xl text-center max-w-xl mx-auto animate-fade-in space-y-6">
+            <VietnameseCornerFlourish position="top-left" className="absolute top-3 left-3 w-7 h-7 text-gold-500/70" />
+            <VietnameseCornerFlourish position="top-right" className="absolute top-3 right-3 w-7 h-7 text-gold-500/70" />
+            <VietnameseCornerFlourish position="bottom-left" className="absolute bottom-3 left-3 w-7 h-7 text-gold-500/70" />
+            <VietnameseCornerFlourish position="bottom-right" className="absolute bottom-3 right-3 w-7 h-7 text-gold-500/70" />
+
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-crimson-800 to-crimson-950 text-gold-200 font-serif font-bold text-2xl flex items-center justify-center mx-auto mb-2 shadow-md border border-gold-400/60">
+              囍
+            </div>
+
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 mb-2">
+                {t.lookup_heading}
+              </h2>
+
+              <p className="text-stone-600 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+                {t.lookup_subtitle}
+              </p>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLookup(lookupQuery);
+              }}
+              className="space-y-4"
+            >
+              <div className="relative max-w-md mx-auto">
+                <Search className="w-4 h-4 text-stone-400 absolute left-4 top-3.5" />
+                <input
+                  type="text"
+                  value={lookupQuery}
+                  onChange={(e) => setLookupQuery(e.target.value)}
+                  placeholder={t.lookup_placeholder}
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-stone-300 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-crimson-700 bg-stone-50/50"
+                />
+              </div>
+
+              {lookupError && !showPaperPrompt && (
+                <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2 text-left max-w-md mx-auto">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{lookupError}</span>
+                </div>
+              )}
+
+              {/* Paper Invite Fallback Prompt Box */}
+              {showPaperPrompt && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-rose-50/70 border-2 border-amber-300 text-left space-y-3 max-w-md mx-auto shadow-xs animate-fade-in">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-amber-100 text-amber-900 text-lg shadow-2xs">
+                      📩
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-bold text-amber-950">
+                        {t.paper_invite_prompt_title}
+                      </h3>
+                      <p className="text-[11px] sm:text-xs text-stone-600 mt-1 leading-relaxed">
+                        {t.paper_invite_prompt_desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPaperForm(true);
+                        setShowPaperPrompt(false);
+                        setLookupError('');
+                      }}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white font-semibold text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                    >
+                      <UserPlus className="w-3.5 h-3.5 text-gold-300" />
+                      <span>{t.paper_invite_register_btn}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPaperPrompt(false);
+                        setLookupError('');
+                      }}
+                      className="py-2.5 px-3 rounded-xl border border-amber-300 hover:bg-amber-100/60 text-amber-900 text-xs font-medium cursor-pointer transition-colors"
+                    >
+                      <span>{t.paper_invite_retry_btn}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={lookupLoading || !lookupQuery.trim()}
+                className="w-full max-w-md mx-auto py-3.5 px-6 rounded-xl bg-gradient-to-r from-crimson-700 via-crimson-800 to-crimson-900 text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                {lookupLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{t.lookup_searching}</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-gold-300" />
+                    <span>{t.lookup_btn}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Direct Paper Invite Entry Option */}
+            <div className="pt-4 border-t border-stone-200/70 max-w-md mx-auto">
+              <p className="text-xs text-stone-500 mb-2.5">
+                {lang === 'en'
+                  ? 'Received a physical paper invite card without an RSVP code?'
+                  : 'Quý khách nhận được thiệp cưới giấy in không có mã riêng?'}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPaperForm(true);
+                  setShowPaperPrompt(false);
+                  setLookupError('');
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-100/80 hover:bg-amber-200/80 border border-amber-300/80 text-amber-950 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                <span>{lang === 'en' ? 'Register Paper Invite RSVP' : 'Đăng Ký Tham Dự Với Thiệp Giấy'}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-amber-700" />
+              </button>
+            </div>
+
+            <p className="text-[11px] text-stone-400">
+              {lang === 'en'
+                ? 'Have an invite link? Click it directly to open your party without searching!'
+                : 'Bạn nhận được đường link thiệp riêng? Nhấp trực tiếp vào link để mở thiệp ngay nhé!'}
+            </p>
+          </div>
+        )
       ) : (
         /* 2. PERSONALIZED PARTY RSVP STATE (When party is loaded) */
         <form

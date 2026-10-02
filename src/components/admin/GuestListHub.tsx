@@ -39,7 +39,7 @@ export const GuestListHub: React.FC<Props> = ({ lang, parties, onRefresh }) => {
   const t = translations[lang];
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'attending' | 'pending' | 'declined'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'attending' | 'pending' | 'declined' | 'paper_invite'>('all');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Modals
@@ -200,6 +200,9 @@ Trang & Alfredo`;
     }
     if (statusFilter === 'pending') {
       return p.guests?.some(g => g.rsvp_status === 'pending');
+    }
+    if (statusFilter === 'paper_invite') {
+      return Boolean((p.notes && p.notes.includes('Paper Invite')) || p.invitation_code?.startsWith('PAPER-'));
     }
 
     return true;
@@ -705,6 +708,7 @@ Trang & Alfredo`;
             <option value="attending">{lang === 'en' ? 'Attending Only' : 'Đã nhận lời'}</option>
             <option value="pending">{lang === 'en' ? 'Pending Only' : 'Chờ phản hồi'}</option>
             <option value="declined">{lang === 'en' ? 'Declined Only' : 'Đã từ chối'}</option>
+            <option value="paper_invite">{lang === 'en' ? '📩 Paper Invites (Self-Registered)' : '📩 Thiệp Giấy (Tự Đăng Ký)'}</option>
           </select>
         </div>
 
@@ -783,13 +787,29 @@ Trang & Alfredo`;
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h4 className="text-base font-serif font-bold text-stone-900">
                           {party.primary_guest_name}
                         </h4>
                         <span className="px-2 py-0.5 rounded-full bg-crimson-50 border border-crimson-200 text-crimson-800 text-[10px] font-bold">
                           {party.invitation_code}
                         </span>
+                        {(party.invitation_code?.startsWith('PAPER-') || party.notes?.includes('Paper Invite')) && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-[10px] font-bold flex items-center gap-1 shadow-2xs">
+                            <span>📩</span>
+                            <span>{lang === 'en' ? 'Paper Invite' : 'Thiệp Giấy'}</span>
+                          </span>
+                        )}
+                        {(party.notes?.includes('Paper Invite') || party.invitation_code?.startsWith('PAPER-')) &&
+                          party.guests?.some(g => g.rsvp_status === 'attending' && !g.table_id) && (
+                          <span
+                            className="px-2 py-0.5 rounded-full bg-rose-100 border border-rose-300 text-rose-800 text-[10px] font-semibold flex items-center gap-1"
+                            title={lang === 'en' ? 'Needs table assignment in Seating Hub' : 'Cần xếp bàn tiệc'}
+                          >
+                            <span>⚠️</span>
+                            <span>{lang === 'en' ? 'Needs Table' : 'Chưa Xếp Bàn'}</span>
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 mt-1">

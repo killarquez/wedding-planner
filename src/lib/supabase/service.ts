@@ -512,6 +512,152 @@ export class SupabaseService {
     };
   }
 
+  public static async registerPaperParty(payload: {
+    primary_first_name: string;
+    primary_last_name: string;
+    contact_phone: string;
+    contact_email?: string;
+    relationship_side: 'bride' | 'groom' | 'friend';
+    guests: Array<{
+      first_name: string;
+      last_name: string;
+      rsvp_status: 'attending' | 'declined';
+      dietary_restrictions?: string[];
+      dietary_notes?: string;
+    }>;
+    special_message?: string;
+    song_request?: {
+      song_title?: string;
+      artist_name?: string;
+    };
+  }): Promise<{
+    party: Party;
+    guests: Guest[];
+    primaryGuest: Guest;
+    attendingCount: number;
+    declinedCount: number;
+  }> {
+    const supabase = this.getClient();
+    const now = new Date().toISOString();
+
+    const attendees = (payload.guests && payload.guests.length > 0)
+      ? payload.guests.slice(0, 2)
+      : [{
+          first_name: payload.primary_first_name,
+          last_name: payload.primary_last_name,
+          rsvp_status: 'attending' as const
+        }];
+
+    // Generate readable, unique code: PAPER-<SURNAME>-<4DIGITS>
+    const cleanSurname = (payload.primary_last_name || payload.primary_first_name || 'GUEST')
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 8);
+    const code = `PAPER-${cleanSurname || 'VIP'}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Side mapping
+    let sideLabel = "Friends & Colleagues (Bạn Bè)";
+    let hierarchyTag: TableHierarchy = 'friends_bar';
+    if (payload.relationship_side === 'bride') {
+      sideLabel = "Bride's Family & Friends (Nhà Gái)";
+      hierarchyTag = 'extended_relatives';
+    } else if (payload.relationship_side === 'groom') {
+      sideLabel = "Groom's Family & Friends (Nhà Trai)";
+      hierarchyTag = 'extended_relatives';
+    }
+
+    const partyId = `party-paper-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const primaryDisplayName = attendees.length > 1
+      ? `${attendees[0].first_name} & ${attendees[1].first_name} ${attendees[1].last_name || attendees[0].last_name}`.trim()
+      : `${payload.primary_first_name} ${payload.primary_last_name}`.trim();
+
+    const formattedNotes = `[Source: Paper Invite | Side: ${sideLabel} | Status: Pending Review]${
+      payload.special_message ? ' | Note: ' + payload.special_message : ''
+    }`;
+
+    // 1. Insert Party
+    const { data: createdParty, error: pError } = await supabase
+      .from('parties')
+      .insert({
+        id: partyId,
+        primary_guest_name: primaryDisplayName,
+        invitation_code: code,
+        total_invited: Math.max(1, attendees.length),
+        contact_email: payload.contact_email?.trim() || null,
+        contact_phone: payload.contact_phone?.trim() || null,
+        notes: formattedNotes,
+        created_at: now
+      })
+      .select()
+      .single();
+
+    if (pError || !createdParty) {
+      throw new Error(pError?.message || 'Failed to create paper invite party');
+    }
+
+    // 2. Insert Guests
+    let attendingCount = 0;
+    let declinedCount = 0;
+    const guestsToInsert = attendees.map((att, idx) => {
+      const isAttending = att.rsvp_status === 'attending';
+      if (isAttending) attendingCount++;
+      else declinedCount++;
+
+      return {
+        id: `guest-paper-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+        party_id: partyId,
+        first_name: att.first_name.trim(),
+        last_name: att.last_name.trim(),
+        email: idx === 0 ? payload.contact_email?.trim() || null : null,
+        phone: idx === 0 ? payload.contact_phone?.trim() || null : null,
+        rsvp_status: att.rsvp_status || 'attending',
+        headcount: 1,
+        dietary_restrictions: att.dietary_restrictions || [],
+        dietary_notes: att.dietary_notes?.trim() || null,
+        table_id: null,
+        table_seat_number: null,
+        is_primary_contact: idx === 0,
+        relationship_tag: hierarchyTag,
+        plus_one_names: [],
+        created_at: now,
+        updated_at: now
+      };
+    });
+
+    const { data: createdGuests, error: gError } = await supabase
+      .from('guests')
+      .insert(guestsToInsert)
+      .select();
+
+    if (gError || !createdGuests) {
+      throw new Error(gError?.message || 'Failed to create guest records');
+    }
+
+    // 3. Insert Song Request if present
+    if (payload.song_request?.song_title && payload.song_request.song_title.trim()) {
+      try {
+        await supabase.from('song_requests').insert({
+          id: `song-${Date.now()}`,
+          song_title: payload.song_request.song_title.trim(),
+          artist: payload.song_request.artist_name?.trim() || '',
+          requested_by: primaryDisplayName,
+          notes: 'Requested via paper invite RSVP',
+          created_at: now
+        });
+      } catch (e) {
+        console.warn('Song request insert warning:', e);
+      }
+    }
+
+    return {
+      party: { ...(createdParty as Party), relationship_tag: hierarchyTag },
+      guests: createdGuests as Guest[],
+      primaryGuest: (createdGuests[0] || {}) as Guest,
+      attendingCount,
+      declinedCount
+    };
+  }
+
   public static async bulkImportParties(rows: Array<{
     name: string;
     code?: string;

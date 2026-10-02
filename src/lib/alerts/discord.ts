@@ -8,6 +8,7 @@ export interface DiscordRsvpAlertParams {
   declinedCount: number;
   specialMessage?: string;
   songRequest?: string;
+  isPaperInvite?: boolean;
 }
 
 export async function sendDiscordRsvpAlert(params: DiscordRsvpAlertParams): Promise<boolean> {
@@ -114,12 +115,25 @@ export async function sendDiscordRsvpAlert(params: DiscordRsvpAlertParams): Prom
     });
   }
 
+  const isPaper = params.isPaperInvite || party.notes?.includes('Paper Invite');
+  if (isPaper) {
+    fields.unshift({
+      name: '📩 Registration Source',
+      value: '🏷️ **Paper Invitation (Self-Registered)** • *Needs banquet table assignment in CRM*',
+      inline: false
+    });
+  }
+
   const embed = {
-    title: isAttending 
-      ? `🎉 New RSVP: ${primaryName} is Attending! (${attendingCount} Guests)`
-      : `💌 RSVP Update: ${primaryName} Regretfully Cannot Attend`,
-    description: `Party **${party.primary_guest_name}** has confirmed their RSVP for **Sunday, Dec 20, 2026** at **Grand Harbor Restaurant**.`,
-    color: isAttending ? 0x10B981 : 0x64748B, // Emerald Green or Slate
+    title: isPaper
+      ? `🚨 Paper Invite Registered: ${primaryName} (${attendingCount} Guests)`
+      : (isAttending 
+        ? `🎉 New RSVP: ${primaryName} is Attending! (${attendingCount} Guests)`
+        : `💌 RSVP Update: ${primaryName} Regretfully Cannot Attend`),
+    description: isPaper
+      ? `**${party.primary_guest_name}** scanned a paper invitation QR code and self-registered on **wedding.au-tomato.com**.`
+      : `Party **${party.primary_guest_name}** has confirmed their RSVP for **Sunday, Dec 20, 2026** at **Grand Harbor Restaurant**.`,
+    color: isPaper ? 0xF59E0B : (isAttending ? 0x10B981 : 0x64748B),
     fields,
     footer: {
       text: "Trang & Alfredo's Wedding Operations Hub • Grand Harbor"
